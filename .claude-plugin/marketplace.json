@@ -1,0 +1,12 @@
+{
+  "name": "claude-plugins",
+  "owner": {
+    "name": "Krishnaswamy Subramanian",
+    "email": "jskswamy@gmail.com"
+  },
+  "metadata": {
+    "description": "A curated collection of Claude Code plugins",
+    "version": "1.0.0"
+  },
+  "plugins": []
+}
