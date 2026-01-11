@@ -5,6 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     git-hooks.url = "github:cachix/git-hooks.nix";
+    direnv-instant.url = "github:Mic92/direnv-instant";
   };
 
   outputs =
@@ -13,6 +14,7 @@
       nixpkgs,
       flake-utils,
       git-hooks,
+      direnv-instant,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -64,7 +66,8 @@
               # Changelog generation
               git-cliff
             ]
-            ++ pre-commit-check.enabledPackages;
+            ++ pre-commit-check.enabledPackages
+            ++ [ direnv-instant.packages.${system}.default ];
 
           shellHook = ''
             ${pre-commit-check.shellHook}

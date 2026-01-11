@@ -17,3 +17,12 @@ Thumbs.db
 # Nix/direnv
 .direnv/
 .pre-commit-config.yaml
+
+# Environment files (sensitive)
+.env
+.env.*
+.envrc
+
+# Claude local settings
+.claude/*.local.json
+.claude/*.local.md
