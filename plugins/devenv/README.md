@@ -144,6 +144,8 @@ Create `.claude/devenv.local.md` to customize defaults:
 nixpkgs_channel: nixos-unstable
 use_mcp_search: true
 direnv_mode: instant
+shell_welcome: box
+shell_welcome_custom: ""
 ---
 ```
 
@@ -154,6 +156,8 @@ direnv_mode: instant
 | `nixpkgs_channel` | `nixos-unstable` | Nixpkgs channel to use |
 | `use_mcp_search` | `true` | Use mcp-nixos for package search (requires Nix) |
 | `direnv_mode` | `instant` | direnv integration: `instant`, `standard`, or `none` |
+| `shell_welcome` | `box` | Welcome style: `box`, `minimal`, `project`, `tech`, `custom`, `none` |
+| `shell_welcome_custom` | `""` | Custom message (when `shell_welcome: custom`) |
 
 ## direnv-instant Support
 
@@ -192,6 +196,42 @@ Or set in `.claude/devenv.local.md`:
 ```yaml
 ---
 direnv_mode: standard  # or instant, or none
+---
+```
+
+## Shell Welcome Customization
+
+Customize the message displayed when entering your development environment:
+
+### Available Styles
+
+| Style | Description |
+|-------|-------------|
+| `box` | Unicode box with devenv branding (default) |
+| `minimal` | Single line "▸ devenv ready" |
+| `project` | Shows current project directory name |
+| `tech` | Terminal-style "[devenv] :: environment initialized" |
+| `custom` | Your own custom message |
+| `none` | No welcome message |
+
+### Changing the Style
+
+Run `/devenv` and select "Change welcome style", or set directly in `.claude/devenv.local.md`:
+
+```yaml
+---
+shell_welcome: minimal
+---
+```
+
+### Custom Messages
+
+For custom messages with multiple lines, use `\n`:
+
+```yaml
+---
+shell_welcome: custom
+shell_welcome_custom: "Welcome to my project!\nHappy coding!"
 ---
 ```
 
