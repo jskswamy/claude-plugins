@@ -110,6 +110,31 @@ The plugin includes hooks that automatically run on any `flake.nix` modification
 2. **statix** - Fixes anti-patterns
 3. **deadnix** - Removes unused code
 
+## MCP Integration (mcp-nixos)
+
+This plugin integrates with [mcp-nixos](https://github.com/utensils/mcp-nixos) for enhanced package search capabilities:
+
+- **130K+ packages** - Access to all NixOS packages with accurate names
+- **No hallucinations** - Queries official NixOS APIs instead of relying on AI memory
+- **Version history** - Access to package version history via NixHub.io
+
+### How It Works
+
+When you search for packages, the plugin tries in order:
+1. **Global/project mcp-nixos** - If you already have mcp-nixos configured (avoids duplicates)
+2. **Plugin's bundled mcp-nixos** - Runs via `nix-shell -p uv` (no extra setup needed)
+3. **Bash fallback** - Uses `nix search` if MCP is unavailable
+
+### Disabling MCP
+
+To always use native `nix search`, add to `.claude/devenv.local.md`:
+
+```yaml
+---
+use_mcp_search: false
+---
+```
+
 ## Configuration
 
 Create `.claude/devenv.local.md` to customize defaults:
@@ -117,6 +142,7 @@ Create `.claude/devenv.local.md` to customize defaults:
 ```yaml
 ---
 nixpkgs_channel: nixos-unstable
+use_mcp_search: true
 ---
 ```
 
@@ -125,6 +151,7 @@ nixpkgs_channel: nixos-unstable
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `nixpkgs_channel` | `nixos-unstable` | Nixpkgs channel to use |
+| `use_mcp_search` | `true` | Use mcp-nixos for package search (requires Nix) |
 
 ## Entering the Environment
 

@@ -10,6 +10,8 @@ allowed-tools:
   - Glob
   - Grep
   - AskUserQuestion
+  - mcp__nixos__nix
+  - mcp__plugin_devenv_nixos__nix
 ---
 
 # Devenv Command
@@ -71,9 +73,34 @@ Let user confirm, deselect, or add more via "Other" option.
 Ask: "Any additional packages you need? (e.g., redis, postgresql, jq)"
 
 For each package mentioned:
-1. Run `nix-shell -p nix --run "nix search nixpkgs <package> --json"` to find exact package names
-2. If version specified (e.g., `nodejs@20`), search for versioned variants like `nodejs_20`
-3. Present search results and confirm selection
+1. Check `.claude/devenv.local.md` for `use_mcp_search` setting (default: `true`)
+2. If MCP search is enabled, try MCP tools in priority order:
+   a. First try global/project level MCP (if user has mcp-nixos configured):
+      ```
+      mcp__nixos__nix(
+        action="search",
+        query="<package>",
+        source="nixos",
+        type="packages",
+        channel="unstable",
+        limit=10
+      )
+      ```
+   b. If unavailable, try plugin's bundled MCP:
+      ```
+      mcp__plugin_devenv_nixos__nix(
+        action="search",
+        query="<package>",
+        source="nixos",
+        type="packages",
+        channel="unstable",
+        limit=10
+      )
+      ```
+3. **Fallback:** If no MCP tool available or `use_mcp_search: false`, use bash:
+   `nix-shell -p nix --run "nix search nixpkgs <package> --json"`
+4. If version specified (e.g., `nodejs@20`), search for versioned variants like `nodejs_20`
+5. Present search results and confirm selection
 
 **2d. Offer security tools:**
 
@@ -193,7 +220,11 @@ gitleaks = {
             # Nix
             nixfmt-rfc-style.enable = true;
             statix.enable = true;
-            deadnix.enable = true;
+            deadnix = {
+              enable = true;
+              settings.edit = true;
+              settings.noLambdaPatternNames = true; # Preserve 'self' in flake outputs
+            };
 
             # General
             check-yaml.enable = true;
@@ -251,7 +282,28 @@ use flake
 
 4. Run `nix flake lock` to generate `flake.lock`
 
-**2f. Output instructions:**
+**2f. Validate the flake:**
+
+After generating files, ALWAYS validate the flake works correctly:
+
+```bash
+nix flake check --no-build 2>&1
+```
+
+**If validation fails:**
+1. Read the error message carefully
+2. Common issues to check:
+   - Missing `self` parameter in outputs (required by flake system even if unused)
+   - Syntax errors in Nix expressions
+   - Invalid package names
+   - Missing inputs referenced in outputs
+3. Fix the issue in `flake.nix`
+4. Re-run validation until it passes
+5. Only proceed to output instructions after validation succeeds
+
+**Important:** Never finish the task if validation fails. The user should have a working environment.
+
+**2g. Output instructions:**
 
 ```
 Development environment created!
@@ -302,7 +354,13 @@ Only show "Setup security tools" option if `git-hooks` input is NOT present in f
 
 **Add packages:**
 1. Ask: "What packages would you like to add?"
-2. Search nixpkgs for each: `nix-shell -p nix --run "nix search nixpkgs <package> --json"`
+2. Search nixpkgs for each package:
+   - Check `.claude/devenv.local.md` for `use_mcp_search` setting (default: `true`)
+   - If MCP search is enabled, try MCP tools in priority order:
+     a. First try global/project level MCP: `mcp__nixos__nix(...)`
+     b. If unavailable, try plugin's bundled MCP: `mcp__plugin_devenv_nixos__nix(...)`
+   - **Fallback:** If no MCP tool available or `use_mcp_search: false`, use bash:
+     `nix-shell -p nix --run "nix search nixpkgs <package> --json"`
 3. Confirm package names
 4. Edit `flake.nix` to add packages to the list
 5. Run `nix flake lock --update-input nixpkgs` to update lock
@@ -323,6 +381,14 @@ Only show "Setup security tools" option if `git-hooks` input is NOT present in f
 4. Update the devShell to include `pre-commit-check.enabledPackages` and shellHook
 5. Add the `checks.pre-commit-check` output
 
+**After any modification, validate the flake:**
+
+```bash
+nix flake check --no-build 2>&1
+```
+
+If validation fails, fix the issue before completing the task.
+
 ---
 
 ## Important Notes
@@ -330,9 +396,55 @@ Only show "Setup security tools" option if `git-hooks` input is NOT present in f
 - Always use `nix-shell -p <tool> --run "<command>"` for nix tools - do NOT assume they are installed system-wide
 - The PostToolUse hooks will automatically format and lint `flake.nix` after any Write/Edit operations
 - Use the nixpkgs channel from `.claude/devenv.local.md` if it exists, otherwise default to `nixos-unstable`
-- When searching for packages, prefer the `--json` flag for easier parsing
+- When searching for packages, use the mcp-nixos MCP tool (preferred) with bash fallback
 - `git-hooks.nix` auto-generates `.pre-commit-config.yaml` via shellHook - no manual YAML needed!
 - All hook tools are provided by Nix, ensuring reproducibility
+- **Critical:** The `self` parameter in flake outputs is REQUIRED by the Nix flake system, even if not explicitly used in the function body. The plugin's deadnix hook is configured with `--no-lambda-pattern-names` to preserve it
+- **Always validate** with `nix flake check --no-build` before completing any flake creation/modification task
+
+## MCP Tool: mcp-nixos
+
+This plugin uses the `mcp-nixos` MCP server for package search, providing access to 130K+ NixOS packages with accurate, up-to-date information.
+
+### Tool Priority Order
+
+The command tries MCP tools in this order:
+1. **Global/Project level**: `mcp__nixos__nix` - if user has mcp-nixos configured globally or in project
+2. **Plugin's bundled**: `mcp__plugin_devenv_nixos__nix` - plugin's own MCP server
+3. **Bash fallback**: `nix search` command
+
+This ensures users with existing mcp-nixos configuration don't get duplicate servers.
+
+### Package Search
+
+```
+mcp__nixos__nix(  # or mcp__plugin_devenv_nixos__nix
+  action="search",
+  query="<search_term>",
+  source="nixos",
+  type="packages",
+  channel="unstable",
+  limit=10
+)
+```
+
+### Parameters
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| action | "search" | Search for packages |
+| query | string | Package name or search term |
+| source | "nixos" | Use NixOS packages source |
+| type | "packages" | Search packages (not options) |
+| channel | "unstable" | Use nixos-unstable channel |
+| limit | number | Max results to return |
+
+### Fallback Behavior
+
+If no MCP tool is available, the command falls back to:
+```bash
+nix-shell -p nix --run "nix search nixpkgs <package> --json"
+```
 
 ## Settings File
 
@@ -341,8 +453,16 @@ Users can customize behavior via `.claude/devenv.local.md`:
 ```yaml
 ---
 nixpkgs_channel: nixos-unstable
+use_mcp_search: true
 ---
 ```
+
+### Available Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `nixpkgs_channel` | `nixos-unstable` | Nixpkgs channel to use |
+| `use_mcp_search` | `true` | Use mcp-nixos for package search. Set to `false` to always use bash fallback |
 
 ## git-hooks.nix Hook Reference
 
