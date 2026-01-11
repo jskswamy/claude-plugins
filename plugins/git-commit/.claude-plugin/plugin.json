@@ -1,0 +1,16 @@
+{
+  "name": "git-commit",
+  "version": "1.0.0",
+  "description": "Generate intelligent git commit messages with classic or conventional commit style support and strict atomic commit validation",
+  "author": {
+    "name": "Krishnaswamy Subramanian",
+    "email": "jskswamy@gmail.com"
+  },
+  "keywords": [
+    "git",
+    "commit",
+    "classic-commits",
+    "conventional-commits",
+    "atomic-commits"
+  ]
+}

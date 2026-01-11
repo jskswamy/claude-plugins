@@ -30,6 +30,24 @@
         "direnv",
         "direnv-instant"
       ]
+    },
+    {
+      "name": "git-commit",
+      "description": "Generate intelligent git commit messages with classic or conventional commit style support and strict atomic commit validation",
+      "version": "1.0.0",
+      "author": {
+        "name": "Krishnaswamy Subramanian"
+      },
+      "source": "./plugins/git-commit",
+      "category": "git",
+      "tags": [
+        "git",
+        "commit",
+        "classic-commits",
+        "conventional-commits",
+        "atomic-commits",
+        "pair-programming"
+      ]
     }
   ]
 }
