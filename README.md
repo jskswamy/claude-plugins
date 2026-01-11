@@ -42,7 +42,28 @@ This is a personal collection of useful Claude Code plugins that I've built to e
 
 ## Available Plugins
 
-*Coming soon. First plugins are in development.*
+### devenv
+
+Initialize and manage Nix flake development environments with auto-detection and security tooling.
+
+**Features:**
+- Auto-detects project stack (Node.js, Python, Go, Rust, etc.)
+- Generates `flake.nix` with best practices
+- Offers pre-commit hooks with SAST tools
+- Includes gitleaks for secret detection
+- Automatic linting with nixfmt, statix, deadnix
+
+**Install:**
+```
+/plugin install devenv@claude-plugins
+```
+
+**Usage:**
+```
+/devenv
+```
+
+[View documentation](./plugins/devenv/README.md)
 
 ## Roadmap
 

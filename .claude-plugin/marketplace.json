@@ -8,5 +8,17 @@
     "description": "A curated collection of Claude Code plugins",
     "version": "1.0.0"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "devenv",
+      "description": "Initialize and manage Nix flake development environments with auto-detection and security tooling",
+      "version": "1.0.0",
+      "author": {
+        "name": "Krishnaswamy Subramanian"
+      },
+      "source": "./plugins/devenv",
+      "category": "development",
+      "tags": ["nix", "flake", "devenv", "development", "environment", "pre-commit", "gitleaks", "security"]
+    }
+  ]
 }
