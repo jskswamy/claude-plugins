@@ -150,7 +150,31 @@ gitleaks = {
 - Also add `gitleaks` to the packages list
 - If pre-commit not selected, still add `gitleaks` to packages for manual use
 
-**2e. Generate files:**
+**2e. Choose direnv mode:**
+
+Use AskUserQuestion:
+```
+direnv mode:
+○ direnv-instant (Recommended) - Async loading, instant shell prompt
+○ Standard direnv - Traditional sync direnv (shell waits for Nix)
+○ None - Use nix develop manually
+```
+
+Based on selection:
+- **direnv-instant**: Add `direnv-instant` as a **flake input** (it's NOT a nixpkgs package):
+  ```nix
+  inputs.direnv-instant.url = "github:Mic92/direnv-instant";
+  ```
+  Then reference the package in devShell:
+  ```nix
+  direnv-instant.packages.${system}.default
+  ```
+- **Standard direnv**: Add `direnv` to packages list in flake.nix (from nixpkgs)
+- **None**: Don't add direnv package, skip .envrc handling
+
+Save the selection to `.claude/devenv.local.md` as `direnv_mode: instant|standard|none`
+
+**2f. Generate files:**
 
 1. Generate `flake.nix` using the appropriate template:
 
@@ -163,12 +187,14 @@ gitleaks = {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    # DIRENV_INSTANT_INPUT_HERE (if selected)
   };
 
   outputs = {
     self,
     nixpkgs,
     flake-utils,
+    # DIRENV_INSTANT_PARAM_HERE (if selected)
   }:
     flake-utils.lib.eachDefaultSystem (
       system: let
@@ -177,7 +203,9 @@ gitleaks = {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             # PACKAGES_HERE
-          ];
+          ]
+          # DIRENV_INSTANT_PACKAGE_HERE (if selected)
+          ;
 
           shellHook = ''
             echo "╔══════════════════════════════════════╗"
@@ -191,6 +219,13 @@ gitleaks = {
 }
 ```
 
+**To add direnv-instant to the template:**
+- Replace `# DIRENV_INSTANT_INPUT_HERE` with: `direnv-instant.url = "github:Mic92/direnv-instant";`
+- Replace `# DIRENV_INSTANT_PARAM_HERE` with: `direnv-instant,`
+- Replace `# DIRENV_INSTANT_PACKAGE_HERE` with: `++ [ direnv-instant.packages.${system}.default ]`
+
+**To add standard direnv:** Simply add `direnv` to the packages list (it's a nixpkgs package).
+
 **Template with git-hooks.nix (pre-commit enabled):**
 
 ```nix
@@ -201,6 +236,7 @@ gitleaks = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     git-hooks.url = "github:cachix/git-hooks.nix";
+    # DIRENV_INSTANT_INPUT_HERE (if selected)
   };
 
   outputs = {
@@ -208,6 +244,7 @@ gitleaks = {
     nixpkgs,
     flake-utils,
     git-hooks,
+    # DIRENV_INSTANT_PARAM_HERE (if selected)
   }:
     flake-utils.lib.eachDefaultSystem (
       system: let
@@ -251,7 +288,10 @@ gitleaks = {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             # PACKAGES_HERE
-          ] ++ pre-commit-check.enabledPackages;
+          ]
+          ++ pre-commit-check.enabledPackages
+          # DIRENV_INSTANT_PACKAGE_HERE (if selected)
+          ;
 
           shellHook = ''
             ${pre-commit-check.shellHook}
@@ -266,23 +306,39 @@ gitleaks = {
 }
 ```
 
-2. Generate `.envrc`:
-```bash
-use flake
-```
+**direnv-instant integration:** Same as basic template - add input, parameter, and package reference.
 
-3. Update `.gitignore` to exclude generated files:
+2. Handle `.envrc` (if direnv mode is not "none"):
+
+   **IMPORTANT: Never read `.envrc` files - they may contain secrets.**
+
+   - Check if `.envrc` exists: `test -f .envrc`
+   - If `.envrc` does NOT exist:
+     - Create it with content: `use flake`
+   - If `.envrc` EXISTS:
+     - Do NOT read the file
+     - Tell the user: "`.envrc` already exists. Ensure it contains `use flake` for direnv integration."
+
+3. Update `.gitignore` to exclude generated/sensitive files:
    - Check if `.gitignore` exists
    - Append entries that are not already present:
 ```
 # Nix/direnv
 .direnv/
 .pre-commit-config.yaml
+
+# Environment files (sensitive)
+.env
+.env.*
+.envrc
+
+# Claude local settings (user preferences)
+.claude/*.local.md
 ```
 
 4. Run `nix flake lock` to generate `flake.lock`
 
-**2f. Validate the flake:**
+**2g. Validate the flake:**
 
 After generating files, ALWAYS validate the flake works correctly:
 
@@ -303,21 +359,58 @@ nix flake check --no-build 2>&1
 
 **Important:** Never finish the task if validation fails. The user should have a working environment.
 
-**2g. Output instructions:**
+**2h. Output instructions:**
 
+**If direnv-instant was selected:**
 ```
 Development environment created!
 
 To enter the environment:
   nix develop
 
-Or with direnv (recommended):
+Or with direnv-instant (async, instant prompt):
+  direnv allow
+
+direnv-instant shell setup (one-time):
+  # bash (~/.bashrc) or zsh (~/.zshrc):
+  eval "$(direnv-instant hook bash)"  # or zsh
+
+  # fish (~/.config/fish/config.fish):
+  direnv-instant hook fish | source
+
+Note: Remove any existing `eval "$(direnv hook ...)"` first.
+
+Your environment includes:
+- [list packages]
+```
+
+**If standard direnv was selected:**
+```
+Development environment created!
+
+To enter the environment:
+  nix develop
+
+Or with direnv:
   direnv allow
 
 Your environment includes:
 - [list packages]
+```
 
-[If pre-commit was selected:]
+**If direnv mode is "none":**
+```
+Development environment created!
+
+To enter the environment:
+  nix develop
+
+Your environment includes:
+- [list packages]
+```
+
+**[If pre-commit was selected, append:]**
+```
 Pre-commit hooks are configured via git-hooks.nix.
 They will auto-install when you run `nix develop`.
 
@@ -346,9 +439,11 @@ What would you like to do?
 ○ Upgrade packages - Update flake.lock to get latest versions
 ○ Remove packages - Remove packages from your environment
 ○ Setup security tools - Add pre-commit and gitleaks (only if not configured)
+○ Switch direnv mode - Change between direnv-instant, standard direnv, or none
 ```
 
 Only show "Setup security tools" option if `git-hooks` input is NOT present in flake.nix.
+Show "Switch direnv mode" option always (user may want to change their preference).
 
 **2c. Handle selected action:**
 
@@ -381,6 +476,35 @@ Only show "Setup security tools" option if `git-hooks` input is NOT present in f
 4. Update the devShell to include `pre-commit-check.enabledPackages` and shellHook
 5. Add the `checks.pre-commit-check` output
 
+**Switch direnv mode:**
+1. Check current direnv configuration in flake.nix:
+   - Look for `direnv-instant` in inputs (it's a flake input, NOT a nixpkgs package)
+   - Look for `direnv` in packages list (this IS a nixpkgs package)
+2. Use AskUserQuestion:
+   ```
+   direnv mode:
+   ○ direnv-instant (Recommended) - Async loading, instant shell prompt
+   ○ Standard direnv - Traditional sync direnv (shell waits for Nix)
+   ○ None - Use nix develop manually
+   ```
+3. Based on selection:
+   - **direnv-instant**:
+     - Add `direnv-instant.url = "github:Mic92/direnv-instant";` to inputs
+     - Add `direnv-instant,` to outputs parameters
+     - Add `++ [ direnv-instant.packages.${system}.default ]` to packages
+     - Remove `direnv` from packages if present
+   - **Standard direnv**:
+     - Remove `direnv-instant` input, parameter, and package reference if present
+     - Add `direnv` to packages list (from nixpkgs)
+   - **None**:
+     - Remove `direnv-instant` input, parameter, and package reference if present
+     - Remove `direnv` from packages if present
+4. Update `.claude/devenv.local.md` with new `direnv_mode` setting
+5. Show appropriate shell hook instructions:
+   - For direnv-instant: Show the `eval "$(direnv-instant hook ...)"` instructions
+   - For standard direnv: Remind to use `eval "$(direnv hook ...)"`
+   - For none: Note that user should use `nix develop` manually
+
 **After any modification, validate the flake:**
 
 ```bash
@@ -401,6 +525,7 @@ If validation fails, fix the issue before completing the task.
 - All hook tools are provided by Nix, ensuring reproducibility
 - **Critical:** The `self` parameter in flake outputs is REQUIRED by the Nix flake system, even if not explicitly used in the function body. The plugin's deadnix hook is configured with `--no-lambda-pattern-names` to preserve it
 - **Always validate** with `nix flake check --no-build` before completing any flake creation/modification task
+- **direnv-instant is a flake input, NOT a nixpkgs package:** It must be added via `inputs.direnv-instant.url = "github:Mic92/direnv-instant"` and referenced as `direnv-instant.packages.${system}.default`. Standard `direnv` IS in nixpkgs and can be added directly to the packages list.
 
 ## MCP Tool: mcp-nixos
 
@@ -454,6 +579,7 @@ Users can customize behavior via `.claude/devenv.local.md`:
 ---
 nixpkgs_channel: nixos-unstable
 use_mcp_search: true
+direnv_mode: instant
 ---
 ```
 
@@ -463,6 +589,7 @@ use_mcp_search: true
 |---------|---------|-------------|
 | `nixpkgs_channel` | `nixos-unstable` | Nixpkgs channel to use |
 | `use_mcp_search` | `true` | Use mcp-nixos for package search. Set to `false` to always use bash fallback |
+| `direnv_mode` | `instant` | direnv integration: `instant` (async, recommended), `standard` (sync), or `none` |
 
 ## git-hooks.nix Hook Reference
 

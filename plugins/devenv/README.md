@@ -143,6 +143,7 @@ Create `.claude/devenv.local.md` to customize defaults:
 ---
 nixpkgs_channel: nixos-unstable
 use_mcp_search: true
+direnv_mode: instant
 ---
 ```
 
@@ -152,13 +153,54 @@ use_mcp_search: true
 |---------|---------|-------------|
 | `nixpkgs_channel` | `nixos-unstable` | Nixpkgs channel to use |
 | `use_mcp_search` | `true` | Use mcp-nixos for package search (requires Nix) |
+| `direnv_mode` | `instant` | direnv integration: `instant`, `standard`, or `none` |
+
+## direnv-instant Support
+
+The plugin defaults to [direnv-instant](https://github.com/Mic92/direnv-instant) for async environment loading:
+
+- **Instant shell prompt**: Your shell returns immediately
+- **Background loading**: Nix flake evaluates asynchronously
+- **Progress display**: Shows loading status in tmux/zellij for long evaluations (>4s)
+
+### Shell Setup (One-Time)
+
+Add to your shell rc file:
+
+**Bash (~/.bashrc) or Zsh (~/.zshrc):**
+```bash
+eval "$(direnv-instant hook bash)"  # or zsh
+```
+
+**Fish (~/.config/fish/config.fish):**
+```fish
+direnv-instant hook fish | source
+```
+
+**Note:** Remove any existing `eval "$(direnv hook ...)"` first - direnv-instant replaces standard direnv.
+
+### Switching Modes
+
+To switch between direnv-instant and standard direnv:
+
+```
+/devenv
+# Select "Switch direnv mode"
+```
+
+Or set in `.claude/devenv.local.md`:
+```yaml
+---
+direnv_mode: standard  # or instant, or none
+---
+```
 
 ## Entering the Environment
 
 After setup, enter your development environment:
 
 ```bash
-# With direnv (auto-activates on cd)
+# With direnv-instant or direnv (auto-activates on cd)
 direnv allow
 
 # Or manually
