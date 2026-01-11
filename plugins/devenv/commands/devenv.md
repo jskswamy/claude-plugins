@@ -94,7 +94,7 @@ If pre-commit selected, determine which git-hooks.nix hooks to enable based on d
 | Nix (always) | `nixfmt-rfc-style.enable = true; statix.enable = true; deadnix.enable = true;` |
 | Shell scripts | `shellcheck.enable = true;` |
 | Docker | `hadolint.enable = true;` |
-| General (always) | `check-yaml.enable = true; trailing-whitespace.enable = true; end-of-file-fixer.enable = true;` |
+| General (always) | `check-yaml.enable = true; trim-trailing-whitespace.enable = true;` |
 
 **Then ask about secret scanning:**
 
@@ -197,8 +197,7 @@ gitleaks = {
 
             # General
             check-yaml.enable = true;
-            trailing-whitespace.enable = true;
-            end-of-file-fixer.enable = true;
+            trim-trailing-whitespace.enable = true;
 
             # LANGUAGE_HOOKS_HERE
 
@@ -241,7 +240,16 @@ gitleaks = {
 use flake
 ```
 
-3. Run `nix flake lock` to generate `flake.lock`
+3. Update `.gitignore` to exclude generated files:
+   - Check if `.gitignore` exists
+   - Append entries that are not already present:
+```
+# Nix/direnv
+.direnv/
+.pre-commit-config.yaml
+```
+
+4. Run `nix flake lock` to generate `flake.lock`
 
 **2f. Output instructions:**
 
@@ -351,7 +359,7 @@ nixpkgs_channel: nixos-unstable
 | Docker | `hadolint` |
 | YAML | `check-yaml`, `yamllint` |
 | Secrets | `trufflehog`, `ripsecrets` (built-in); `gitleaks` requires custom config |
-| General | `trailing-whitespace`, `end-of-file-fixer`, `check-added-large-files` |
+| General | `trim-trailing-whitespace`, `check-added-large-files`, `check-merge-conflicts` |
 
 ### Example Hook Configuration
 
