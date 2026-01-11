@@ -369,13 +369,70 @@ The style files contain comprehensive rules including:
 
 5. Store selected co-author for commit message generation
 
+### Step 6b: Gather Session Context
+
+**CRITICAL:** Before generating the commit message, review the current conversation history to extract context about WHY these changes were made.
+
+**What to look for in the conversation:**
+
+| Context Type | What to Extract |
+|--------------|-----------------|
+| **User Intent** | What did the user originally ask for? What problem were they solving? |
+| **Decisions Made** | What approaches were discussed? Why was this implementation chosen? |
+| **Trade-offs** | What alternatives were considered and rejected? |
+| **Requirements** | Any specific constraints or requirements mentioned? |
+| **References** | Issue numbers, ticket IDs, PR references, or external links discussed? |
+
+**Extraction process:**
+
+1. **Identify the original request**
+   - Find the user's initial message that led to these changes
+   - Note the problem being solved or feature being added
+   - Capture any specific requirements stated
+
+2. **Trace key decisions**
+   - What implementation approaches were discussed?
+   - Why was the current approach chosen over alternatives?
+   - Were there any trade-offs mentioned?
+
+3. **Gather important context**
+   - Issue/ticket numbers mentioned (e.g., "fixes #123", "JIRA-456")
+   - Breaking changes or migration notes discussed
+   - Performance or security considerations
+   - Dependencies or prerequisites mentioned
+
+4. **Note user clarifications**
+   - Any follow-up questions and answers
+   - Scope adjustments or refinements
+   - Explicit preferences stated by the user
+
+**Example extraction:**
+
+If the conversation included:
+> User: "The login page crashes when users enter invalid emails. Can you add validation?"
+> Claude: "I'll add email validation with regex. Should I also add rate limiting?"
+> User: "Yes, add rate limiting too - we've been getting bot attacks"
+
+Extract:
+- **Intent:** Fix login crash on invalid emails
+- **Decision:** Added email validation with regex
+- **Additional context:** Rate limiting added due to bot attacks
+- **Problem:** Users experiencing crashes, security concern with bots
+
+**Use this context to:**
+- Write a commit body that explains the "why" not just the "what"
+- Include relevant background that future developers need
+- Reference issues or decisions from the conversation
+- Capture the reasoning that would otherwise be lost
+
 ### Step 7: Generate Commit Message
 
 Using all gathered context, generate the commit message:
 
 **Inputs to consider:**
 - Staged diff content
-- User-provided context/intention
+- User-provided context/intention (command arguments)
+- **Session context** (from Step 6b - conversation history)
 - Current commit message (if amending)
 - Recent commit messages (for style consistency)
 - Selected commit style rules
@@ -383,32 +440,69 @@ Using all gathered context, generate the commit message:
 
 **Generation guidelines:**
 
-1. Analyze the diff to understand:
-   - What files changed
-   - What the changes do
-   - The impact of the changes
+1. **Analyze the diff** to understand WHAT changed:
+   - What files were modified
+   - What the code changes do
+   - The technical impact of the changes
 
-2. If user provided context, incorporate it naturally into the message
+2. **Use session context** to understand WHY (from Step 6b):
+   - Reference the original user request that led to these changes
+   - Include key decisions and reasoning from the conversation
+   - Mention trade-offs or alternatives that were considered
+   - Include issue/ticket references if mentioned in conversation
 
-3. Apply the loaded style rules strictly (from Step 5)
+3. **Prioritize context sources:**
+   - Explicit user arguments (command line) > Session context > Diff analysis
+   - If user provided context via arguments, prioritize it
+   - Session context fills in the "why" that arguments might miss
+
+4. **Apply the loaded style rules strictly** (from Step 5)
    - Follow all formatting rules from the style file
    - Use the examples as reference for good formatting
    - Avoid the anti-patterns listed in the style file
 
-4. Generate body text that explains:
-   - WHAT: Summary of the changes
-   - WHY: Reason/motivation for the change
-   - Any important caveats or side effects
+5. **Generate body text that explains:**
+   - WHAT: Summary of the changes (from diff analysis)
+   - WHY: Reason/motivation (from session context)
+   - CONTEXT: Important background (from conversation history)
+   - IMPACT: Any caveats, side effects, or breaking changes
 
-5. **CRITICAL:** Wrap ALL lines at 72 characters maximum
+6. **CRITICAL:** Wrap ALL lines at 72 characters maximum
    - Count characters carefully
    - Break at natural word boundaries
 
-6. If co-author selected, append:
+7. If co-author selected, append:
    ```
 
    Co-Authored-By: Name <email>
    ```
+
+**Example with session context:**
+
+If the conversation was about "fixing login crashes due to invalid emails and adding rate limiting for bot attacks", the commit message should be:
+
+```
+Add email validation and rate limiting to login
+
+Users reported crashes when entering malformed email addresses. The
+previous implementation passed raw input to the auth service without
+validation.
+
+Changes:
+- Add regex-based email validation before auth call
+- Implement rate limiting (5 attempts per minute per IP)
+- Add user-friendly error messages for validation failures
+
+Rate limiting addresses the bot attack concern raised during
+implementation discussion.
+```
+
+NOT just:
+```
+Add validation to login
+
+Add email validation and rate limiting.
+```
 
 ### Step 8: Present and Confirm
 

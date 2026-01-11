@@ -33,8 +33,8 @@
     },
     {
       "name": "git-commit",
-      "description": "Generate intelligent git commit messages with classic or conventional commit style support and strict atomic commit validation",
-      "version": "1.0.0",
+      "description": "Generate intelligent git commit messages with classic or conventional commit style support, strict atomic commit validation, and session context awareness",
+      "version": "1.1.0",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -46,7 +46,8 @@
         "classic-commits",
         "conventional-commits",
         "atomic-commits",
-        "pair-programming"
+        "pair-programming",
+        "session-context"
       ]
     }
   ]
