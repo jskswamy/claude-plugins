@@ -1,10 +1,18 @@
 {
   "name": "devenv",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Initialize and manage Nix flake development environments with auto-detection and security tooling",
   "author": {
     "name": "Krishnaswamy Subramanian",
     "email": "jskswamy@gmail.com"
   },
-  "keywords": ["nix", "flake", "devenv", "development", "environment", "pre-commit", "gitleaks"]
+  "keywords": [
+    "nix",
+    "flake",
+    "devenv",
+    "development",
+    "environment",
+    "pre-commit",
+    "gitleaks"
+  ]
 }

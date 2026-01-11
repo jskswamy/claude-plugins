@@ -81,7 +81,6 @@ Use AskUserQuestion with multiSelect:
 ```
 Security tools (recommended):
 [ ] pre-commit - Git hooks with SAST tools for your stack (using git-hooks.nix)
-[ ] gitleaks - Prevent secrets from being committed
 ```
 
 If pre-commit selected, determine which git-hooks.nix hooks to enable based on detected stack:
@@ -97,8 +96,31 @@ If pre-commit selected, determine which git-hooks.nix hooks to enable based on d
 | Docker | `hadolint.enable = true;` |
 | General (always) | `check-yaml.enable = true; trailing-whitespace.enable = true; end-of-file-fixer.enable = true;` |
 
+**Then ask about secret scanning:**
+
+Use AskUserQuestion:
+```
+Secret scanner preference:
+○ trufflehog (Recommended) - Built-in hook, works out of the box
+○ gitleaks - Popular choice, requires custom hook configuration
+○ None - Skip secret scanning
+```
+
+If trufflehog selected:
+- Add `trufflehog.enable = true;` to the hooks configuration (built-in, no extra config needed)
+
 If gitleaks selected:
-- Add `gitleaks.enable = true;` to the hooks configuration
+- Add gitleaks as a **custom hook** (it's NOT built-in to git-hooks.nix):
+```nix
+gitleaks = {
+  enable = true;
+  name = "gitleaks";
+  entry = "${pkgs.gitleaks}/bin/gitleaks git --pre-commit --redact --staged --verbose";
+  language = "system";
+  pass_filenames = false;
+};
+```
+- Also add `gitleaks` to the packages list
 - If pre-commit not selected, still add `gitleaks` to packages for manual use
 
 **2e. Generate files:**
@@ -179,7 +201,17 @@ If gitleaks selected:
             end-of-file-fixer.enable = true;
 
             # LANGUAGE_HOOKS_HERE
-            # GITLEAKS_HERE
+
+            # SECRET_SCANNER_HERE
+            # For trufflehog (built-in): trufflehog.enable = true;
+            # For gitleaks (custom hook):
+            # gitleaks = {
+            #   enable = true;
+            #   name = "gitleaks";
+            #   entry = "${pkgs.gitleaks}/bin/gitleaks git --pre-commit --redact --staged --verbose";
+            #   language = "system";
+            #   pass_filenames = false;
+            # };
           };
         };
       in {
@@ -318,15 +350,18 @@ nixpkgs_channel: nixos-unstable
 | Shell | `shellcheck`, `shfmt` |
 | Docker | `hadolint` |
 | YAML | `check-yaml`, `yamllint` |
-| Secrets | `gitleaks`, `detect-secrets` |
+| Secrets | `trufflehog`, `ripsecrets` (built-in); `gitleaks` requires custom config |
 | General | `trailing-whitespace`, `end-of-file-fixer`, `check-added-large-files` |
 
 ### Example Hook Configuration
 
 ```nix
 hooks = {
-  # Enable a hook
+  # Enable a built-in hook
   eslint.enable = true;
+
+  # Built-in secret scanner
+  trufflehog.enable = true;
 
   # Enable with custom settings
   ruff = {
@@ -334,11 +369,13 @@ hooks = {
     settings.args = ["--fix"];
   };
 
-  # Custom hook
-  my-hook = {
+  # Custom hook example: gitleaks (not built-in)
+  gitleaks = {
     enable = true;
-    entry = "my-script.sh";
-    files = "\\.py$";
+    name = "gitleaks";
+    entry = "${pkgs.gitleaks}/bin/gitleaks git --pre-commit --redact --staged --verbose";
+    language = "system";
+    pass_filenames = false;
   };
 };
 ```
