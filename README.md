@@ -65,10 +65,63 @@ Initialize and manage Nix flake development environments with auto-detection and
 
 [View documentation](./plugins/devenv/README.md)
 
+### git-commit
+
+Generate intelligent git commit messages with classic or conventional commit style support, strict atomic commit validation, and session context awareness.
+
+**Features:**
+- Two commit styles: Classic (default) and Conventional Commits
+- Strict atomic commit validation with split commit helper
+- Pair programming support with co-author attribution
+- Session context awareness for meaningful messages
+- 72-character wrapping for message bodies
+
+**Install:**
+```
+/plugin install git-commit@claude-plugins
+```
+
+**Usage:**
+```
+/commit                           # Generate with default style
+/commit --style conventional      # Use conventional commits
+/commit --pair                    # Add co-author
+/commit fix the login issue       # Provide context
+```
+
+[View documentation](./plugins/git-commit/README.md)
+
+### jot
+
+Quick, low-friction capture of notes, tasks, ideas, session summaries, and tech radar blips with Obsidian-style auto-linking.
+
+**Features:**
+- Quick captures: tasks, notes, ideas, session summaries
+- URL-based captures: articles, videos, books, people, repositories
+- Tech radar blips with rings (Adopt, Trial, Assess, Hold) and quadrants
+- Obsidian-style wikilinks for auto-linking related notes
+- Session context awareness (git repo, branch, directory)
+
+**Install:**
+```
+/plugin install jot@claude-plugins
+```
+
+**Usage:**
+```
+/capture task Review the PR
+/capture note Meeting notes about X
+/capture idea Try approach Y
+/capture session                  # Guided session summary
+/capture blip Docker --ring adopt --quadrant platforms
+/capture https://github.com/repo  # URL-based capture
+```
+
+[View documentation](./plugins/jot/README.md)
+
 ## Roadmap
 
 ### Dev Workflows
-- Git commit helpers and conventional commit enforcement
 - Code review automation
 - Test generation and coverage analysis
 
@@ -78,7 +131,6 @@ Initialize and manage Nix flake development environments with auto-detection and
 
 ### Productivity
 - Documentation generators
-- Note-taking and knowledge management
 - Task and todo management
 
 ## Contributing
