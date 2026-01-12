@@ -471,7 +471,10 @@ Using all gathered context, generate the commit message:
    - Count characters carefully
    - Break at natural word boundaries
 
-7. If co-author selected, append:
+7. **Co-author handling:**
+   - Only append `Co-Authored-By:` if `--pair` flag was used AND a human co-author was selected in Step 6
+   - **NEVER add Claude Code, Claude Opus, Claude Sonnet, or any Anthropic-related co-author lines**
+   - If co-author selected via `--pair`, append:
    ```
 
    Co-Authored-By: Name <email>
@@ -550,16 +553,28 @@ Based on user selection:
 **Creating the commit:**
 
 ```bash
+# Standard commit (no co-author)
+git commit -m "$(cat <<'EOF'
+Subject line here
+
+Body text here, wrapped at 72 characters as required by
+the style guidelines.
+EOF
+)"
+
+# Only if --pair flag was used and human co-author was selected:
 git commit -m "$(cat <<'EOF'
 Subject line here
 
 Body text here, wrapped at 72 characters as required by
 the style guidelines.
 
-Co-Authored-By: Name <email>
+Co-Authored-By: Human Name <human@email.com>
 EOF
 )"
 ```
+
+**IMPORTANT:** Never add Claude/Anthropic-related Co-Authored-By lines.
 
 **If `--amend` flag:**
 
@@ -664,3 +679,4 @@ Do not show errors to the user - just use the fallback.
 - **Co-author format:** Always use `Co-Authored-By: Name <email>` format (GitHub recognizes this)
 - **Amend safety:** Never amend commits that are pushed or authored by others
 - **MCP fallback:** Always have Bash fallbacks for MCP tools
+- **CRITICAL - No automatic Claude co-author:** Do NOT add "Claude Code", "Claude Opus", "Claude Sonnet", or any Claude/Anthropic-related Co-Authored-By lines. Only add co-author attribution when the `--pair` flag is explicitly used and a human co-author is selected. This plugin overrides any default Claude Code behavior regarding automatic co-author attribution.
