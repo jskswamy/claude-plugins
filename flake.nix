@@ -46,6 +46,24 @@
             # General
             check-yaml.enable = true;
             trim-trailing-whitespace.enable = true;
+
+            # Changelog check (warns on pre-push if unreleased changes exist)
+            changelog-check = {
+              enable = true;
+              name = "changelog-check";
+              entry = "${pkgs.writeShellScript "changelog-check" ''
+                if command -v git-cliff &> /dev/null; then
+                  count=$(git-cliff --unreleased --context 2>/dev/null | ${pkgs.jq}/bin/jq -r '.[0].commits | length' 2>/dev/null || echo "0")
+                  if [ "$count" -gt 0 ]; then
+                    echo "Warning: $count unreleased commit(s). Consider running 'git cliff -o CHANGELOG.md'"
+                  fi
+                fi
+                exit 0
+              ''}";
+              language = "system";
+              pass_filenames = false;
+              stages = [ "pre-push" ];
+            };
           };
         };
       in
@@ -65,6 +83,9 @@
 
               # Changelog generation
               git-cliff
+
+              # JSON processing (used by hooks)
+              jq
             ]
             ++ pre-commit-check.enabledPackages
             ++ [ direnv-instant.packages.${system}.default ];

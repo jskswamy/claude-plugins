@@ -1,0 +1,151 @@
+# git-cliff configuration for Claude Code Plugin Marketplace
+# https://git-cliff.org/docs/configuration
+#
+# This configuration parses CLASSICAL/IMPERATIVE commit messages
+# (e.g., "Add feature", "Fix bug") NOT conventional commits (e.g., "feat: add feature")
+
+[changelog]
+# Header template
+header = """
+# Changelog\n
+All notable changes to the Claude Code Plugin Marketplace will be documented in this file.\n
+"""
+
+# Template for each release
+body = """
+{%- macro remote_url() -%}
+  https://github.com/jskswamy/claude-plugins
+{%- endmacro -%}
+
+{% if version -%}
+    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else -%}
+    ## [Unreleased]
+{% endif -%}
+
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | striptags | trim | upper_first }}
+    {% for commit in commits %}
+        - {{ commit.message | upper_first }}\
+            {% if commit.remote.username %} by @{{ commit.remote.username }}{%- endif -%}
+            {% if commit.remote.pr_number %} in \
+              [#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}) \
+            {%- endif -%}
+    {% endfor %}
+{% endfor %}
+"""
+
+# Footer template with version comparison links
+footer = """
+{% for release in releases -%}
+    {% if release.version -%}
+        {% if release.previous.version -%}
+            [{{ release.version | trim_start_matches(pat="v") }}]: \
+                https://github.com/jskswamy/claude-plugins/compare/{{ release.previous.version }}..{{ release.version }}
+        {% endif -%}
+    {% else -%}
+        {% if release.previous.version -%}
+            [unreleased]: https://github.com/jskswamy/claude-plugins/compare/{{ release.previous.version }}..HEAD
+        {% endif -%}
+    {% endif -%}
+{% endfor %}
+"""
+
+# Remove leading and trailing whitespace
+trim = true
+
+[git]
+# CRITICAL: Disable conventional commits parsing for classical/imperative style
+conventional_commits = false
+# Include all commits, not just conventional ones
+filter_unconventional = false
+# Process each commit as a single unit
+split_commits = false
+# Maintain topological order
+topo_order_commits = true
+
+# Commit parsers for CLASSICAL/IMPERATIVE commit messages
+# These match the start of the commit message (imperative verb)
+commit_parsers = [
+    # === Added (new features, plugins, capabilities) ===
+    { message = "^Add ", group = "Added" },
+    { message = "^Introduce ", group = "Added" },
+    { message = "^Implement ", group = "Added" },
+    { message = "^Create ", group = "Added" },
+    { message = "^Include ", group = "Added" },
+
+    # === Changed (modifications, updates, enhancements) ===
+    { message = "^Update ", group = "Changed" },
+    { message = "^Change ", group = "Changed" },
+    { message = "^Modify ", group = "Changed" },
+    { message = "^Improve ", group = "Changed" },
+    { message = "^Enhance ", group = "Changed" },
+    { message = "^Refactor ", group = "Changed" },
+    { message = "^Rename ", group = "Changed" },
+    { message = "^Move ", group = "Changed" },
+    { message = "^Convert ", group = "Changed" },
+    { message = "^Migrate ", group = "Changed" },
+    { message = "^Upgrade ", group = "Changed" },
+    { message = "^Adjust ", group = "Changed" },
+    { message = "^Allow ", group = "Changed" },
+    { message = "^Enable ", group = "Changed" },
+    { message = "^Disable ", group = "Changed" },
+    { message = "^Configure ", group = "Changed" },
+    { message = "^Set ", group = "Changed" },
+
+    # === Fixed (bug fixes, corrections) ===
+    { message = "^Fix ", group = "Fixed" },
+    { message = "^Correct ", group = "Fixed" },
+    { message = "^Resolve ", group = "Fixed" },
+    { message = "^Repair ", group = "Fixed" },
+    { message = "^Patch ", group = "Fixed" },
+    { message = "^Handle ", group = "Fixed" },
+
+    # === Removed (deletions, deprecations) ===
+    { message = "^Remove ", group = "Removed" },
+    { message = "^Delete ", group = "Removed" },
+    { message = "^Drop ", group = "Removed" },
+    { message = "^Deprecate ", group = "Removed" },
+    { message = "^Clean ", group = "Removed" },
+
+    # === Documentation ===
+    { message = "^Document ", group = "Documentation" },
+    { message = "^Update README", group = "Documentation" },
+    { message = "^Update CHANGELOG", group = "Documentation" },
+    { message = "^Update documentation", group = "Documentation" },
+
+    # === Security ===
+    { body = ".*security", group = "Security" },
+    { message = "^Secure ", group = "Security" },
+
+    # === Reverted ===
+    { message = "^Revert ", group = "Reverted" },
+
+    # === Initial Setup ===
+    { message = "^Initial ", group = "Initial Setup" },
+    { message = "^Initialize ", group = "Initial Setup" },
+    { message = "^Setup ", group = "Initial Setup" },
+    { message = "^Bootstrap ", group = "Initial Setup" },
+
+    # === Skip patterns ===
+    { message = "^Merge branch", skip = true },
+    { message = "^Merge pull request", skip = true },
+    { message = "^WIP", skip = true },
+    { message = "^wip", skip = true },
+
+    # === Catch-all for unmatched commits ===
+    { message = ".*", group = "Other" },
+]
+
+# Protect breaking changes from being skipped
+protect_breaking_commits = false
+# Include all commits (no filtering beyond parsers)
+filter_commits = false
+# Tag pattern for versions (supports v1.0.0, v1.0.0-rc.1, etc.)
+tag_pattern = "v[0-9].*"
+# Sort commits within each group (oldest first for chronological order)
+sort_commits = "oldest"
+
+[remote.github]
+owner = "jskswamy"
+repo = "claude-plugins"

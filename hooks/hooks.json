@@ -1,0 +1,17 @@
+{
+  "description": "Update changelogs when plugin versions change",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash hooks/scripts/update-changelog.sh",
+            "timeout": 30000
+          }
+        ]
+      }
+    ]
+  }
+}
