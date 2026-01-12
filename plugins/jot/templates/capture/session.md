@@ -89,7 +89,7 @@ _Session captured_
 - **Use checkboxes** for follow-up tasks (Obsidian-compatible)
 - **Generate 3-5 tags** based on topics discussed
 - **Use emojis on headings** exactly as shown
-- **Filename**: `YYYY-MM-DD-session-slugified-goal.md`
+- **Filename**: `slugified-goal.md` (no date prefix)
 - **Save to**: `notes/sessions/`
 - Output only markdown, no preamble
 - If user has no answer for a section, use the default text provided

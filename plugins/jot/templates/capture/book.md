@@ -134,6 +134,6 @@ Capture information about a book for future reference or reading list. Extract c
 - Note reading status
 - "How Did This Change Me?" section filled after reading
 - Key Takeaways can be expanded after reading
-- **Filename**: `YYYY-MM-DD-slugified-title.md`
+- **Filename**: `slugified-title.md` (no date prefix)
 - **Save to**: `notes/books/`
 - Output only markdown, no preamble

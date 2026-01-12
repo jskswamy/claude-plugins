@@ -59,6 +59,6 @@ Capture information about a company, organization, or group.
 - **Use emojis on headings** exactly as shown
 - **Generate 3-7 relevant tags** - lowercase, hyphenated (e.g., `devtools`, `startup`, `open-source`)
 - Focus on factual, publicly available information
-- **Filename**: `YYYY-MM-DD-slugified-name.md`
+- **Filename**: `slugified-name.md` (no date prefix)
 - **Save to**: `notes/organisations/`
 - Output only markdown, no preamble

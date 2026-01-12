@@ -112,6 +112,6 @@ Extract content from web articles and documentation into a comprehensive, struct
 - **Be concise but capture essential information** - don't pad, but don't skip important details
 - **Extract actionable insights** - what can be applied?
 - **Note statistics and data points** - specific numbers are valuable
-- **Filename**: `YYYY-MM-DD-slugified-title.md`
+- **Filename**: `slugified-title.md` (no date prefix)
 - **Save to**: `notes/articles/`
 - Output only markdown, no preamble

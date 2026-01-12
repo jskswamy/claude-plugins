@@ -145,6 +145,6 @@ Extract comprehensive information from YouTube videos or other video content usi
 - **Note when transcription is unclear** with [unclear]
 - **Attribute quotes** if multiple speakers
 - **Include comparison tables** when the speaker compares approaches
-- **Filename**: `YYYY-MM-DD-slugified-title.md`
+- **Filename**: `slugified-title.md` (no date prefix)
 - **Save to**: `notes/videos/`
 - Output only markdown, no preamble

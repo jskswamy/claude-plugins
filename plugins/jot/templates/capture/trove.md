@@ -58,6 +58,6 @@ Capture a content source - a channel, newsletter, podcast, blog, or creator that
 - **Generate 3-7 relevant tags** - lowercase, hyphenated (e.g., `tech-news`, `podcast`, `systems-design`)
 - Note publication frequency if known
 - Include notable content examples
-- **Filename**: `YYYY-MM-DD-slugified-name.md`
+- **Filename**: `slugified-name.md` (no date prefix)
 - **Save to**: `notes/troves/`
 - Output only markdown, no preamble

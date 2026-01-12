@@ -84,6 +84,33 @@ If type not specified, auto-detect from URL:
 
 **IMPORTANT**: The `tool` type is deprecated. All tools, technologies, libraries, and frameworks are captured as **blips**. If user specifies `tool`, treat as `blip`.
 
+### Step 1b: Check for Existing Note
+
+Before proceeding, check if a note with the same name already exists:
+
+1. **Extract identifier from URL:**
+   - GitHub URLs: Extract repository name from URL path (e.g., `github.com/orhun/git-cliff` → "git-cliff")
+   - Other URLs: Use WebFetch to get page title, then slugify
+
+2. **Check if file exists** (all URL-based captures are reference items - use exact match):
+   ```bash
+   ls "${WORKBENCH_PATH}/notes/{folder}/slugified-name.md" 2>/dev/null
+   ```
+   Where folder is: blips (GitHub), articles, videos, people, books, organisations, troves, research
+
+3. **If existing note found, ask user:**
+   Use AskUserQuestion with options:
+   - "Enhance existing" - Update the existing note with new information
+   - "Create new" - Continue with normal creation flow
+
+4. **If user chooses "Enhance existing":**
+   - Read the existing note
+   - Ask: "What would you like to add or update?"
+   - Proceed to **Enhance Existing Note Workflow** (see below)
+
+5. **If no existing note or user chooses "Create new":**
+   - Continue with normal creation flow (Step 2)
+
 ### Step 2: Check Dependencies (Video Only)
 
 For videos, verify yt-dlp is installed:
@@ -148,16 +175,20 @@ Search existing notes in the workbench:
 
 ### Step 9: Save the Note
 
-Filename format:
-- Articles: `YYYY-MM-DD-slugified-title.md`
-- Blips: `slugified-name.md` (no date prefix)
-- Research: `topic-name.md` (no date)
-- Other: `YYYY-MM-DD-slugified-title.md`
+**Filename format** (all reference items use slugified names, no date prefix):
+- Articles: `slugified-title.md`
+- Videos: `slugified-title.md`
+- Blips: `slugified-name.md`
+- People: `slugified-name.md`
+- Books: `slugified-title.md`
+- Organisations: `slugified-name.md`
+- Troves: `slugified-name.md`
+- Research: `slugified-topic.md`
 
 Slugify: lowercase, hyphens for spaces, no special chars
 
-Location: `${WORKBENCH_PATH}/notes/[type]/`
-- Blips (including all tools/technologies): `notes/blips/`
+**Location:** `${WORKBENCH_PATH}/notes/[type]/`
+- articles/ | videos/ | blips/ | people/ | books/ | organisations/ | troves/ | research/
 
 Create directory if it doesn't exist:
 ```bash
@@ -178,3 +209,42 @@ If related notes found: "Linked to [N] related notes"
 - For blips: Target 80-120+ lines of rich content
 - Preserve code examples with proper formatting
 - Note version numbers if mentioned
+
+---
+
+## Enhance Existing Note Workflow
+
+When user chooses to enhance an existing note (from Step 1b):
+
+### Step E1: Read Existing Note
+Read the full content of the existing note.
+
+### Step E2: Ask What to Enhance
+Ask user: "What would you like to add or update in this note?"
+
+Suggest options based on note type:
+- **Blip**: "Update ring level", "Add new features", "Update usage examples", "Add alternatives"
+- **Article/Video**: "Add personal notes", "Update key takeaways", "Add related links"
+- **Person/Organisation**: "Update information", "Add notes", "Add related links"
+- **Book**: "Add reading notes", "Update status", "Add quotes"
+- **Trove**: "Add new items", "Update description"
+- **Research**: "Add new findings", "Update conclusions"
+
+### Step E3: Gather New Context (if applicable)
+If adding significant new content, ask for discovery context:
+"How did you rediscover this? What's the new context?"
+
+### Step E4: Merge Content
+Intelligently merge new content with existing:
+- Add new sections without duplicating existing content
+- Update metadata (Last Updated date)
+- For blips: Update ring level if changed, add to Movement History
+- Preserve user's original verbatim content in Summary/Ring Rationale
+
+### Step E5: Save Updated Note
+- Save to the **same path**, overwriting the existing file
+- Update "Last Updated" field to current date
+- Preserve original "Created" or "Captured" date
+
+### Step E6: Report Success
+"Enhanced [type] at [path]"

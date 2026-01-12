@@ -163,6 +163,38 @@ Store these values for the Session Context section in the note:
 
 This context is captured silently - do not ask the user for this information.
 
+### Step 1d: Check for Existing Note
+
+Before asking for context, check if a note with the same name already exists:
+
+1. **Generate the slugified identifier** from the content:
+   - Slugify the name/title (e.g., "Kubernetes" → "kubernetes", "Review PR" → "review-pr")
+
+2. **Check for existing note based on type:**
+
+   **For inbox items (task, note, idea)** - use pattern match (dates vary):
+   ```bash
+   ls "${WORKBENCH_PATH}/notes/inbox/"*"-slugified-name.md" 2>/dev/null
+   ```
+
+   **For reference items (session, blip)** - use exact match:
+   ```bash
+   ls "${WORKBENCH_PATH}/notes/{folder}/slugified-name.md" 2>/dev/null
+   ```
+
+3. **If existing note found, ask user:**
+   Use AskUserQuestion with options:
+   - "Enhance existing" - Update the existing note
+   - "Create new" - Continue with normal creation flow
+
+4. **If user chooses "Enhance existing":**
+   - Read the existing note
+   - Ask: "What would you like to add or update?"
+   - Proceed to **Enhance Existing Note Workflow** (see below)
+
+5. **If no existing note or user chooses "Create new":**
+   - Continue with normal creation flow (Step 2)
+
 ### Step 2: Ask for Context (Except Session)
 
 **REQUIRED** for task, note, idea, blip: Ask the user:
@@ -240,8 +272,8 @@ Search existing notes:
 ### Step 7: Save the Note
 
 **Filename formats:**
-- Task/Note/Idea: `YYYY-MM-DD-slugified-title.md`
-- Session: `YYYY-MM-DD-session-slugified-goal.md`
+- Task/Note/Idea (inbox items): `YYYY-MM-DD-slugified-title.md` (keep date for GTD processing)
+- Session: `slugified-goal.md` (no date prefix)
 - Blip: `slugified-name.md` (no date prefix)
 
 **Locations:**
@@ -265,3 +297,39 @@ Brief confirmation: "Captured to [path]"
 - For URL references in quick captures, do NOT trigger full extraction
 - Auto-link only to genuinely related notes
 - Keep the interaction quick and focused
+
+---
+
+## Enhance Existing Note Workflow
+
+When user chooses to enhance an existing note (from Step 1d):
+
+### Step E1: Read Existing Note
+Read the full content of the existing note.
+
+### Step E2: Ask What to Enhance
+Ask user: "What would you like to add or update in this note?"
+
+Suggest options based on note type:
+- **Blip**: "Update ring level", "Add new features", "Update usage examples", "Add alternatives"
+- **Task/Note/Idea**: "Add more context", "Update notes", "Add related links"
+- **Session**: "Add follow-ups", "Update outcomes"
+
+### Step E3: Gather New Context (if applicable)
+If adding significant new content, ask for discovery context:
+"How did you rediscover this? What's the new context?"
+
+### Step E4: Merge Content
+Intelligently merge new content with existing:
+- Add new sections without duplicating existing content
+- Update metadata (Last Updated date)
+- For blips: Update ring level if changed, add to Movement History
+- Preserve user's original verbatim content in Summary/Ring Rationale
+
+### Step E5: Save Updated Note
+- Save to the **same path**, overwriting the existing file
+- Update "Last Updated" field to current date
+- Preserve original "Created" or "Captured" date
+
+### Step E6: Report Success
+"Enhanced [type] at [path]"

@@ -157,6 +157,6 @@ Extract biographical information about a person into a structured profile with e
 - Only include publicly available information
 - Note achievements without excessive praise
 - Respect privacy - no personal contact info
-- **Filename**: `YYYY-MM-DD-slugified-name.md`
+- **Filename**: `slugified-name.md` (no date prefix)
 - **Save to**: `notes/people/`
 - Output only markdown, no preamble
