@@ -1,0 +1,22 @@
+{
+  "name": "jot",
+  "version": "1.0.0",
+  "description": "Quick, low-friction capture of notes, tasks, ideas, and tech radar blips with Obsidian-style auto-linking",
+  "author": {
+    "name": "Krishnaswamy Subramanian",
+    "email": "jskswamy@gmail.com"
+  },
+  "keywords": [
+    "capture",
+    "notes",
+    "tasks",
+    "ideas",
+    "radar",
+    "blips",
+    "knowledge-management",
+    "obsidian",
+    "wikilinks",
+    "gtd",
+    "productivity"
+  ]
+}

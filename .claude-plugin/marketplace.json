@@ -49,6 +49,29 @@
         "pair-programming",
         "session-context"
       ]
+    },
+    {
+      "name": "jot",
+      "description": "Quick, low-friction capture of notes, tasks, ideas, and tech radar blips with Obsidian-style auto-linking",
+      "version": "1.0.0",
+      "author": {
+        "name": "Krishnaswamy Subramanian"
+      },
+      "source": "./plugins/jot",
+      "category": "productivity",
+      "tags": [
+        "capture",
+        "notes",
+        "tasks",
+        "ideas",
+        "radar",
+        "blips",
+        "knowledge-management",
+        "obsidian",
+        "wikilinks",
+        "gtd",
+        "productivity"
+      ]
     }
   ]
 }
