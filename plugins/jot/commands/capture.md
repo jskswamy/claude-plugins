@@ -34,6 +34,7 @@ workbench_path: ~/workbench
 - `task` → Save to `notes/inbox/` with task template
 - `note` → Save to `notes/inbox/` with note template
 - `idea` → Save to `notes/inbox/` with idea template
+- `session` → Save to `notes/sessions/` with session template (Claude Code session summary)
 - `blip` → Save to `notes/blips/` with blip template (tech radar style)
 
 ### Full Captures (URL-based)
@@ -53,17 +54,43 @@ workbench_path: ~/workbench
 ### Step 1: Parse Arguments
 
 Parse the command arguments to determine:
-1. **Type**: First argument (task, note, idea, blip, article, video, person, book, organisation, trove, research)
+1. **Type**: First argument (task, note, idea, session, blip, article, video, person, book, organisation, trove, research) or an alias
 2. **Content/URL**: Remaining text or URL
 3. **Flags** (for blips): `--ring` and `--quadrant`
 
-**Type aliases**: If user specifies `tool`, treat as `blip`.
+**Type aliases:**
+- `todo` → `task`
+- `thought` → `note`
+- `conversation` → `session`
+- `tool` → `blip`
+
+Resolve aliases to their canonical types before proceeding.
 
 If no type specified and content is a URL, auto-detect type:
 - `youtube.com`, `youtu.be` → video
 - `github.com` → blip (NOT tool - tools are captured as blips)
 - `wikipedia.org/wiki/[Person]` → person
 - Default → article
+
+### Step 1b: Detect URL References in Quick Captures
+
+For quick capture types (task, note, idea, session and their aliases):
+
+**If content contains a URL but type is explicitly specified:**
+1. This is a "quick capture with URL reference" - NOT a full URL capture
+2. Extract the URL(s) from the content text
+3. Keep the full text including the URL as the description
+4. Do NOT auto-detect type from URL (user explicitly specified task/note/idea)
+5. Do NOT trigger full content extraction
+
+**URL Detection Pattern:** `https?://[^\s]+`
+
+**Example:**
+- Input: `/capture todo use https://git-cliff.org/ to generate changelog`
+- Result: Type=task, Content="use https://git-cliff.org/ to generate changelog", URLs=["https://git-cliff.org/"]
+
+**Optional: Fetch URL metadata**
+For quick captures with URL references, optionally fetch minimal metadata (just title) to include in the URL Reference section of the note.
 
 ### Step 2: Read Configuration
 
@@ -83,6 +110,7 @@ mkdir -p "${WORKBENCH_PATH}/notes/[type]"
 ```
 
 For quick captures (task, note, idea), use `notes/inbox/`.
+For session captures, use `notes/sessions/`.
 For blips (including tools/technologies), use `notes/blips/`.
 
 ### Step 4: Check Dependencies (Video Only)
@@ -96,13 +124,25 @@ which yt-dlp || command -v yt-dlp
 If not found, inform the user:
 "YouTube capture requires yt-dlp. Install with: `brew install yt-dlp` (macOS) or `pip install yt-dlp`"
 
-### Step 5: Ask for Context (ALL Captures)
+### Step 5: Ask for Context (ALL Captures Except Session)
 
-**IMPORTANT**: Before processing any capture, ask the user:
+**IMPORTANT**: Before processing any capture (except session), ask the user:
 
 "How did you discover this? What's the context?"
 
 Use their response verbatim in italics at the top of the note.
+
+### Step 5b: Session Capture Questions (Session Type Only)
+
+For session/conversation captures, replace the standard context question with guided questions:
+
+1. "What was the main goal or task for this session?"
+2. "What did you accomplish? List the key outcomes."
+3. "Were there any key decisions or choices made?"
+4. "Did you learn anything notable? Any gotchas or insights?"
+5. "Are there any follow-up tasks or next steps?"
+
+Capture the user's responses for each section of the session template.
 
 ### Step 6: Additional Questions (Blips Only)
 
@@ -155,7 +195,8 @@ Scan existing notes in the workbench for related content:
 ### Step 11: Save the Note
 
 Generate filename:
-- Quick captures: `YYYY-MM-DD-slugified-title.md`
+- Quick captures (task, note, idea): `YYYY-MM-DD-slugified-title.md`
+- Session: `YYYY-MM-DD-session-slugified-goal.md`
 - Blips: `slugified-name.md` (no date prefix)
 - Research: `slugified-topic.md` (no date prefix)
 
@@ -225,6 +266,29 @@ If related notes were found, also mention:
 → Auto-detects as `blip` (GitHub URLs are captured as blips)
 → Asks for context, summary, and ring rationale
 → Saves to `~/workbench/notes/blips/uv.md`
+
+### Session Summary Capture
+```
+/capture session
+```
+→ Asks guided questions about goal, accomplishments, decisions, lessons, follow-ups
+→ Saves to `~/workbench/notes/sessions/2026-01-12-session-implementing-auth.md`
+
+### Using Aliases
+```
+/capture todo Review Alice's PR
+/capture thought The API feels slow today
+/capture conversation
+```
+→ `todo` works like `task`, `thought` works like `note`, `conversation` works like `session`
+
+### Quick Todo with URL Reference
+```
+/capture todo use https://git-cliff.org/ to generate changelog
+```
+→ Saves as task with URL reference (NOT full article extraction)
+→ Optionally fetches just the page title
+→ Saves to `~/workbench/notes/inbox/2026-01-12-use-git-cliff-to-generate-changelog.md`
 
 ## Tips
 

@@ -8,8 +8,11 @@ Capture thoughts, tasks, and discoveries without switching context. Jot provides
 
 ## Features
 
-- **Quick captures**: Task, note, idea, blip - minimal friction
+- **Quick captures**: Task, note, idea, session, blip - minimal friction
 - **Full captures**: Article, video, blip (GitHub/tools), person, book, organisation, trove, research - URL-based extraction
+- **Session summaries**: Capture Claude Code session outcomes with guided questions
+- **URL references**: Quick captures can reference URLs without triggering full extraction
+- **Type aliases**: `todo` for task, `thought` for note, `conversation` for session
 - **Context capture**: Every capture asks for discovery context
 - **Tech radar**: ThoughtWorks-style blips with quadrants (Tools, Techniques, Platforms, Languages & Frameworks) and rings (Adopt, Trial, Assess, Hold)
 - **Rich content**: Blips include features, installation, usage examples, pros/cons, and alternatives
@@ -48,6 +51,28 @@ workbench_path: ~/workbench
 /capture blip Docker --ring adopt --quadrant platforms
 ```
 
+### Session Captures
+
+```
+/capture session                    # Guided questions about this Claude session
+/capture conversation               # Alias for session
+```
+
+### Using Aliases
+
+```
+/capture todo Review Alice's PR     # Same as: /capture task
+/capture thought API seems slow     # Same as: /capture note
+```
+
+### Quick Captures with URL References
+
+```
+/capture todo use https://git-cliff.org/ to generate changelog
+```
+
+This keeps it as a quick task (not full article extraction) with the URL as a reference.
+
 ### Full Captures (URL-based)
 
 ```
@@ -84,6 +109,7 @@ Blips are for tracking technologies on your personal tech radar. All tools, fram
 [workbench_path]/
 └── notes/
     ├── inbox/          # Quick captures (task, note, idea)
+    ├── sessions/       # Claude Code session summaries
     ├── blips/          # Tech radar items (tools, technologies, frameworks)
     ├── articles/
     ├── videos/
