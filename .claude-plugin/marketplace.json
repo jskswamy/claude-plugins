@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "A curated collection of Claude Code plugins",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "plugins": [
     {
@@ -71,6 +71,27 @@
         "wikilinks",
         "gtd",
         "productivity"
+      ]
+    },
+    {
+      "name": "sketch-note",
+      "description": "Generate visual sketch notes in Excalidraw format from conversations, code architecture, or custom content",
+      "version": "1.0.0",
+      "author": {
+        "name": "Krishnaswamy Subramanian"
+      },
+      "source": "./plugins/sketch-note",
+      "category": "visualization",
+      "tags": [
+        "sketch",
+        "excalidraw",
+        "diagram",
+        "visualization",
+        "architecture",
+        "notes",
+        "hand-drawn",
+        "mind-map",
+        "flowchart"
       ]
     }
   ]
