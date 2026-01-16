@@ -1,10 +1,15 @@
 {
-  "description": "Update changelogs when plugin versions change",
+  "description": "Auto-sync plugin versions and update changelogs",
   "hooks": {
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
         "hooks": [
+          {
+            "type": "command",
+            "command": "bash hooks/scripts/sync-plugin-version.sh",
+            "timeout": 30000
+          },
           {
             "type": "command",
             "command": "bash hooks/scripts/update-changelog.sh",
