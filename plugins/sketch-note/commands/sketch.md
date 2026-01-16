@@ -1,7 +1,7 @@
 ---
 name: sketch
 description: Generate visual sketch notes in Excalidraw format from conversations, code architecture, or custom content
-argument-hint: "[--mode conversation|code|custom] [--output <name>] [description...]"
+argument-hint: "[--mode conversation|code|custom] [--format excalidraw|png|both] [--output <name>] [description...]"
 allowed-tools:
   - Read
   - Write
@@ -22,8 +22,16 @@ Parse the command arguments to extract:
 | Argument | Short | Type | Default | Description |
 |----------|-------|------|---------|-------------|
 | `--mode` | `-m` | string | (prompt) | Content mode: `conversation`, `code`, or `custom` |
+| `--format` | `-f` | string | (from settings) | Output: `excalidraw`, `png`, `both`, or `direct-png` |
 | `--output` | `-o` | string | auto | Output filename (without extension) |
+| `--scale` | | number | 2 | PNG scale factor (1, 2, or 4) |
 | `[description...]` | | string | | Free-form description for custom mode |
+
+**Format options:**
+- `excalidraw` - Editable .excalidraw file only
+- `png` - PNG via Excalidraw conversion (keeps .excalidraw as intermediate)
+- `both` - Both Excalidraw and PNG files
+- `direct-png` - Generate PNG directly using Mermaid (no Excalidraw file)
 
 **Examples:**
 ```
@@ -32,6 +40,10 @@ Parse the command arguments to extract:
 /sketch -m code                      # Visualize code architecture
 /sketch --mode custom API flow       # Custom sketch with description
 /sketch -o my-diagram -m code        # Named output file
+/sketch --format png                 # PNG via Excalidraw conversion
+/sketch -f both                      # Export both Excalidraw and PNG
+/sketch --format direct-png          # Direct PNG generation (no Excalidraw)
+/sketch --format png --scale 4       # High-resolution PNG (4x)
 ```
 
 ---
@@ -50,6 +62,8 @@ stroke_width: medium
 background_pattern: none
 visual_effects: []
 resolution: standard
+output_format: excalidraw
+png_scale: 2
 ---
 ```
 
@@ -314,51 +328,471 @@ Create valid Excalidraw JSON structure:
 - Warning boxes: `#ffc9c9` (light red)
 - Neutral boxes: `#e9ecef` (light gray)
 
-### Step 6: Determine Output Path
+### Step 6: Determine Output Format and Export Method
+
+This step handles the interactive workflow for choosing output format and PNG generation method.
+
+#### 6a. Detect Available Tools and Runners
+
+**First, detect available tool runners:**
+```bash
+# Check for nix (preferred - isolated environments)
+command -v nix-shell >/dev/null 2>&1 && echo "has_nix"
+
+# Check for npx (fallback - runs without global install)
+command -v npx >/dev/null 2>&1 && echo "has_npx"
+```
+
+Store:
+- `has_nix`: true/false
+- `has_npx`: true/false
+
+**Then, check for globally installed tools:**
+```bash
+# Direct PNG generation (no Excalidraw intermediate)
+command -v mmdc >/dev/null 2>&1 && echo "mermaid-cli"
+
+# Excalidraw to PNG converters
+command -v excalidraw-brute-export-cli >/dev/null 2>&1 && echo "brute-export"
+command -v excalidraw-cli >/dev/null 2>&1 && echo "excalidraw-cli"
+```
+
+Store results:
+- `has_mermaid`: true/false (for direct PNG)
+- `has_brute_export`: true/false
+- `has_excalidraw_cli`: true/false
+
+**Tool availability logic:**
+A tool is "available" if ANY of these are true:
+1. Globally installed (`command -v {tool}` succeeds)
+2. Nix is available (can run via `nix-shell -p`)
+3. npx is available (can run via `npx`)
+
+If `has_nix` or `has_npx` is true, all tools are considered available (will run on-demand).
+
+#### 6b. Determine Output Format
+
+**If `--format` argument provided:** Use specified format, skip to 6c
+
+**If no format specified:** Use AskUserQuestion:
+```
+What output format would you like?
+○ Excalidraw only (Recommended) - Editable .excalidraw file
+○ PNG + Excalidraw - Both formats for sharing and editing
+○ Direct PNG - Generate PNG directly (no Excalidraw file)
+```
+
+#### 6c. Handle PNG Generation Method (if PNG requested)
+
+**If format is `excalidraw` only:** Skip to Step 7
+
+**If format is `direct-png`:** Go to 6c-direct
+
+**If format is `png` or `both`:** Go to 6c-convert
+
+##### 6c-direct: Direct PNG Generation (no Excalidraw)
+
+This workflow generates PNG directly without creating an intermediate Excalidraw file.
+
+**Determine how to run mermaid-cli:**
+
+1. **If globally installed:** Use `mmdc` directly
+2. **If nix available:** Use `nix-shell -p mermaid-cli --run "mmdc ..."`
+3. **If npx available:** Use `npx -y @mermaid-js/mermaid-cli ...`
+4. **None available:** Prompt user
+
+**If mermaid-cli is available (globally, via nix, or via npx):**
+```
+Using Mermaid CLI for direct PNG generation with hand-drawn style.
+{via nix-shell | via npx | globally installed}
+```
+- Set `generation_method: mermaid`
+- Set `mermaid_runner`: `global` | `nix` | `npx`
+- Skip Excalidraw generation entirely (go to Step 7-direct)
+
+**If NO runner is available (no nix, no npx, not installed):**
+Use AskUserQuestion:
+```
+Direct PNG requires Mermaid CLI and no runner is available. How would you like to proceed?
+○ Install mermaid-cli globally - npm install -g @mermaid-js/mermaid-cli
+○ Use Excalidraw conversion - Create Excalidraw first, then convert to PNG
+○ Excalidraw only - Create editable file, export PNG manually later
+○ Cancel - Stop and install tools first
+```
+
+**If user chooses to install mermaid-cli:**
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
+
+After installation, verify:
+```bash
+command -v mmdc >/dev/null 2>&1 && echo "installed"
+```
+
+##### 6c-convert: Excalidraw to PNG Conversion
+
+**Determine how to run each tool:**
+
+| Tool | Nix Package | NPM Package |
+|------|-------------|-------------|
+| excalidraw-brute-export-cli | N/A (use npx) | excalidraw-brute-export-cli |
+| excalidraw-cli | N/A (use npx) | @tommywalkie/excalidraw-cli |
+
+**Runner priority:**
+1. Global install (if available)
+2. nix-shell (if nix available) - Note: These packages may not be in nixpkgs, fall back to npx
+3. npx (if available)
+
+**If nix or npx is available:**
+All tools are considered available. Determine which runner to use:
+- Set `excalidraw_runner`: `global` | `npx`
+
+**Case 1: Multiple tools available (or runners available)**
+Use AskUserQuestion:
+```
+Which export tool would you like to use?
+○ excalidraw-brute-export-cli (Recommended) - Highest fidelity, uses headless Firefox
+○ excalidraw-cli - Faster export, uses node-canvas (may differ slightly)
+```
+
+**Case 2: Only one tool globally installed (and no npx)**
+Auto-select the available tool:
+```
+Using {tool-name} for PNG export.
+```
+
+**Case 3: No tools available AND no npx**
+Use AskUserQuestion:
+```
+PNG conversion requires a CLI tool. None detected and npx unavailable. How would you like to proceed?
+○ Install excalidraw-brute-export-cli (Recommended) - Highest fidelity
+○ Install excalidraw-cli - Faster, no browser dependency
+○ Try direct PNG - Use Mermaid for direct generation instead
+○ Skip PNG - Create Excalidraw file only, export manually later
+○ Cancel - Stop and install tools first
+```
+
+**If user chooses to install:**
+
+For `excalidraw-brute-export-cli`:
+```bash
+npm install -g excalidraw-brute-export-cli && npx playwright install firefox
+```
+
+For `excalidraw-cli`:
+```bash
+npm install -g @tommywalkie/excalidraw-cli
+```
+
+After installation, verify:
+```bash
+command -v {tool} >/dev/null 2>&1 && echo "installed"
+```
+
+If installation succeeds, continue with export.
+If installation fails, show error and offer to continue with Excalidraw only.
+
+**If user chooses "Skip PNG":**
+- Set format to `excalidraw`
+- Continue to Step 7
+- Show note: "You can manually export to PNG at excalidraw.com"
+
+**If user chooses "Cancel":**
+- Exit with message: "Run the command again after installing an export tool."
+
+#### 6d. Determine PNG Scale (if PNG requested)
+
+**If `--scale` argument provided:** Use specified scale
+**Otherwise:** Use `png_scale` from settings (default: 2)
+
+Store: `generation_method` (mermaid | excalidraw-convert), `selected_tool`, `png_scale`, `final_format`
+
+### Step 7: Determine Output Path
 
 **If `--output` provided:** Use specified name
 **Otherwise:** Generate name based on mode and timestamp
 
+**For Excalidraw-based output:**
 ```
 sketches/{mode}-{timestamp}.excalidraw
+```
+
+**For Direct PNG output:**
+```
+sketches/{mode}-{timestamp}.png
 ```
 
 Examples:
 - `sketches/conversation-20240115-143022.excalidraw`
 - `sketches/code-architecture-20240115-143022.excalidraw`
 - `sketches/my-api-flow.excalidraw` (if --output my-api-flow)
+- `sketches/api-flow-20240115-143022.png` (direct PNG)
 
 **Create sketches directory if needed:**
 ```bash
 mkdir -p sketches
 ```
 
-### Step 7: Write Output File
+---
+
+## Direct PNG Generation (Mermaid Workflow)
+
+**If `generation_method` is `mermaid`:** Follow this workflow instead of Steps 8-9.
+
+### Step 8-direct: Generate Mermaid Diagram Definition
+
+Convert the content (from Step 3) into Mermaid diagram syntax.
+
+**For flowcharts/processes:**
+```mermaid
+%%{init: {'theme': 'default', 'themeVariables': { 'fontFamily': 'Comic Sans MS, cursive'}}}%%
+flowchart TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action 1]
+    B -->|No| D[Action 2]
+    C --> E[End]
+    D --> E
+```
+
+**For architecture diagrams:**
+```mermaid
+%%{init: {'theme': 'default'}}%%
+graph LR
+    subgraph Frontend
+        A[React App]
+    end
+    subgraph Backend
+        B[API Server]
+        C[Database]
+    end
+    A --> B
+    B --> C
+```
+
+**For mind maps:**
+```mermaid
+mindmap
+  root((Central Topic))
+    Branch 1
+      Sub-topic 1a
+      Sub-topic 1b
+    Branch 2
+      Sub-topic 2a
+```
+
+**For sequence diagrams:**
+```mermaid
+sequenceDiagram
+    participant A as Client
+    participant B as Server
+    A->>B: Request
+    B-->>A: Response
+```
+
+**Style configuration for hand-drawn look:**
+```json
+{
+  "theme": "default",
+  "look": "handDrawn",
+  "themeVariables": {
+    "fontFamily": "Virgil, Comic Sans MS, cursive"
+  }
+}
+```
+
+### Step 9-direct: Generate PNG with Mermaid CLI
+
+1. **Write the Mermaid definition to a temp file:**
+   ```bash
+   cat > /tmp/sketch-{timestamp}.mmd << 'EOF'
+   {mermaid-definition}
+   EOF
+   ```
+
+2. **Create config for hand-drawn style:**
+   ```bash
+   cat > /tmp/mermaid-config.json << 'EOF'
+   {
+     "theme": "default",
+     "look": "handDrawn"
+   }
+   EOF
+   ```
+
+3. **Generate PNG based on `mermaid_runner`:**
+
+   **If `mermaid_runner: global`:**
+   ```bash
+   mmdc -i /tmp/sketch-{timestamp}.mmd \
+        -o "sketches/{filename}.png" \
+        -c /tmp/mermaid-config.json \
+        -s {png_scale} \
+        -b transparent
+   ```
+
+   **If `mermaid_runner: nix`:**
+   ```bash
+   nix-shell -p mermaid-cli --run "mmdc -i /tmp/sketch-{timestamp}.mmd \
+        -o \"sketches/{filename}.png\" \
+        -c /tmp/mermaid-config.json \
+        -s {png_scale} \
+        -b transparent"
+   ```
+
+   **If `mermaid_runner: npx`:**
+   ```bash
+   npx -y @mermaid-js/mermaid-cli -i /tmp/sketch-{timestamp}.mmd \
+        -o "sketches/{filename}.png" \
+        -c /tmp/mermaid-config.json \
+        -s {png_scale} \
+        -b transparent
+   ```
+
+   **Scale mapping:**
+   - `png_scale: 1` → `-s 1`
+   - `png_scale: 2` → `-s 2`
+   - `png_scale: 4` → `-s 4`
+
+4. **Clean up temp files:**
+   ```bash
+   rm /tmp/sketch-{timestamp}.mmd /tmp/mermaid-config.json
+   ```
+
+5. **If generation fails:**
+   - Show error message
+   - Offer to create Excalidraw file instead as fallback
+
+**Skip to Step 10** for success message.
+
+---
+
+## Excalidraw-based Workflow
+
+**If `generation_method` is `excalidraw-convert` or format is `excalidraw`:** Follow Steps 8-9 below.
+
+### Step 8: Write Excalidraw File
 
 1. **Write the Excalidraw JSON file:**
    ```
    Write to: sketches/{filename}.excalidraw
    ```
 
-2. **Show success message:**
-   ```
-   ✓ Sketch created: sketches/conversation-20240115-143022.excalidraw
+2. **If format is `png` only:** Continue to Step 9 (PNG export), then delete the .excalidraw file after successful PNG creation
 
-   Elements: 12 boxes, 8 arrows, 15 text labels
-   Style: hand-drawn, medium stroke, white background
+3. **If format is `excalidraw` or `both`:** Keep the .excalidraw file
 
-   Open in Excalidraw:
-   - Visit excalidraw.com and drag the file to open
-   - Or use VS Code with Excalidraw extension
-   ```
+### Step 9: Export to PNG (if format is `png` or `both`)
 
-3. **Offer follow-up options:**
-   ```
-   What would you like to do next?
-   ○ Open location - Show the file in finder/explorer
-   ○ Create another - Make another sketch
-   ○ Done - Finish
-   ```
+Use the `selected_tool` and `excalidraw_runner` determined in Step 6c.
+
+**For excalidraw-brute-export-cli:**
+
+*If globally installed (`excalidraw_runner: global`):*
+```bash
+excalidraw-brute-export-cli -i "sketches/{filename}.excalidraw" \
+  --format png \
+  --scale {png_scale} \
+  --background 1 \
+  -o "sketches/{filename}.png"
+```
+
+*If via npx (`excalidraw_runner: npx`):*
+```bash
+npx -y excalidraw-brute-export-cli -i "sketches/{filename}.excalidraw" \
+  --format png \
+  --scale {png_scale} \
+  --background 1 \
+  -o "sketches/{filename}.png"
+```
+
+**For excalidraw-cli:**
+
+*If globally installed (`excalidraw_runner: global`):*
+```bash
+excalidraw-cli "sketches/{filename}.excalidraw" "sketches/"
+```
+
+*If via npx (`excalidraw_runner: npx`):*
+```bash
+npx -y @tommywalkie/excalidraw-cli "sketches/{filename}.excalidraw" "sketches/"
+```
+
+**If export fails:**
+- Show error message
+- Keep the .excalidraw file
+- Suggest manual export: "Export failed. You can manually export at excalidraw.com"
+
+**If format was `png` only and export succeeded:**
+- Delete the temporary .excalidraw file:
+  ```bash
+  rm "sketches/{filename}.excalidraw"
+  ```
+
+### Step 10: Show Success Message
+
+**If only Excalidraw generated:**
+```
+✓ Sketch created: sketches/conversation-20240115-143022.excalidraw
+
+Elements: 12 boxes, 8 arrows, 15 text labels
+Style: hand-drawn, medium stroke, white background
+
+Open in Excalidraw:
+- Visit excalidraw.com and drag the file to open
+- Or use VS Code with Excalidraw extension
+```
+
+**If PNG + Excalidraw generated (via conversion):**
+```
+✓ Sketch created:
+  - sketches/conversation-20240115-143022.excalidraw (editable)
+  - sketches/conversation-20240115-143022.png (2x scale, via {tool-name})
+
+Elements: 12 boxes, 8 arrows, 15 text labels
+Style: hand-drawn, medium stroke, white background
+```
+
+**If PNG via conversion only (format=png):**
+```
+✓ Sketch exported: sketches/conversation-20240115-143022.png (2x scale, via {tool-name})
+
+Elements: 12 boxes, 8 arrows, 15 text labels
+Style: hand-drawn, medium stroke, white background
+
+Note: Excalidraw source not saved. Use --format both to keep editable version.
+```
+
+**If Direct PNG generated (via Mermaid):**
+```
+✓ Sketch created: sketches/conversation-20240115-143022.png (2x scale, via Mermaid)
+
+Diagram type: flowchart
+Style: hand-drawn theme
+
+Note: This is a direct PNG - no editable source file.
+Use --format excalidraw or --format both if you need to edit later.
+```
+
+**If PNG was skipped (no tools, user chose to skip):**
+```
+✓ Sketch created: sketches/conversation-20240115-143022.excalidraw
+
+Elements: 12 boxes, 8 arrows, 15 text labels
+Style: hand-drawn, medium stroke, white background
+
+PNG export skipped. To export manually:
+- Open at excalidraw.com and use Export menu
+- Or install: npm install -g excalidraw-brute-export-cli
+```
+
+**Offer follow-up options:**
+```
+What would you like to do next?
+○ Open location - Show the file in finder/explorer
+○ Create another - Make another sketch
+○ Done - Finish
+```
 
 ---
 
@@ -400,6 +834,8 @@ stroke_width: medium
 background_pattern: none
 visual_effects: []
 resolution: standard
+output_format: excalidraw
+png_scale: 2
 ---
 
 # Sketch Note Plugin Settings
@@ -416,6 +852,8 @@ Your preferences for generating sketch notes.
 | background_pattern | none, dots, grid, lines | Background pattern |
 | visual_effects | shadow, glow, cursive | Effects (array, multi-select) |
 | resolution | standard, high, 4k | Output resolution |
+| output_format | excalidraw, png, both, direct-png | Default output format |
+| png_scale | 1, 2, 4 | PNG export scale (1x, 2x, 4x) |
 
 ## Examples
 
@@ -431,6 +869,18 @@ Warm creative style:
 roughness: hand-drawn
 background_color: cream
 visual_effects: [cursive, shadow]
+```
+
+Always export PNG alongside Excalidraw:
+```yaml
+output_format: both
+png_scale: 2
+```
+
+High-resolution PNG only:
+```yaml
+output_format: png
+png_scale: 4
 ```
 ```
 
