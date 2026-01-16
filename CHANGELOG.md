@@ -2,6 +2,184 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.1.1] - 2026-01-16
+
+### Added
+
+- Add duplicate detection and enhance workflow to jot plugin
+
+Before creating a note, agents now check if a note with the same name
+already exists. If found, users can choose to enhance the existing
+note or create a new one.
+
+Changes:
+- Add 'Check for Existing Note' step to both capture agents
+- Add 'Enhance Existing Note Workflow' section for updating notes
+- Update filename conventions: remove date prefix from reference
+  items (session, article, video, person, book, organisation, trove)
+- Keep date prefix only for inbox items (task, note, idea) for GTD
+- Bump plugin version to 1.2.0
+
+Inbox items use pattern matching (*-slug.md) for duplicate detection
+while reference items use exact filename matching. by @jskswamy
+- Add sketch-note plugin for Excalidraw visual documentation
+
+Implement a new plugin that generates visual sketch notes in Excalidraw
+format from conversations, code architecture, or custom descriptions.
+
+Features:
+- /sketch command with three modes: conversation, code, custom
+- Proactive sketch agent triggered by visualization requests
+- Excalidraw format skill with complete JSON schema reference
+- Customizable styling: roughness, stroke width, colors, effects
+- Persistent user preferences via .claude/sketch-note.local.md
+- Output saved to sketches/ directory as .excalidraw files
+
+Plugin structure:
+- 1 command (sketch.md)
+- 1 agent (sketch.md)
+- 1 skill (excalidraw-format)
+- 3 style definitions (hand-drawn, sketchy, clean)
+- 3 content templates (conversation, code-architecture, custom) by @jskswamy
+- Add .beads/.gitignore to exclude unnecessary files
+
+This commit introduces a .gitignore file for the .beads directory to
+prevent tracking of various temporary and machine-specific files.
+
+The patterns include:
+
+- SQLite database files
+- Daemon runtime files
+- Local version tracking files
+- Legacy database files
+- Worktree redirect files
+- Merge artifacts
+- Sync state files by @jskswamy
+- Add beads configuration for AI-native issue tracking
+
+Initialize beads in this repository with:
+- README explaining beads usage and quick start guide
+- Configuration with sync-branch set to 'beads-sync'
+- Git attributes for JSONL merge driver
+- AGENTS.md with workflow instructions for AI coding agents
+
+Beads provides git-native issue tracking designed for AI-assisted
+development workflows. Issues live in the repo as JSONL, sync with
+git, and work seamlessly with Claude Code and other AI agents. by @jskswamy
+- Add PNG export options to sketch-note plugin
+
+Implement multiple approaches for generating PNG output from sketches:
+
+1. Direct PNG via Mermaid CLI - generates PNG directly without
+   intermediate Excalidraw file, uses hand-drawn theme styling
+
+2. Excalidraw conversion - creates Excalidraw first, then converts
+   using excalidraw-brute-export-cli or excalidraw-cli
+
+The workflow detects available tool runners (nix-shell, npx) and
+globally installed tools, enabling zero-install mode where tools run
+on-demand via npx or nix-shell without requiring global installation.
+
+Features:
+- --format argument: excalidraw, png, both, or direct-png
+- --scale argument: 1, 2, or 4 for PNG resolution
+- Interactive workflow guides users through export options
+- Automatic tool detection with smart fallbacks
+- export-png.sh helper script with nix/npx support by @jskswamy
+- Add auto-version sync hook for plugins
+
+When plugin content files are modified (commands/, agents/, skills/,
+etc.), this hook automatically:
+- Bumps the patch version in plugin.json
+- Syncs the version to marketplace.json
+- Shows a system message confirming the bump
+
+Uses session markers (/tmp/.claude-version-bumped-{plugin}) to ensure
+only one bump per plugin per session, preventing multiple bumps when
+editing several files.
+
+Skips metadata files (plugin.json, marketplace.json, README, CHANGELOG)
+to avoid infinite loops. by @jskswamy
+- Add unified storage and cross-plugin skills to sketch-note
+
+Update sketch-note plugin to use the shared workbench_path configuration
+from .claude/jot.local.md, ensuring sketches and captures are stored
+together in a unified location (default: ~/workbench/sketches/).
+
+Add two cross-plugin skills enabling seamless workflows between jot
+and sketch-note:
+
+- plugins/jot/skills/sketch-from-capture.md: Enables creating visual
+  diagrams from captured content (articles, videos, blips)
+- plugins/sketch-note/skills/capture-for-sketch.md: Enables sketching
+  directly from URLs, YouTube videos, or GitHub repos
+
+This makes it easier to capture content and immediately visualize it,
+or to create visual summaries of external resources.
+
+### Changed
+
+- Update changelog with v1.0.1 release notes
+
+Add changelog entries documenting recent changes:
+- Initial changelog generation with git-cliff automation
+- Removal of automatic Claude co-author attribution from git-commit
+  plugin (v1.1.1)
+
+Updates version link to compare v1.0.0..v1.0.1. by @jskswamy
+- Move file existence check to start of capture workflow
+
+Previously, the capture agents would process through multiple steps
+before checking if a note already existed, wasting time when the
+user wanted to update an existing note.
+
+Changes:
+- capture.md: Merge Step 1 and 1b into unified step that checks for
+  existing notes immediately after type detection and slug extraction
+- quick-capture.md: Move existence check to Step 1c, right after
+  parsing and alias resolution, before any context gathering
+- Both agents now read and display existing note info before asking
+  any user questions
+- Renumber subsequent steps in quick-capture.md (Steps 2-10)
+
+Closes claude-plugins-3f3 by @jskswamy
+- Move plugin hooks to local .claude/hooks directory
+
+Relocate version sync and changelog notification hooks from the public
+hooks/ directory to .claude/hooks/ for repository-local use only.
+
+This keeps automation scripts private to this repository rather than
+publishing them as part of the marketplace. The hooks can be exported
+to other repositories later if needed.
+
+Hooks moved:
+- sync-plugin-version.sh: Auto-bumps patch version on plugin changes
+- update-changelog.sh: Notifies when changelog updates are needed
+- Move release command to .claude/commands directory
+
+Local slash commands must be in .claude/commands/ to be discovered by
+Claude Code. The previous .claude/plugins/ location is for installable
+plugins, not local commands.
+
+This fixes the /release command not appearing in the command list.
+
+### Other
+
+- Bd sync: 2026-01-12 23:01:25 by @jskswamy
+- Sync plugin versions in marketplace registry
+
+Update marketplace.json to match actual plugin versions:
+- jot: 1.0.0 → 1.3.0
+- sketch-note: 1.0.0 → 1.2.0 (includes PNG export feature)
+
+Also bump sketch-note plugin.json from 1.1.0 to 1.2.0 to reflect
+the PNG export changes added earlier. by @jskswamy
+- Release marketplace v1.1.1 with plugin version bumps
+
+Bump versions for plugins with changes since last sync:
+- jot: 1.3.0 → 1.3.1 (added sketch-from-capture skill)
+- sketch-note: 1.2.0 → 1.2.1 (added unified storage, capture-for-sketch)
+- marketplace metadata: 1.1.0 → 1.1.1
 ## [1.0.1] - 2026-01-12
 
 ### Added
@@ -20,7 +198,7 @@ Sections included:
 - Removed: welcome message from shell hook
 
 This provides project history visibility and supports the changelog
-automation workflow added in commit 346dc78.
+automation workflow added in commit 346dc78. by @jskswamy
 
 ### Removed
 
@@ -35,7 +213,7 @@ Changes:
 - Bump version to 1.1.1
 
 This ensures commit messages remain clean and co-authorship reflects
-actual pair programming sessions rather than AI assistance.
+actual pair programming sessions rather than AI assistance. by @jskswamy
 ## [1.0.0] - 2026-01-12
 
 ### Added
@@ -301,5 +479,6 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.1.1]: https://github.com/jskswamy/claude-plugins/compare/v1.0.1..v1.1.1
 [1.0.1]: https://github.com/jskswamy/claude-plugins/compare/v1.0.0..v1.0.1
 
