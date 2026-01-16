@@ -59,7 +59,9 @@ png_scale: 2                 # 1, 2, 4
 
 ## Output
 
-Sketch notes are saved to `sketches/` directory as `.excalidraw` files.
+Sketch notes are saved to `${workbench_path}/sketches/` directory as `.excalidraw` files.
+
+The `workbench_path` is read from `.claude/jot.local.md` (shared with the jot plugin). Default: `~/workbench`.
 
 ## Styles
 

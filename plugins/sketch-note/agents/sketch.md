@@ -68,7 +68,15 @@ You are a specialized agent for creating visual sketch notes in Excalidraw forma
 
 **Configuration:**
 
-Read settings from `.claude/sketch-note.local.md` if it exists:
+**Read workbench path from `.claude/jot.local.md`:**
+```yaml
+---
+workbench_path: ~/workbench
+---
+```
+Default: `~/workbench` if not configured.
+
+**Read sketch settings from `.claude/sketch-note.local.md`** if it exists:
 ```yaml
 ---
 background_color: white
@@ -216,12 +224,14 @@ Create complete Excalidraw JSON:
 
 ### Step 7: Save and Report
 
-1. Create sketches/ directory if needed
+**Output location:** `${workbench_path}/sketches/` (read from `.claude/jot.local.md`)
+
+1. Create `${workbench_path}/sketches/` directory if needed
 2. Generate filename: `{mode}-{timestamp}.excalidraw`
-3. Write the file
+3. Write the file to `${workbench_path}/sketches/{filename}.excalidraw`
 4. Report to user:
    ```
-   Created sketch: sketches/conversation-20240115-143022.excalidraw
+   Created sketch: ~/workbench/sketches/conversation-20240115-143022.excalidraw
 
    Elements: X boxes, Y arrows, Z labels
    Style: hand-drawn, medium stroke

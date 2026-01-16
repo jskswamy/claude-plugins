@@ -52,7 +52,17 @@ Parse the command arguments to extract:
 
 ### Step 1: Load User Preferences
 
-Read `.claude/sketch-note.local.md` if it exists:
+**Read workbench path from `.claude/jot.local.md`:**
+
+```yaml
+---
+workbench_path: ~/workbench
+---
+```
+
+Default: `~/workbench` if not configured or file doesn't exist.
+
+**Read sketch settings from `.claude/sketch-note.local.md`** if it exists:
 
 ```yaml
 ---
@@ -510,28 +520,30 @@ Store: `generation_method` (mermaid | excalidraw-convert), `selected_tool`, `png
 
 ### Step 7: Determine Output Path
 
+**Output location:** `${workbench_path}/sketches/` (from Step 1)
+
 **If `--output` provided:** Use specified name
 **Otherwise:** Generate name based on mode and timestamp
 
 **For Excalidraw-based output:**
 ```
-sketches/{mode}-{timestamp}.excalidraw
+${workbench_path}/sketches/{mode}-{timestamp}.excalidraw
 ```
 
 **For Direct PNG output:**
 ```
-sketches/{mode}-{timestamp}.png
+${workbench_path}/sketches/{mode}-{timestamp}.png
 ```
 
-Examples:
-- `sketches/conversation-20240115-143022.excalidraw`
-- `sketches/code-architecture-20240115-143022.excalidraw`
-- `sketches/my-api-flow.excalidraw` (if --output my-api-flow)
-- `sketches/api-flow-20240115-143022.png` (direct PNG)
+Examples (assuming default workbench_path: `~/workbench`):
+- `~/workbench/sketches/conversation-20240115-143022.excalidraw`
+- `~/workbench/sketches/code-architecture-20240115-143022.excalidraw`
+- `~/workbench/sketches/my-api-flow.excalidraw` (if --output my-api-flow)
+- `~/workbench/sketches/api-flow-20240115-143022.png` (direct PNG)
 
 **Create sketches directory if needed:**
 ```bash
-mkdir -p sketches
+mkdir -p "${workbench_path}/sketches"
 ```
 
 ---
@@ -625,7 +637,7 @@ sequenceDiagram
    **If `mermaid_runner: global`:**
    ```bash
    mmdc -i /tmp/sketch-{timestamp}.mmd \
-        -o "sketches/{filename}.png" \
+        -o "${workbench_path}/sketches/{filename}.png" \
         -c /tmp/mermaid-config.json \
         -s {png_scale} \
         -b transparent
@@ -634,7 +646,7 @@ sequenceDiagram
    **If `mermaid_runner: nix`:**
    ```bash
    nix-shell -p mermaid-cli --run "mmdc -i /tmp/sketch-{timestamp}.mmd \
-        -o \"sketches/{filename}.png\" \
+        -o \"${workbench_path}/sketches/{filename}.png\" \
         -c /tmp/mermaid-config.json \
         -s {png_scale} \
         -b transparent"
@@ -643,7 +655,7 @@ sequenceDiagram
    **If `mermaid_runner: npx`:**
    ```bash
    npx -y @mermaid-js/mermaid-cli -i /tmp/sketch-{timestamp}.mmd \
-        -o "sketches/{filename}.png" \
+        -o "${workbench_path}/sketches/{filename}.png" \
         -c /tmp/mermaid-config.json \
         -s {png_scale} \
         -b transparent
@@ -675,7 +687,7 @@ sequenceDiagram
 
 1. **Write the Excalidraw JSON file:**
    ```
-   Write to: sketches/{filename}.excalidraw
+   Write to: ${workbench_path}/sketches/{filename}.excalidraw
    ```
 
 2. **If format is `png` only:** Continue to Step 9 (PNG export), then delete the .excalidraw file after successful PNG creation
@@ -690,32 +702,32 @@ Use the `selected_tool` and `excalidraw_runner` determined in Step 6c.
 
 *If globally installed (`excalidraw_runner: global`):*
 ```bash
-excalidraw-brute-export-cli -i "sketches/{filename}.excalidraw" \
+excalidraw-brute-export-cli -i "${workbench_path}/sketches/{filename}.excalidraw" \
   --format png \
   --scale {png_scale} \
   --background 1 \
-  -o "sketches/{filename}.png"
+  -o "${workbench_path}/sketches/{filename}.png"
 ```
 
 *If via npx (`excalidraw_runner: npx`):*
 ```bash
-npx -y excalidraw-brute-export-cli -i "sketches/{filename}.excalidraw" \
+npx -y excalidraw-brute-export-cli -i "${workbench_path}/sketches/{filename}.excalidraw" \
   --format png \
   --scale {png_scale} \
   --background 1 \
-  -o "sketches/{filename}.png"
+  -o "${workbench_path}/sketches/{filename}.png"
 ```
 
 **For excalidraw-cli:**
 
 *If globally installed (`excalidraw_runner: global`):*
 ```bash
-excalidraw-cli "sketches/{filename}.excalidraw" "sketches/"
+excalidraw-cli "${workbench_path}/sketches/{filename}.excalidraw" "${workbench_path}/sketches/"
 ```
 
 *If via npx (`excalidraw_runner: npx`):*
 ```bash
-npx -y @tommywalkie/excalidraw-cli "sketches/{filename}.excalidraw" "sketches/"
+npx -y @tommywalkie/excalidraw-cli "${workbench_path}/sketches/{filename}.excalidraw" "${workbench_path}/sketches/"
 ```
 
 **If export fails:**
@@ -726,14 +738,14 @@ npx -y @tommywalkie/excalidraw-cli "sketches/{filename}.excalidraw" "sketches/"
 **If format was `png` only and export succeeded:**
 - Delete the temporary .excalidraw file:
   ```bash
-  rm "sketches/{filename}.excalidraw"
+  rm "${workbench_path}/sketches/{filename}.excalidraw"
   ```
 
 ### Step 10: Show Success Message
 
 **If only Excalidraw generated:**
 ```
-✓ Sketch created: sketches/conversation-20240115-143022.excalidraw
+✓ Sketch created: ~/workbench/sketches/conversation-20240115-143022.excalidraw
 
 Elements: 12 boxes, 8 arrows, 15 text labels
 Style: hand-drawn, medium stroke, white background
@@ -746,8 +758,8 @@ Open in Excalidraw:
 **If PNG + Excalidraw generated (via conversion):**
 ```
 ✓ Sketch created:
-  - sketches/conversation-20240115-143022.excalidraw (editable)
-  - sketches/conversation-20240115-143022.png (2x scale, via {tool-name})
+  - ~/workbench/sketches/conversation-20240115-143022.excalidraw (editable)
+  - ~/workbench/sketches/conversation-20240115-143022.png (2x scale, via {tool-name})
 
 Elements: 12 boxes, 8 arrows, 15 text labels
 Style: hand-drawn, medium stroke, white background
@@ -755,7 +767,7 @@ Style: hand-drawn, medium stroke, white background
 
 **If PNG via conversion only (format=png):**
 ```
-✓ Sketch exported: sketches/conversation-20240115-143022.png (2x scale, via {tool-name})
+✓ Sketch exported: ~/workbench/sketches/conversation-20240115-143022.png (2x scale, via {tool-name})
 
 Elements: 12 boxes, 8 arrows, 15 text labels
 Style: hand-drawn, medium stroke, white background
@@ -765,7 +777,7 @@ Note: Excalidraw source not saved. Use --format both to keep editable version.
 
 **If Direct PNG generated (via Mermaid):**
 ```
-✓ Sketch created: sketches/conversation-20240115-143022.png (2x scale, via Mermaid)
+✓ Sketch created: ~/workbench/sketches/conversation-20240115-143022.png (2x scale, via Mermaid)
 
 Diagram type: flowchart
 Style: hand-drawn theme
@@ -776,7 +788,7 @@ Use --format excalidraw or --format both if you need to edit later.
 
 **If PNG was skipped (no tools, user chose to skip):**
 ```
-✓ Sketch created: sketches/conversation-20240115-143022.excalidraw
+✓ Sketch created: ~/workbench/sketches/conversation-20240115-143022.excalidraw
 
 Elements: 12 boxes, 8 arrows, 15 text labels
 Style: hand-drawn, medium stroke, white background
