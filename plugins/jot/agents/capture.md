@@ -71,9 +71,11 @@ Default: `~/workbench` if not configured.
 
 **Capture Workflow:**
 
-### Step 1: Determine Content Type
+### Step 1: Determine Content Type and Check for Existing Note
 
-If type not specified, auto-detect from URL:
+**IMPORTANT:** Check for existing notes FIRST, before any user interaction.
+
+#### 1a. Auto-detect type from URL:
 - `youtube.com`, `youtu.be` → video
 - `github.com` → **blip** (tech radar item, NOT article)
 - `wikipedia.org/wiki/[Person]` → person
@@ -84,34 +86,50 @@ If type not specified, auto-detect from URL:
 
 **IMPORTANT**: The `tool` type is deprecated. All tools, technologies, libraries, and frameworks are captured as **blips**. If user specifies `tool`, treat as `blip`.
 
-### Step 1b: Check for Existing Note
+#### 1b. Extract identifier from URL immediately (NO WebFetch yet):
+- **GitHub URLs**: Extract repository name from URL path
+  - `github.com/orhun/git-cliff` → "git-cliff"
+  - `github.com/astral-sh/uv` → "uv"
+- **YouTube URLs**: Extract video ID or use URL slug
+  - `youtube.com/watch?v=abc123` → "abc123"
+- **Other URLs**: Extract last path segment or domain
+  - `martinfowler.com/articles/microservices.html` → "microservices"
+  - `example.com/some-article` → "some-article"
 
-Before proceeding, check if a note with the same name already exists:
+#### 1c. Check if file exists BEFORE any user questions:
+```bash
+ls "${WORKBENCH_PATH}/notes/{folder}/slugified-name.md" 2>/dev/null
+```
+Where folder is: blips (GitHub), articles, videos, people, books, organisations, troves, research
 
-1. **Extract identifier from URL:**
-   - GitHub URLs: Extract repository name from URL path (e.g., `github.com/orhun/git-cliff` → "git-cliff")
-   - Other URLs: Use WebFetch to get page title, then slugify
+#### 1d. If existing note found:
+1. **Read the existing note immediately**
+2. **Show key info to user:**
+   - For blips: Title, Ring level, Last Updated
+   - For articles/videos: Title, Source, Last Updated
+   - For others: Title, Last Updated
+3. **Ask user with AskUserQuestion:**
+   - "Update existing" (Recommended) - Enhance the existing note
+   - "View full note" - Show complete content, then ask again
+   - "Create new anyway" - Continue with normal creation flow
 
-2. **Check if file exists** (all URL-based captures are reference items - use exact match):
-   ```bash
-   ls "${WORKBENCH_PATH}/notes/{folder}/slugified-name.md" 2>/dev/null
-   ```
-   Where folder is: blips (GitHub), articles, videos, people, books, organisations, troves, research
-
-3. **If existing note found, ask user:**
-   Use AskUserQuestion with options:
-   - "Enhance existing" - Update the existing note with new information
-   - "Create new" - Continue with normal creation flow
-
-4. **If user chooses "Enhance existing":**
-   - Read the existing note
-   - Ask: "What would you like to add or update?"
+4. **If "Update existing":**
    - Proceed to **Enhance Existing Note Workflow** (see below)
+   - The note content is already loaded - pass it to the enhance workflow
 
-5. **If no existing note or user chooses "Create new":**
-   - Continue with normal creation flow (Step 2)
+5. **If "View full note":**
+   - Display the full note content
+   - Ask the same question again
+
+6. **If "Create new anyway":**
+   - Continue to Step 2
+
+#### 1e. If no existing note:
+- Continue to Step 2 (normal creation flow)
 
 ### Step 2: Check Dependencies (Video Only)
+
+**Note:** Only reach this step if no existing note was found OR user chose "Create new anyway".
 
 For videos, verify yt-dlp is installed:
 ```bash

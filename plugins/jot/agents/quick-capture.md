@@ -110,20 +110,63 @@ Default: `~/workbench` if not configured.
 
 **Quick Capture Workflow:**
 
-### Step 1: Parse Input
+### Step 1: Parse Input and Check for Existing Note
 
-Extract:
+**IMPORTANT:** Check for existing notes FIRST, before any user interaction or context gathering.
+
+#### 1a. Parse input to extract:
 - **Type**: task, note, idea, session, or blip
 - **Content**: The text to capture
 - **Flags** (blips only): `--ring` and `--quadrant`
 
-**Type aliases:** Resolve before proceeding:
+#### 1b. Resolve type aliases:
 - `todo` → `task`
 - `thought` → `note`
 - `conversation` → `session`
 - `tool` → `blip`
 
-### Step 1b: Handle URL References
+#### 1c. Check for existing note IMMEDIATELY after parsing:
+
+1. **Generate the slugified identifier** from the content:
+   - Slugify the name/title (e.g., "Kubernetes" → "kubernetes", "Review PR" → "review-pr")
+
+2. **Check for existing note based on type:**
+
+   **For inbox items (task, note, idea)** - use pattern match (dates vary):
+   ```bash
+   ls "${WORKBENCH_PATH}/notes/inbox/"*"-slugified-name.md" 2>/dev/null
+   ```
+
+   **For reference items (session, blip)** - use exact match:
+   ```bash
+   ls "${WORKBENCH_PATH}/notes/{folder}/slugified-name.md" 2>/dev/null
+   ```
+
+3. **If existing note found:**
+   - **Read the existing note immediately**
+   - **Show key info to user:**
+     - For blips: Title, Ring level, Last Updated
+     - For tasks/notes/ideas: Title, Status, Created date
+     - For sessions: Title, Goal, Last Updated
+   - **Ask user with AskUserQuestion:**
+     - "Update existing" (Recommended) - Enhance the existing note
+     - "View full note" - Show complete content, then ask again
+     - "Create new anyway" - Continue with normal creation flow
+
+4. **If "Update existing":**
+   - Proceed to **Enhance Existing Note Workflow** (see below)
+   - The note content is already loaded - pass it to the enhance workflow
+
+5. **If "View full note":**
+   - Display the full note content
+   - Ask the same question again
+
+6. **If "Create new anyway" OR no existing note:**
+   - Continue to Step 2 (Handle URL References)
+
+### Step 2: Handle URL References
+
+**Note:** Only reach this step if no existing note was found OR user chose "Create new anyway".
 
 If the content contains URLs (regex: `https?://[^\s]+`):
 
@@ -135,7 +178,7 @@ If the content contains URLs (regex: `https?://[^\s]+`):
    - Store for use in template's URL Reference section
 5. **Continue as quick capture** - do not delegate to full capture agent
 
-### Step 1c: Gather Session Context (Automatic)
+### Step 3: Gather Session Context (Automatic)
 
 **IMPORTANT**: Automatically gather context for ALL captures (task, note, idea, session). This helps regain context later.
 
@@ -163,46 +206,14 @@ Store these values for the Session Context section in the note:
 
 This context is captured silently - do not ask the user for this information.
 
-### Step 1d: Check for Existing Note
-
-Before asking for context, check if a note with the same name already exists:
-
-1. **Generate the slugified identifier** from the content:
-   - Slugify the name/title (e.g., "Kubernetes" → "kubernetes", "Review PR" → "review-pr")
-
-2. **Check for existing note based on type:**
-
-   **For inbox items (task, note, idea)** - use pattern match (dates vary):
-   ```bash
-   ls "${WORKBENCH_PATH}/notes/inbox/"*"-slugified-name.md" 2>/dev/null
-   ```
-
-   **For reference items (session, blip)** - use exact match:
-   ```bash
-   ls "${WORKBENCH_PATH}/notes/{folder}/slugified-name.md" 2>/dev/null
-   ```
-
-3. **If existing note found, ask user:**
-   Use AskUserQuestion with options:
-   - "Enhance existing" - Update the existing note
-   - "Create new" - Continue with normal creation flow
-
-4. **If user chooses "Enhance existing":**
-   - Read the existing note
-   - Ask: "What would you like to add or update?"
-   - Proceed to **Enhance Existing Note Workflow** (see below)
-
-5. **If no existing note or user chooses "Create new":**
-   - Continue with normal creation flow (Step 2)
-
-### Step 2: Ask for Context (Except Session)
+### Step 4: Ask for Context (Except Session)
 
 **REQUIRED** for task, note, idea, blip: Ask the user:
 "How did you discover this? What's the context?"
 
 Keep it brief.
 
-### Step 2a: Optional Additional Context (All Types)
+### Step 4a: Optional Additional Context (All Types)
 
 After the discovery context (or session questions), ask:
 "Anything else you want to remember about this?"
@@ -217,7 +228,7 @@ This captures things only the user knows:
 - "Mentioned by Sarah in standup"
 - "Blocked until API v2 ships"
 
-### Step 2b: Session Capture Questions (Session Only)
+### Step 4b: Session Capture Questions (Session Only)
 
 For session/conversation captures, replace the standard context question with guided questions:
 
@@ -229,7 +240,7 @@ For session/conversation captures, replace the standard context question with gu
 
 Capture the user's responses for each section.
 
-### Step 3: Additional Questions (Blips Only)
+### Step 5: Additional Questions (Blips Only)
 
 For blips, also ask:
 1. "What is this and why is it on your radar?" → Summary
@@ -247,13 +258,13 @@ For blips, also ask:
 - **Platforms**: Infrastructure, runtime, hosting
 - **Languages**: Programming languages, frameworks, SDKs
 
-### Step 4: Read Template
+### Step 6: Read Template
 
 Read from `${CLAUDE_PLUGIN_ROOT}/templates/capture/[type].md`
 
 For captures with URL references, the template will include a URL Reference section.
 
-### Step 5: Generate Note Content
+### Step 7: Generate Note Content
 
 Follow template structure:
 - Add metadata (date, status)
@@ -261,7 +272,7 @@ Follow template structure:
 - For blips: Include user's summary and ring rationale verbatim
 - Generate 3-5 relevant tags
 
-### Step 6: Find Related Notes
+### Step 8: Find Related Notes
 
 Search existing notes:
 1. Extract key terms from the capture
@@ -269,7 +280,7 @@ Search existing notes:
 3. Check tags, titles, and content
 4. Add [[wikilinks]] to 2-3 most relevant notes
 
-### Step 7: Save the Note
+### Step 9: Save the Note
 
 **Filename formats:**
 - Task/Note/Idea (inbox items): `YYYY-MM-DD-slugified-title.md` (keep date for GTD processing)
@@ -286,7 +297,7 @@ Create directory if needed:
 mkdir -p "${WORKBENCH_PATH}/notes/[folder]"
 ```
 
-### Step 8: Report Success
+### Step 10: Report Success
 
 Brief confirmation: "Captured to [path]"
 
@@ -302,7 +313,7 @@ Brief confirmation: "Captured to [path]"
 
 ## Enhance Existing Note Workflow
 
-When user chooses to enhance an existing note (from Step 1d):
+When user chooses to enhance an existing note (from Step 1c):
 
 ### Step E1: Read Existing Note
 Read the full content of the existing note.
