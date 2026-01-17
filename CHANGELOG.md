@@ -2,6 +2,28 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.1.2] - 2026-01-17
+
+### Added
+
+- Add /teach command for Feynman-style learning to jot plugin
+
+Implements the Richard Feynman Iterative Learning Framework:
+- /teach command for papers, videos, articles, and concepts
+- Phase 0 prerequisite check - confirms user has engaged with content
+- 7-phase interactive loop: assessment, explanation, gaps, questions,
+  refinement, application, and analogy creation
+- Depth levels: shallow (1 iter), standard (2), deep (3)
+- Teaching notes saved to notes/learned/ with wikilinks
+
+Key components:
+- commands/teach.md: Main command with argument parsing
+- agents/content-extractor.md: PDF, YouTube, article extraction
+- agents/learning-tutor.md: Interactive Feynman loop with prereq check
+- templates/teach/teaching-note.md: Output template
+
+Philosophy: There are no shortcuts to learning. The Feynman Technique
+deepens understanding through explanation, not acquisition.
 ## [1.1.1] - 2026-01-16
 
 ### Added
@@ -115,7 +137,7 @@ and sketch-note:
   directly from URLs, YouTube videos, or GitHub repos
 
 This makes it easier to capture content and immediately visualize it,
-or to create visual summaries of external resources.
+or to create visual summaries of external resources. by @jskswamy
 
 ### Changed
 
@@ -154,14 +176,18 @@ to other repositories later if needed.
 
 Hooks moved:
 - sync-plugin-version.sh: Auto-bumps patch version on plugin changes
-- update-changelog.sh: Notifies when changelog updates are needed
+- update-changelog.sh: Notifies when changelog updates are needed by @jskswamy
 - Move release command to .claude/commands directory
 
 Local slash commands must be in .claude/commands/ to be discovered by
 Claude Code. The previous .claude/plugins/ location is for installable
 plugins, not local commands.
 
-This fixes the /release command not appearing in the command list.
+This fixes the /release command not appearing in the command list. by @jskswamy
+- Update CHANGELOG for v1.1.1
+
+Document all changes included in the v1.1.1 release.
+Generated using git-cliff. by @jskswamy
 
 ### Other
 
@@ -179,7 +205,7 @@ the PNG export changes added earlier. by @jskswamy
 Bump versions for plugins with changes since last sync:
 - jot: 1.3.0 → 1.3.1 (added sketch-from-capture skill)
 - sketch-note: 1.2.0 → 1.2.1 (added unified storage, capture-for-sketch)
-- marketplace metadata: 1.1.0 → 1.1.1
+- marketplace metadata: 1.1.0 → 1.1.1 by @jskswamy
 ## [1.0.1] - 2026-01-12
 
 ### Added
@@ -479,6 +505,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.1.2]: https://github.com/jskswamy/claude-plugins/compare/v1.1.1..v1.1.2
 [1.1.1]: https://github.com/jskswamy/claude-plugins/compare/v1.0.1..v1.1.1
 [1.0.1]: https://github.com/jskswamy/claude-plugins/compare/v1.0.0..v1.0.1
 
