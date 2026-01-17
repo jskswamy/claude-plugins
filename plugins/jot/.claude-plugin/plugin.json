@@ -1,7 +1,7 @@
 {
   "name": "jot",
-  "version": "1.3.1",
-  "description": "Quick, low-friction capture of notes, tasks, ideas, session summaries, and tech radar blips with Obsidian-style auto-linking",
+  "version": "1.4.1",
+  "description": "Quick, low-friction capture of notes, tasks, ideas, session summaries, tech radar blips, and Feynman-style teaching notes with Obsidian-style auto-linking",
   "author": {
     "name": "Krishnaswamy Subramanian",
     "email": "jskswamy@gmail.com"
@@ -17,6 +17,10 @@
     "obsidian",
     "wikilinks",
     "gtd",
-    "productivity"
+    "productivity",
+    "learning",
+    "feynman",
+    "teach",
+    "teaching-notes"
   ]
 }
