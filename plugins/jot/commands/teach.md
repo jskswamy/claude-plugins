@@ -16,6 +16,8 @@ allowed-tools:
 
 Teach back content you've already studied to deepen your understanding using the Richard Feynman Iterative Learning Framework. This command guides you through explaining concepts simply, identifying gaps, and iterating to mastery.
 
+> Based on [The Richard Feynman Iterative Learning Framework](https://tools.eq4c.com/prompt/ai-prompt-the-richard-feynman-iterative-learning-framework/) prompt.
+
 ## Important: Prerequisites
 
 **This command requires you to have already engaged with the content.**

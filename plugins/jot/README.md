@@ -127,7 +127,9 @@ Blips are for tracking technologies on your personal tech radar. All tools, fram
 
 ## The `/teach` Command
 
-Teach back content you've studied of content you've already studied using the **Richard Feynman Iterative Learning Framework**.
+Teach back content you've studied using the **Richard Feynman Iterative Learning Framework**.
+
+> Based on [The Richard Feynman Iterative Learning Framework](https://tools.eq4c.com/prompt/ai-prompt-the-richard-feynman-iterative-learning-framework/) prompt.
 
 ### Philosophy: No Shortcuts to Learning
 
@@ -229,6 +231,10 @@ After the interactive session, a teaching note is saved to `notes/learned/` cont
 - **For video captures**: `yt-dlp` must be installed
   - macOS: `brew install yt-dlp`
   - pip: `pip install yt-dlp`
+
+## Sources
+
+- [The Richard Feynman Iterative Learning Framework](https://tools.eq4c.com/prompt/ai-prompt-the-richard-feynman-iterative-learning-framework/) - The `/teach` command implementation
 
 ## License
 
