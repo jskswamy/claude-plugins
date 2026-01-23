@@ -2,6 +2,24 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.0.2] - 2026-01-23
+
+### Added
+
+- Add typst-notes plugin for document generation
+
+New plugin that converts conversation context, jot
+notes, or files into professionally formatted PDFs
+and HTML using Typst with 7 templates (executive
+summary, cheat sheet, sketchnote, meeting minutes,
+study guide, technical brief, portfolio) and 4
+color themes.
+
+Includes jot integration that resolves note paths
+via workbench_path config, preference persistence
+across sessions, and compile.sh with --root / for
+correct absolute imports. Bundled Inter, Source
+Serif, and JetBrains Mono fonts.
 ## [1.3.1] - 2026-01-23
 
 ### Added
@@ -32,7 +50,14 @@ Changes to the package search priority order:
 
 Also adds version resolution support using nixhub_find_version
 and nixhub_package_versions tools for handling versioned package
-requests like nodejs@20.
+requests like nodejs@20. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG for v1.3.1
+
+Document all changes included in the v1.3.1 release.
+Generated using git-cliff with plugin-specific filtering. by @jskswamy
 
 ### Other
 
@@ -40,7 +65,7 @@ requests like nodejs@20.
 
 Bump devenv plugin version from 1.3.0 to 1.3.1.
 Update marketplace registry with new version and bump
-marketplace metadata version to 1.1.3.
+marketplace metadata version to 1.1.3. by @jskswamy
 ## [1.1.2] - 2026-01-17
 
 ### Added
@@ -564,6 +589,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.0.2]: https://github.com/jskswamy/claude-plugins/compare/v1.3.1..v1.0.2
 [1.3.1]: https://github.com/jskswamy/claude-plugins/compare/v1.1.2..v1.3.1
 [1.1.2]: https://github.com/jskswamy/claude-plugins/compare/v1.1.1..v1.1.2
 [1.1.1]: https://github.com/jskswamy/claude-plugins/compare/v1.0.1..v1.1.1
