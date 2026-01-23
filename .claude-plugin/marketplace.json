@@ -97,6 +97,25 @@
         "mind-map",
         "flowchart"
       ]
+    },
+    {
+      "name": "typst-notes",
+      "description": "Generate beautiful PDF/HTML shareable notes using Typst with 7 professional templates, infographics, and modern typography",
+      "version": "1.0.0",
+      "author": {
+        "name": "Krishnaswamy Subramanian"
+      },
+      "source": "./plugins/typst-notes",
+      "category": "productivity",
+      "tags": [
+        "typst",
+        "pdf",
+        "html",
+        "notes",
+        "templates",
+        "publish",
+        "infographics"
+      ]
     }
   ]
 }
