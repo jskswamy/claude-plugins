@@ -2,6 +2,45 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.3.1] - 2026-01-23
+
+### Added
+
+- Add attribution for Feynman Learning Framework source
+
+Credit the original prompt that inspired the /teach command
+implementation. Following the same pattern as git-commit plugin
+which has a dedicated Sources section.
+
+Attribution added to:
+- README.md (inline blockquote + Sources section)
+- commands/teach.md (inline blockquote)
+- agents/learning-tutor.md (inline blockquote)
+
+Also fixed redundant phrasing in README description. by @jskswamy
+- Add 1mcp NixOS server discovery to devenv plugin
+
+Prefer an already-running NixOS MCP server via 1mcp proxy over
+starting the plugin's own bundled server. The bundled server is
+kept as fallback for environments without 1mcp.
+
+Changes to the package search priority order:
+1. 1mcp (preferred, already running, no extra process)
+2. Global/project mcp-nixos
+3. Plugin's bundled mcp-nixos
+4. Bash fallback (nix search)
+
+Also adds version resolution support using nixhub_find_version
+and nixhub_package_versions tools for handling versioned package
+requests like nodejs@20.
+
+### Other
+
+- Release devenv v1.3.1
+
+Bump devenv plugin version from 1.3.0 to 1.3.1.
+Update marketplace registry with new version and bump
+marketplace metadata version to 1.1.3.
 ## [1.1.2] - 2026-01-17
 
 ### Added
@@ -23,7 +62,27 @@ Key components:
 - templates/teach/teaching-note.md: Output template
 
 Philosophy: There are no shortcuts to learning. The Feynman Technique
-deepens understanding through explanation, not acquisition.
+deepens understanding through explanation, not acquisition. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG for v1.1.2
+
+Document all changes included in the v1.1.2 release.
+Generated using git-cliff.
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com> by @jskswamy
+
+### Other
+
+- Release marketplace v1.1.2 with jot plugin version sync
+
+Bump marketplace metadata version from 1.1.1 to 1.1.2.
+Sync jot plugin version from 1.3.1 to 1.4.1 to match plugin.json.
+Update jot description to include teaching notes feature.
+Add new tags: learning, feynman, teach, teaching-notes.
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com> by @jskswamy
 ## [1.1.1] - 2026-01-16
 
 ### Added
@@ -505,6 +564,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.3.1]: https://github.com/jskswamy/claude-plugins/compare/v1.1.2..v1.3.1
 [1.1.2]: https://github.com/jskswamy/claude-plugins/compare/v1.1.1..v1.1.2
 [1.1.1]: https://github.com/jskswamy/claude-plugins/compare/v1.0.1..v1.1.1
 [1.0.1]: https://github.com/jskswamy/claude-plugins/compare/v1.0.0..v1.0.1
