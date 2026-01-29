@@ -2,6 +2,69 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [task-decomposer-v1.2.0] - 2026-01-29
+
+### Added
+
+- Add missing plugin documentation to README
+
+The main README was outdated, listing only 3 of 6 plugins. Users
+browsing the marketplace couldn't discover sketch-note, typst-notes,
+or task-decomposer.
+
+Added documentation sections for:
+- sketch-note: Visual sketch notes in Excalidraw format
+- task-decomposer: Transform complex tasks into beads issues
+- typst-notes: PDF/HTML notes with Typst templates
+
+Each section follows the existing format with features, install
+command, usage examples, and link to the plugin README.
+
+Closes: claude-plugins-csj by @jskswamy
+- Add README auto-generation using gomplate
+
+The README plugins section was manually maintained and often fell out
+of sync with actual plugin features. Now uses gomplate templates to
+auto-generate content from marketplace.json and plugin READMEs.
+
+Changes:
+- Add gomplate to flake.nix dev packages
+- Create templates/readme-plugins.md.tmpl for plugin section generation
+- Add scripts/update-readme.sh to regenerate README between markers
+- Add <!-- PLUGINS:START/END --> markers to README.md
+- Update release command with Step 7.5 for README regeneration
+- Document nix prerequisite in CONTRIBUTING.md
+
+The template extracts features from plugin READMEs (bold bullets or
+numbered headings) and falls back to marketplace tags. Usage examples
+are extracted from the first code block in each plugin's Usage section.
+- Add beads viewer setup and agent instructions
+
+Configure gitignore for .bv/ directory (beads viewer local config and
+caches) and add comprehensive beads workflow documentation to AGENTS.md.
+
+The AGENTS.md additions cover:
+- Essential bd CLI commands for agents
+- Workflow pattern (ready → claim → work → complete → sync)
+- Key concepts (dependencies, priority, types, blocking)
+- Session close protocol checklist
+- Best practices for issue tracking
+- Add commands to task-decomposer plugin
+
+Add 7 explicit commands to complement existing auto-invoked skills:
+- /plan: Task decomposition with --dry-run, --quick, --epic flags
+- /task: Single task operations (create, start, done, show, next)
+- /park: Quick idea parking with metadata options
+- /parked: Manage parked ideas (list, promote, discard, review)
+- /backlog: Dashboard views (overview, ready, blocked, priorities, epics)
+- /epic: Epic management (create, add, remove, progress, close)
+- /deps: Dependency management (add, remove, show, graph)
+
+Commands follow kubectl/unix conventions with noun-verb patterns and
+provide explicit argument control for workflows that skills handle
+automatically.
+
+Bump version to 1.2.0.
 ## [task-decomposer-v1.1.0] - 2026-01-29
 
 ### Added
@@ -42,7 +105,7 @@ The hooks intercept both MCP git_commit tool and bash git commit
 commands, redirecting to the /commit workflow for proper atomic
 validation and style-consistent message generation.
 
-Closes: claude-plugins-n1c, claude-plugins-l2t, claude-plugins-2g5
+Closes: claude-plugins-n1c, claude-plugins-l2t, claude-plugins-2g5 by @jskswamy
 - Add understand skill to task-decomposer plugin
 
 New skill for deep task exploration through structured questioning
@@ -62,7 +125,14 @@ assumption surfacing, synthesis, transition) and adapts questioning
 based on task type (technical, product, bug fix, refactoring).
 
 Output is an understanding summary that can feed into the decompose
-skill for issue creation.
+skill for issue creation. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG for task-decomposer-v1.1.0
+
+Document all changes included in the task-decomposer v1.1.0 release.
+Generated using git-cliff with plugin-specific filtering. by @jskswamy
 
 ### Other
 
@@ -70,7 +140,7 @@ skill for issue creation.
 
 Bump task-decomposer plugin version from 1.0.0 to 1.1.0.
 Update marketplace registry with new version and bump
-marketplace metadata version to 1.1.5.
+marketplace metadata version to 1.1.5. by @jskswamy
 ## [1.0.2] - 2026-01-23
 
 ### Added
@@ -673,6 +743,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[task-decomposer-v1.2.0]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.1.0..task-decomposer-v1.2.0
 [task-decomposer-v1.1.0]: https://github.com/jskswamy/claude-plugins/compare/v1.0.2..task-decomposer-v1.1.0
 [1.0.2]: https://github.com/jskswamy/claude-plugins/compare/v1.3.1..v1.0.2
 [1.3.1]: https://github.com/jskswamy/claude-plugins/compare/v1.1.2..v1.3.1

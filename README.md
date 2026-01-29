@@ -154,11 +154,11 @@ Generate visual sketch notes in Excalidraw format from conversations, code archi
 Transform complex tasks into structured beads issues with proper dependencies, capture ideas without breaking flow, and create rich commit messages
 
 **Features:**
-- Task Understanding
-- Task Decomposition
-- Idea Parking
-- Parked Idea Review
-- Task Commit
+- Beads
+- Planning
+- Decomposition
+- Issues
+- Epic
 
 **Install:**
 ```
@@ -167,12 +167,7 @@ Transform complex tasks into structured beads issues with proper dependencies, c
 
 **Usage:**
 ```
-User: Help me understand what adding caching to our API would involve
-
-Claude: [Enters discovery phase]
-- Asks: What's driving the need - performance, load, cost?
-- Probes scope: Which endpoints? What data types?
-- Explores constraints: Freshness requirements? Tech preferences?
+/taskdecomposer
 ```
 
 [View documentation](./plugins/task-decomposer/README.md)
