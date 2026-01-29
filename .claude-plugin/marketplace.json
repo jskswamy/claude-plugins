@@ -116,6 +116,27 @@
         "publish",
         "infographics"
       ]
+    },
+    {
+      "name": "task-decomposer",
+      "description": "Transform complex tasks into structured beads issues with proper dependencies, capture ideas without breaking flow, and create rich commit messages",
+      "version": "1.0.0",
+      "author": {
+        "name": "Krishnaswamy Subramanian"
+      },
+      "source": "./plugins/task-decomposer",
+      "category": "workflow",
+      "tags": [
+        "beads",
+        "planning",
+        "decomposition",
+        "issues",
+        "epic",
+        "workflow",
+        "tasks",
+        "parking",
+        "commit"
+      ]
     }
   ]
 }
