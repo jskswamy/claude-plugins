@@ -4,11 +4,13 @@ Generate intelligent git commit messages with classic or conventional commit sty
 
 ## Features
 
+- **Auto-Activation:** Triggers automatically when you ask to commit (no need to type `/commit`)
 - **Two Commit Styles:** Classic commits (default) and conventional commits
 - **Strict Atomic Commit Validation:** Warns when staged changes aren't atomic
 - **Split Commits Helper:** Guides you through staging changes separately
 - **Pair Programming Support:** Save and reuse co-author information
 - **Smart Message Generation:** Analyzes your diff to generate meaningful messages
+- **Commit Interception:** Prevents direct git commits, ensuring all commits go through the plugin workflow
 
 ## Installation
 
@@ -21,6 +23,60 @@ Or for local development:
 ```bash
 claude --plugin-dir ./plugins/git-commit
 ```
+
+## Auto-Activation
+
+The plugin automatically activates when you express intent to commit. No need to type `/commit` explicitly.
+
+### Trigger Phrases
+
+The plugin recognizes natural language commit requests:
+
+| Category | Example Phrases |
+|----------|----------------|
+| **Direct requests** | "commit these changes", "commit this", "let's commit", "make a commit" |
+| **Readiness** | "time to commit", "ready to commit", "let's do the commit" |
+| **Delegation** | "commit for me", "please commit", "can you commit this" |
+| **Contextual** | "save my changes" (after code edits), "finalize these changes" |
+| **With style** | "make a conventional commit", "commit this classically" |
+| **With context** | "commit the login fix", "commit this as a bug fix" |
+
+### Examples
+
+```
+You: "commit these changes"
+→ Plugin activates, runs /commit workflow
+
+You: "let's make a conventional commit for the auth fix"
+→ Plugin activates, runs /commit --style conventional auth fix
+
+You: "time to commit, this fixes the redirect bug"
+→ Plugin activates, runs /commit fixes redirect bug
+```
+
+### Commit Interception
+
+The plugin includes hooks that intercept direct git commit attempts:
+
+- **MCP tool interception:** Blocks `mcp__1mcp__git_1mcp_git_commit` and redirects to `/commit`
+- **Bash interception:** Detects `git commit` commands and redirects to `/commit`
+
+This ensures all commits go through the plugin workflow for:
+- Atomic commit validation
+- Intelligent message generation
+- Session context awareness
+- Style consistency
+
+### Questions vs Actions
+
+The plugin distinguishes between **learning** and **doing**:
+
+| User Intent | Handled By |
+|-------------|------------|
+| "How do I write a commit message?" | `commit-style` skill (educational) |
+| "What is a conventional commit?" | `commit-style` skill (educational) |
+| "commit these changes" | `commit` skill (action) |
+| "let's make a commit" | `commit` skill (action) |
 
 ## Usage
 
@@ -209,6 +265,38 @@ To add a new style:
 2. Add YAML frontmatter with name and description
 3. Document the rules, examples, and anti-patterns
 4. Use with `/commit --style your-style`
+
+## Plugin Architecture
+
+### Skills
+
+| Skill | Purpose | Triggers On |
+|-------|---------|-------------|
+| `commit.md` | Perform commit actions | Intent to commit (action phrases) |
+| `commit-style.md` | Educational guidance | Questions about commit formats |
+
+### Hooks
+
+The plugin uses PreToolUse hooks to intercept direct git commits:
+
+```
+hooks/
+├── hooks.json              # Hook configuration
+├── intercept-mcp-commit.md # Blocks MCP git_commit tool
+└── intercept-bash-commit.md # Blocks bash git commit commands
+```
+
+**Why hooks?** Even with the intent-based skill, Claude might decide to commit directly using git tools. The hooks ensure ALL commits go through the plugin workflow.
+
+### Styles
+
+Custom commit styles in `styles/` directory:
+
+```
+styles/
+├── classic.md       # Traditional git commit style (default)
+└── conventional.md  # Conventional Commits specification
+```
 
 ## Sources
 

@@ -1,21 +1,31 @@
 ---
 name: commit-style
-description: Provides guidance on writing good git commit messages, including classic commits, conventional commits, and atomic commit principles
+description: Provides educational guidance on writing good git commit messages. Activates when users ASK QUESTIONS about commit message formats, styles, conventional commits, classic commits, atomic commit principles, or git best practices. Does NOT activate when users want to PERFORM a commit (use the commit skill instead).
 ---
 
 # Git Commit Message Guidelines
 
-This skill provides context about writing effective git commit messages.
+This skill provides **educational context** about writing effective git commit messages.
 
 ## When to Activate
 
-Activate this skill when the user asks about:
+Activate this skill when the user **asks questions** about:
 - How to write commit messages
 - Commit message formats or styles
 - Conventional commits vs classic commits
 - What makes a good commit message
 - Atomic commits
 - Git best practices for commits
+
+## When NOT to Activate
+
+Do NOT use this skill when the user wants to **perform a commit**. The following are handled by the `commit` skill:
+- "commit these changes"
+- "let's commit"
+- "make a commit"
+- "commit this"
+
+For action requests, the `commit` skill invokes the `/commit` workflow.
 
 ## Available Commit Styles
 
