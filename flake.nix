@@ -86,6 +86,9 @@
 
               # JSON processing (used by hooks)
               jq
+
+              # README generation from templates
+              gomplate
             ]
             ++ pre-commit-check.enabledPackages
             ++ [ direnv-instant.packages.${system}.default ];

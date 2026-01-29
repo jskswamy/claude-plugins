@@ -1,5 +1,25 @@
 # Contributing
 
+## Prerequisites
+
+This project uses [Nix](https://nixos.org/) for reproducible development environments. All required tools (git-cliff, gomplate, shellcheck, etc.) are provided via the flake.
+
+1. Install Nix with flakes enabled:
+   ```bash
+   curl -L https://nixos.org/nix/install | sh
+   echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+   ```
+
+2. Enter the development shell:
+   ```bash
+   nix develop
+   ```
+
+   Or use direnv for automatic activation:
+   ```bash
+   direnv allow
+   ```
+
 ## Creating a Plugin
 
 1. Install the official plugin-dev tool:

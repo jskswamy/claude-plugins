@@ -42,16 +42,19 @@ This is a personal collection of useful Claude Code plugins that I've built to e
 
 ## Available Plugins
 
+<!-- PLUGINS:START -->
+
+
 ### devenv
 
-Initialize and manage Nix flake development environments with auto-detection and security tooling.
+Initialize and manage Nix flake development environments with auto-detection and security tooling
 
 **Features:**
-- Auto-detects project stack (Node.js, Python, Go, Rust, etc.)
-- Generates `flake.nix` with best practices
-- Offers pre-commit hooks with SAST tools
-- Includes gitleaks for secret detection
-- Automatic linting with nixfmt, statix, deadnix
+- Auto-detection: Automatically detects your project's tech stack and suggests appropriate packages
+- Native Nix pre-commit: Uses [git-hooks.nix](https://github.com/cachix/git-hooks.nix) for pure Nix pre-commit integration
+- Security tooling: Built-in support for gitleaks and SAST tools
+- Nix best practices: Generated flakes follow Nix conventions and are automatically linted/formatted
+- No system dependencies: All tools run via Nix, ensuring reproducibility
 
 **Install:**
 ```
@@ -65,16 +68,17 @@ Initialize and manage Nix flake development environments with auto-detection and
 
 [View documentation](./plugins/devenv/README.md)
 
+
 ### git-commit
 
-Generate intelligent git commit messages with classic or conventional commit style support, strict atomic commit validation, and session context awareness.
+Generate intelligent git commit messages with classic or conventional commit style support, strict atomic commit validation, and session context awareness
 
 **Features:**
-- Two commit styles: Classic (default) and Conventional Commits
-- Strict atomic commit validation with split commit helper
-- Pair programming support with co-author attribution
-- Session context awareness for meaningful messages
-- 72-character wrapping for message bodies
+- Auto-Activation: Triggers automatically when you ask to commit (no need to type `/commit`)
+- Two Commit Styles: Classic commits (default) and conventional commits
+- Strict Atomic Commit Validation: Warns when staged changes aren't atomic
+- Split Commits Helper: Guides you through staging changes separately
+- Pair Programming Support: Save and reuse co-author information
 
 **Install:**
 ```
@@ -83,24 +87,22 @@ Generate intelligent git commit messages with classic or conventional commit sty
 
 **Usage:**
 ```
-/commit                           # Generate with default style
-/commit --style conventional      # Use conventional commits
-/commit --pair                    # Add co-author
-/commit fix the login issue       # Provide context
+/commit                    # Generate commit with default style (classic)
 ```
 
 [View documentation](./plugins/git-commit/README.md)
 
+
 ### jot
 
-Quick, low-friction capture of notes, tasks, ideas, session summaries, and tech radar blips with Obsidian-style auto-linking.
+Quick, low-friction capture of notes, tasks, ideas, session summaries, tech radar blips, and Feynman-style teaching notes with Obsidian-style auto-linking
 
 **Features:**
-- Quick captures: tasks, notes, ideas, session summaries
-- URL-based captures: articles, videos, books, people, repositories
-- Tech radar blips with rings (Adopt, Trial, Assess, Hold) and quadrants
-- Obsidian-style wikilinks for auto-linking related notes
-- Session context awareness (git repo, branch, directory)
+- Quick captures: Task, note, idea, session, blip - minimal friction
+- Full captures: Article, video, blip (GitHub/tools), person, book, organisation, trove, research - URL-based extraction
+- Feynman teaching: Interactive `/teach` command for deepening understanding of papers, videos, articles, and concepts you've already studied
+- Teaching notes: Capture your learning journey with analogies, misconceptions, and applied scenarios
+- Session summaries: Capture Claude Code session outcomes with guided questions
 
 **Install:**
 ```
@@ -109,26 +111,25 @@ Quick, low-friction capture of notes, tasks, ideas, session summaries, and tech 
 
 **Usage:**
 ```
-/capture task Review the PR
-/capture note Meeting notes about X
-/capture idea Try approach Y
-/capture session                  # Guided session summary
+/capture task Buy groceries
+/capture note Meeting notes about project X
+/capture idea What if we tried approach Y
 /capture blip Docker --ring adopt --quadrant platforms
-/capture https://github.com/repo  # URL-based capture
 ```
 
 [View documentation](./plugins/jot/README.md)
 
+
 ### sketch-note
 
-Generate visual sketch notes in Excalidraw format from conversations, code architecture, or custom content.
+Generate visual sketch notes in Excalidraw format from conversations, code architecture, or custom content
 
 **Features:**
-- Multiple content modes: conversation summaries, code architecture, custom content
-- Creates `.excalidraw` files that open directly in Excalidraw
-- PNG export with interactive tool detection workflow
-- Customizable styling: background, pen type, roughness, visual effects
-- Persistent per-project preferences
+- Multiple content modes: Capture conversation summaries, visualize code architecture, or sketch custom content
+- Excalidraw output: Creates `.excalidraw` files that open directly in Excalidraw
+- PNG export: Interactive workflow detects available tools and guides you through export options
+- Customizable styling: Configure background, pen type, roughness, and visual effects
+- Persistent preferences: Settings saved per-project for consistent output
 
 **Install:**
 ```
@@ -140,22 +141,24 @@ Generate visual sketch notes in Excalidraw format from conversations, code archi
 /sketch                           # Interactive mode selection
 /sketch --mode conversation       # Sketch current conversation
 /sketch --mode code               # Visualize code architecture
-/sketch --format png              # Export as PNG
-/sketch --format both             # Both Excalidraw and PNG
+/sketch --mode custom             # Custom content input
+/sketch --output my-diagram       # Specify output filename
+/sketch --format png              # PNG via Excalidraw conversion
 ```
 
 [View documentation](./plugins/sketch-note/README.md)
 
+
 ### task-decomposer
 
-Transform complex tasks into well-structured beads issues through a thoughtful workflow, capture side ideas without breaking flow, and create rich commit messages with full context.
+Transform complex tasks into structured beads issues with proper dependencies, capture ideas without breaking flow, and create rich commit messages
 
 **Features:**
-- Deep task understanding with 7 questioning dimensions
-- Break down work into structured beads issues with dependencies
-- Park side ideas quickly without losing focus
-- Review parked ideas and promote to real issues
-- Rich commit messages combining beads context with code changes
+- Task Understanding
+- Task Decomposition
+- Idea Parking
+- Parked Idea Review
+- Task Commit
 
 **Install:**
 ```
@@ -164,25 +167,27 @@ Transform complex tasks into well-structured beads issues through a thoughtful w
 
 **Usage:**
 ```
-/understand                       # Explore a task deeply
-/decompose                        # Break work into beads issues
-/park-idea rate limiting          # Capture side thought quickly
-/review-parked                    # Review parked ideas
-/task-commit                      # Commit with beads context
+User: Help me understand what adding caching to our API would involve
+
+Claude: [Enters discovery phase]
+- Asks: What's driving the need - performance, load, cost?
+- Probes scope: Which endpoints? What data types?
+- Explores constraints: Freshness requirements? Tech preferences?
 ```
 
 [View documentation](./plugins/task-decomposer/README.md)
 
+
 ### typst-notes
 
-Generate beautiful PDF/HTML shareable notes using Typst with 7 professional templates, infographics support, and modern typography.
+Generate beautiful PDF/HTML shareable notes using Typst with 7 professional templates, infographics, and modern typography
 
 **Features:**
-- 7 templates: executive summary, cheat sheet, sketch, meeting minutes, study guide, technical brief, portfolio
-- 4 themes: light, dark, minimal, vibrant
-- Auto-generated infographics via CeTZ, Fletcher, Pintorita
-- Jot integration for publishing captures directly
-- Bundled OFL-licensed fonts (Inter, Source Serif 4, JetBrains Mono)
+- Typst
+- Pdf
+- Html
+- Notes
+- Templates
 
 **Install:**
 ```
@@ -191,14 +196,16 @@ Generate beautiful PDF/HTML shareable notes using Typst with 7 professional temp
 
 **Usage:**
 ```
-/publish                          # Interactive template selection
-/publish --template exec          # Executive summary
-/publish --template cheat --theme dark    # Dark cheat sheet
-/publish --source jot:notes/meeting.md    # Publish a jot note
-/publish --format both --output api-design # PDF and HTML
+/publish [--template exec|cheat|sketch|meeting|study|tech|portfolio]
+         [--theme light|dark|minimal|vibrant]
+         [--format pdf|html|both]
+         [--output <name>]
+         [--source conversation|jot:<path>|file:<path>]
+         [content description...]
 ```
 
 [View documentation](./plugins/typst-notes/README.md)
+<!-- PLUGINS:END -->
 
 ## Roadmap
 

@@ -273,6 +273,13 @@ Display the plan and skip to Step 10 (Dry Run Summary).
      --prepend CHANGELOG.md
    ```
 
+### Step 7.5: Update README Documentation
+
+Regenerate the plugins section in README.md:
+```bash
+./scripts/update-readme.sh
+```
+
 ### Step 8: Commit Changes (Two Commits)
 
 **IMPORTANT:** Use the `/commit` skill for both commits to ensure consistent commit message style.
@@ -300,30 +307,30 @@ Display the plan and skip to Step 10 (Dry Run Summary).
    marketplace metadata version to 1.2.0.
    ```
 
-#### Commit 2: Changelog
+#### Commit 2: Changelog and README
 
-1. **Stage changelog:**
+1. **Stage changelog and README:**
    ```bash
-   git add CHANGELOG.md
+   git add CHANGELOG.md README.md
    ```
 
 2. **Invoke /commit skill:**
    ```
    Use Skill: git-commit:commit
-   Args: Update CHANGELOG for v<new-version>
+   Args: Update CHANGELOG and README for v<new-version>
    ```
 
    Expected commit message:
    ```
-   Update CHANGELOG for v1.3.0
+   Update CHANGELOG and README for v1.3.0
 
    Document all changes included in the v1.3.0 release.
-   Generated using git-cliff with plugin-specific filtering.
+   Regenerate plugins section in README from marketplace.json.
    ```
 
 **Why two commits:**
-- Keeps changelog commit separate from version bumps
-- The changelog commit won't appear in the next release's changelog
+- Keeps docs commit separate from version bumps
+- The docs commit won't appear in the next release's changelog
 - Makes it easier to revert if needed
 - Version bump commits are meaningful on their own
 

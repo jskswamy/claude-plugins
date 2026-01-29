@@ -1,0 +1,99 @@
+{{- /*
+  Template for generating the "Available Plugins" section of README.md
+  Uses marketplace.json and individual plugin READMEs as data sources
+*/ -}}
+{{- $mp := (datasource "marketplace") -}}
+{{- $pluginsDir := (getenv "PLUGINS_DIR" | default "plugins") -}}
+{{- range $mp.plugins | sort "name" }}
+### {{ .name }}
+
+{{ .description }}
+
+**Features:**
+{{- $readmePath := printf "%s/%s/README.md" $pluginsDir .name -}}
+{{- $featuresFound := false -}}
+{{- if file.Exists $readmePath -}}
+{{- $content := file.Read $readmePath -}}
+{{- /* First try: Extract features from ## Features section - get bold-prefixed bullets */ -}}
+{{- $featuresSection := regexp.Find "(?s)## Features\\n\\n([\\s\\S]*?)(?:\\n## |$)" $content -}}
+{{- if $featuresSection -}}
+{{- /* Try bold bullets like "- **Feature**: description" or "- **Feature:** description" */ -}}
+{{- $bullets := regexp.FindAll "- \\*\\*[^*]+\\*\\*:? ?[^\n]+" $featuresSection -}}
+{{- if $bullets -}}
+{{- $featuresFound = true -}}
+{{- range $i, $bullet := $bullets -}}
+{{- if lt $i 5 }}
+{{ $bullet | regexp.Replace "^- \\*\\*([^*:]+):?\\*\\*:? ?" "- $1: " }}
+{{- end }}
+{{- end -}}
+{{- else -}}
+{{- /* Try numbered headings like "### 1. Feature Name" */ -}}
+{{- $headings := regexp.FindAll "### \\d+\\. [^\n`(]+" $featuresSection -}}
+{{- if $headings -}}
+{{- $featuresFound = true -}}
+{{- range $i, $heading := $headings -}}
+{{- if lt $i 5 }}
+- {{ $heading | regexp.Replace "^### \\d+\\. " "" | strings.TrimSpace }}
+{{- end }}
+{{- end -}}
+{{- else -}}
+{{- /* Try plain bullet points */ -}}
+{{- $plainBullets := regexp.FindAll "^- [^\n]+" $featuresSection -}}
+{{- if $plainBullets -}}
+{{- $featuresFound = true -}}
+{{- range $i, $bullet := $plainBullets -}}
+{{- if lt $i 5 }}
+{{ $bullet }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- /* Fallback: generate from tags */ -}}
+{{- if not $featuresFound -}}
+{{- range $i, $tag := .tags -}}
+{{- if lt $i 5 }}
+- {{ $tag | strings.ReplaceAll "-" " " | strings.Title }}
+{{- end }}
+{{- end -}}
+{{- end }}
+
+**Install:**
+```
+/plugin install {{ .name }}@claude-plugins
+```
+
+**Usage:**
+{{- $readmePath := printf "%s/%s/README.md" $pluginsDir .name -}}
+{{- $usageExtracted := false -}}
+{{- if file.Exists $readmePath -}}
+{{- $content := file.Read $readmePath -}}
+{{- /* Look for ## Usage section followed by code block */ -}}
+{{- $usageSection := regexp.Find "(?s)## Usage[\\s\\S]*?```[^\n]*\n([\\s\\S]*?)```" $content -}}
+{{- if $usageSection -}}
+{{- $codeContent := regexp.Find "(?s)```[^\n]*\n([\\s\\S]*?)```" $usageSection -}}
+{{- if $codeContent -}}
+{{- $code := $codeContent | regexp.Replace "(?s)^```[^\n]*\n" "" | regexp.Replace "```$" "" | strings.TrimSpace -}}
+{{- $lines := $code | strings.Split "\n" -}}
+{{- $usageExtracted = true }}
+```
+{{- range $i, $line := $lines -}}
+{{- if lt $i 6 }}
+{{ $line }}
+{{- end }}
+{{- end }}
+```
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- if not $usageExtracted }}
+```
+/{{ .name | strings.ReplaceAll "-" "" }}
+```
+{{- end }}
+
+[View documentation](./plugins/{{ .name }}/README.md)
+
+{{ end -}}
