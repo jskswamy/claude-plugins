@@ -4,7 +4,31 @@ Transform complex tasks into well-structured beads issues through a thoughtful w
 
 ## Features
 
-### 1. Task Decomposition (`/decompose`)
+### 1. Task Understanding (`/understand`)
+
+Deeply explore a task through structured questioning before any planning begins. This surfaces hidden assumptions, clarifies ambiguities, and builds a complete mental model.
+
+**When to use this vs decompose:**
+- Use `/understand` when the task is fuzzy, complex, or you suspect hidden complexity
+- Use `/decompose` when you're ready to break work into issues
+
+**Trigger phrases:**
+- "help me understand this task", "what questions should I ask"
+- "let's think through this", "explore this with me"
+- "clarify this task", "what am I missing", "deep dive into this"
+
+**Seven questioning dimensions:**
+1. Goal Clarity - What does "done" look like?
+2. Context & Background - What triggered this?
+3. Scope Boundaries - What's in/out?
+4. Constraints & Requirements - Performance, security, tech limits?
+5. Dependencies & Integration - What systems does this touch?
+6. Risks & Unknowns - What could go wrong?
+7. Success Criteria - How will we verify it works?
+
+**Output:** Understanding summary that can feed into decomposition.
+
+### 2. Task Decomposition (`/decompose`)
 
 Break down complex work into structured beads issues through three phases:
 
@@ -17,7 +41,7 @@ Break down complex work into structured beads issues through three phases:
 - "break this down", "create issues for", "turn this into beads"
 - "structure this work", "how should I approach this"
 
-### 2. Idea Parking (`/park-idea`)
+### 3. Idea Parking (`/park-idea`)
 
 Quickly capture side thoughts while working without breaking your flow.
 
@@ -31,7 +55,7 @@ Quickly capture side thoughts while working without breaking your flow.
 - Creates a deferred issue with `parked-idea` label
 - Returns you to work immediately
 
-### 3. Parked Idea Review (`/review-parked`)
+### 4. Parked Idea Review (`/review-parked`)
 
 Review ideas you've parked and decide what to do with them.
 
@@ -45,7 +69,7 @@ Review ideas you've parked and decide what to do with them.
 - Keep parked for later
 - Discard
 
-### 4. Task Commit (`/task-commit`)
+### 5. Task Commit (`/task-commit`)
 
 Create rich commit messages combining beads context with code changes.
 
@@ -59,7 +83,7 @@ Create rich commit messages combining beads context with code changes.
 - Changes: Summary of actual code modifications
 - Acceptance: Which criteria were met
 
-### 5. Automatic Review Prompt
+### 6. Automatic Review Prompt
 
 After committing work for a task, automatically prompts you to review any ideas you parked while working on it.
 
@@ -72,6 +96,32 @@ claude --plugin-dir ./plugins/task-decomposer
 Or add to your Claude Code settings.
 
 ## Usage Examples
+
+### Understanding a Complex Task
+
+```
+User: Help me understand what adding caching to our API would involve
+
+Claude: [Enters discovery phase]
+- Asks: What's driving the need - performance, load, cost?
+- Probes scope: Which endpoints? What data types?
+- Explores constraints: Freshness requirements? Tech preferences?
+
+User: [Provides context iteratively]
+
+Claude: [Surfaces assumptions]
+- States what it understood
+- Asks for validation
+
+Claude: [Presents Understanding Summary]
+- Goal, context, scope (in/out)
+- Constraints, dependencies, risks
+- Success criteria
+
+User: This looks right, let's plan it
+
+Claude: [Transitions to decompose skill with context]
+```
 
 ### Decomposing a Feature
 
@@ -179,6 +229,7 @@ task-decomposer/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── skills/
+│   ├── understand.md         # Deep task exploration (7 dimensions)
 │   ├── decompose.md          # Main decomposition workflow
 │   ├── park-idea.md          # Quick idea capture
 │   ├── review-parked.md      # Review parked ideas
@@ -192,6 +243,7 @@ task-decomposer/
 
 ## Tips
 
+- **Understand before decomposing**: For fuzzy tasks, use `/understand` first to build clarity
 - **Don't over-decompose**: 3-7 tasks is usually the sweet spot
 - **Park liberally**: Capturing ideas is cheap, losing them is expensive
 - **Review regularly**: Parked ideas can become stale
