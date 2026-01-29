@@ -1,6 +1,6 @@
 {
   "name": "task-decomposer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Transform complex tasks into structured beads issues through understanding, design, and creation phases",
   "author": {
     "name": "Krishnaswamy Subramanian",
