@@ -4,18 +4,193 @@ Transform complex tasks into well-structured beads issues through a thoughtful w
 
 ## Features
 
-### 1. Task Understanding (`/understand`)
+### Commands
 
-Deeply explore a task through structured questioning before any planning begins. This surfaces hidden assumptions, clarifies ambiguities, and builds a complete mental model.
+Commands provide explicit entry points with argument control. Use these when you want direct control over the workflow.
 
-**When to use this vs decompose:**
-- Use `/understand` when the task is fuzzy, complex, or you suspect hidden complexity
-- Use `/decompose` when you're ready to break work into issues
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/plan` | Decompose tasks into beads issues | `/plan "Add auth" --dry-run` |
+| `/task` | Single task operations | `/task start abc123` |
+| `/park` | Quick idea parking with metadata | `/park "Add caching" -p 3` |
+| `/parked` | Manage parked ideas | `/parked promote xyz` |
+| `/backlog` | Dashboard views of work | `/backlog ready` |
+| `/epic` | Epic management | `/epic progress abc123` |
+| `/deps` | Dependency management | `/deps graph` |
 
-**Trigger phrases:**
-- "help me understand this task", "what questions should I ask"
-- "let's think through this", "explore this with me"
-- "clarify this task", "what am I missing", "deep dive into this"
+### Skills
+
+Skills are auto-invoked based on conversation context. They complement the commands.
+
+| Skill | Trigger Phrases |
+|-------|-----------------|
+| `understand` | "help me understand", "clarify this task", "what am I missing" |
+| `decompose` | "plan this work", "break this down", "create issues for" |
+| `park-idea` | "park this", "btw:", "tangent:", "note for later" |
+| `review-parked` | "review parked", "show parked", "what did I park" |
+| `task-commit` | "task commit", "commit this task", "beads commit" |
+
+---
+
+## Command Reference
+
+### /plan - Task Decomposition
+
+Decompose complex tasks into structured beads issues with explicit control.
+
+```bash
+/plan "Add user authentication"                    # Full workflow
+/plan "Add caching" --epic "Performance"           # Create as epic
+/plan -p 1 "Critical security fix"                 # Set priority
+/plan --dry-run "Refactor database"                # Preview only
+/plan --quick --skip-questions "Simple task"       # Fast mode
+```
+
+**Arguments:**
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--epic` | `-e` | Create as epic with title |
+| `--priority` | `-p` | Default priority 0-4 |
+| `--skip-questions` | `-q` | Skip clarifying questions |
+| `--dry-run` | `-d` | Preview without creating |
+| `--quick` | | No confirmations |
+
+### /task - Single Task Operations
+
+Create, start, complete, and view individual tasks.
+
+```bash
+/task create "Fix login bug"                       # Create task
+/task create "Add tests" -p 1 --parent abc123      # With options
+/task start abc123                                 # Start working
+/task done abc123                                  # Mark complete
+/task done abc123 --commit                         # Complete and commit
+/task show abc123                                  # View details
+/task next                                         # Get recommendation
+```
+
+**Subcommands:**
+- `create <title>` - Create with `--description`, `--design`, `--acceptance`, `--priority`, `--parent`
+- `start <id>` - Mark in-progress, show context
+- `done <id>` - Close task, `--commit` triggers task-commit skill
+- `show <id>` - Display details, `--format brief|full|json`
+- `next` - Recommend next task based on priorities
+
+### /park - Quick Idea Parking
+
+Park ideas quickly with optional metadata.
+
+```bash
+/park "Add caching to the API"                     # Basic parking
+/park "Consider rate limiting" -t abc123           # Link to task
+/park -p 3 "Refactor auth module"                  # Set priority
+/park --tags "perf,db" "Index user table"          # Add tags
+/park -q "Remember to update docs"                 # Quick mode
+```
+
+**Arguments:**
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--task` | `-t` | Link to specific task |
+| `--priority` | `-p` | Priority override (default: 4) |
+| `--tags` | | Additional comma-separated tags |
+| `--quick` | `-q` | Minimal output |
+
+### /parked - Manage Parked Ideas
+
+List, filter, and manage parked ideas.
+
+```bash
+/parked                                            # List all
+/parked list --format full                         # Detailed view
+/parked from abc123                                # From specific task
+/parked promote xyz                                # Promote to real task
+/parked promote xyz --decompose                    # Promote and decompose
+/parked discard xyz                                # Delete idea
+/parked review                                     # Interactive review
+```
+
+**Subcommands:**
+- `list` - List all parked (default), `--format`, `--since`, `--limit`
+- `from <task-id>` - Ideas from specific task
+- `promote <id>...` - Promote to real issues, `--priority`, `--decompose`
+- `discard <id>...` - Delete parked ideas, `--force`
+- `review` - Interactive review session
+
+### /backlog - Work Dashboard
+
+Dashboard views of all work with filtering.
+
+```bash
+/backlog                                           # Overview stats
+/backlog ready                                     # Ready to work
+/backlog ready -p 1                                # High priority only
+/backlog blocked                                   # Show blocked tasks
+/backlog priorities                                # Group by priority
+/backlog epics                                     # Epic progress view
+```
+
+**Views:**
+- `overview` - Summary statistics (default)
+- `ready` - Tasks ready to work (no blockers)
+- `blocked` - Blocked tasks with reasons
+- `priorities` - Grouped by P0-P4
+- `epics` - Epic-centric progress view
+
+**Filters:** `--status`, `--priority`, `--epic`, `--format`, `--limit`
+
+### /epic - Epic Management
+
+Create and manage epics, track progress.
+
+```bash
+/epic create "Auth System"                         # Create epic
+/epic create "API v2" -p 1 -d "Full redesign"      # With options
+/epic add abc123 task1 task2                       # Add tasks
+/epic remove abc123 task1                          # Remove task
+/epic progress abc123                              # Show progress
+/epic close abc123                                 # Close epic
+/epic close abc123 --force                         # Force close
+```
+
+**Subcommands:**
+- `create <title>` - Create with `--description`, `--priority`, `--design`
+- `add <epic> <tasks...>` - Add tasks to epic
+- `remove <epic> <tasks...>` - Remove tasks
+- `progress <epic>` - Show completion progress
+- `close <epic>` - Close epic, `--force` if tasks open
+
+### /deps - Dependency Management
+
+Manage and visualize task dependencies.
+
+```bash
+/deps add task1 task2                              # task1 depends on task2
+/deps remove task1 task2                           # Remove dependency
+/deps show task1                                   # Show dependencies
+/deps graph                                        # Full graph
+/deps graph task1                                  # Centered on task
+/deps graph --format mermaid                       # Mermaid diagram
+```
+
+**Subcommands:**
+- `add <task> <depends-on>` - Add dependency
+- `remove <task> <depends-on>` - Remove dependency
+- `show <task>` - Show what blocks this task
+- `graph [task]` - Visualize graph, `--format tree|mermaid|json`, `--depth`
+
+---
+
+## Skill Reference
+
+### Task Understanding (`/understand`)
+
+Deeply explore a task through structured questioning before any planning begins.
+
+**When to use:**
+- Task is fuzzy or complex
+- Suspect hidden complexity
+- Want systematic exploration before committing to a plan
 
 **Seven questioning dimensions:**
 1. Goal Clarity - What does "done" look like?
@@ -26,66 +201,46 @@ Deeply explore a task through structured questioning before any planning begins.
 6. Risks & Unknowns - What could go wrong?
 7. Success Criteria - How will we verify it works?
 
-**Output:** Understanding summary that can feed into decomposition.
+### Task Decomposition (`/decompose`)
 
-### 2. Task Decomposition (`/decompose`)
+Break down complex work into structured beads issues through three phases.
 
-Break down complex work into structured beads issues through three phases:
-
+**Phases:**
 1. **Understanding** - Parse goals, ask clarifying questions, explore codebase
 2. **Designing** - Create hierarchy, map dependencies, define acceptance criteria
 3. **Creating** - Execute beads commands in correct order
 
-**Trigger phrases:**
-- "plan this work", "help me plan", "decompose this"
-- "break this down", "create issues for", "turn this into beads"
-- "structure this work", "how should I approach this"
+### Idea Parking (`/park-idea`)
 
-### 3. Idea Parking (`/park-idea`)
+Quickly capture side thoughts while working without breaking flow.
 
-Quickly capture side thoughts while working without breaking your flow.
-
-**Trigger phrases:**
-- "park this idea", "save this for later", "side thought"
-- "note for later", "don't forget", "tangent:", "btw:"
-
-**How it works:**
-- Asks only one question (if the idea isn't already clear)
+**Principles:**
+- Maximum 1 question (if idea isn't clear)
 - Auto-captures current task context
-- Creates a deferred issue with `parked-idea` label
+- Creates deferred issue with `parked-idea` label
 - Returns you to work immediately
 
-### 4. Parked Idea Review (`/review-parked`)
+### Parked Idea Review (`/review-parked`)
 
 Review ideas you've parked and decide what to do with them.
 
-**Trigger phrases:**
-- "review parked ideas", "show parked", "what did I park"
-- "check my parking lot", "any ideas parked"
-
 **Options for each idea:**
 - Promote to real issue
-- Run through decomposition for complex ideas
+- Run through decomposition
 - Keep parked for later
 - Discard
 
-### 5. Task Commit (`/task-commit`)
+### Task Commit (`/task-commit`)
 
 Create rich commit messages combining beads context with code changes.
-
-**Trigger phrases:**
-- "commit this task", "task commit", "commit with context"
-- "beads commit", after closing a task: "now commit"
 
 **Generated message includes:**
 - What: Goal from task description
 - Why: Approach from task design
-- Changes: Summary of actual code modifications
+- Changes: Summary of code modifications
 - Acceptance: Which criteria were met
 
-### 6. Automatic Review Prompt
-
-After committing work for a task, automatically prompts you to review any ideas you parked while working on it.
+---
 
 ## Installation
 
@@ -95,131 +250,40 @@ claude --plugin-dir ./plugins/task-decomposer
 
 Or add to your Claude Code settings.
 
-## Usage Examples
-
-### Understanding a Complex Task
-
-```
-User: Help me understand what adding caching to our API would involve
-
-Claude: [Enters discovery phase]
-- Asks: What's driving the need - performance, load, cost?
-- Probes scope: Which endpoints? What data types?
-- Explores constraints: Freshness requirements? Tech preferences?
-
-User: [Provides context iteratively]
-
-Claude: [Surfaces assumptions]
-- States what it understood
-- Asks for validation
-
-Claude: [Presents Understanding Summary]
-- Goal, context, scope (in/out)
-- Constraints, dependencies, risks
-- Success criteria
-
-User: This looks right, let's plan it
-
-Claude: [Transitions to decompose skill with context]
-```
-
-### Decomposing a Feature
-
-```
-User: Help me plan adding user authentication to the API
-
-Claude: [Enters Understanding phase]
-- Asks clarifying questions about auth method, session handling
-- Checks existing code patterns
-- Presents understanding summary
-
-User: [Confirms understanding]
-
-Claude: [Enters Design phase]
-- Breaks into: Epic + 4 tasks with dependencies
-- Shows preview with dependency graph
-
-User: [Approves design]
-
-Claude: [Creates issues via issue-writer agent]
-- Reports created issue IDs
-```
-
-### Parking an Idea
-
-```
-User: btw: we should add rate limiting to this endpoint
-
-Claude: Parked as claude-plugins-xyz! Continuing with the auth implementation...
-```
-
-### Committing with Context
-
-```
-User: task commit
-
-Claude: [Gathers beads context + git diff]
-
-Generated message:
----
-feat: Add JWT authentication to API (#claude-plugins-abc)
-
-## What
-Implement JWT-based authentication for API endpoints...
-
-## Why
-Used RS256 signing for security, with refresh token rotation...
-
-## Changes
-- src/auth/jwt.ts: New JWT utilities
-- src/middleware/auth.ts: Auth middleware
-- src/routes/auth.ts: Login/logout endpoints
-
-## Acceptance
-- [x] Tokens expire after 15 minutes
-- [x] Refresh tokens rotate on use
-- [x] Invalid tokens return 401
-
-Closes: claude-plugins-abc
----
-
-Commit as-is? [Yes / Edit / Regenerate]
-```
-
 ## Requirements
 
 - [beads plugin](https://github.com/jskswamy/claude-plugins/tree/main/plugins/beads) must be installed and initialized
 - Git repository for commit features
 
-## How It Works
+## Workflows
 
-### Decomposition Flow
-
-```
-Understanding → User Confirms → Designing → User Approves → Creating
-     ↓                              ↓                           ↓
-Parse goals               Map dependencies            Execute bd commands
-Ask questions            Define acceptance           Report created IDs
-Explore code             Assign priorities
-```
-
-### Parking Flow
+### Planning New Work
 
 ```
-User says "park this" → Auto-detect context → Create deferred issue → Back to work
-                              ↓
-                        Current task
-                        Current file
-                        What triggered it
+1. /plan "Add feature X"           # Decompose into issues
+2. bd ready                        # See what's available
+3. /task start <id>                # Start working
+4. /park "Related idea"            # Capture side thoughts
+5. /task done <id> --commit        # Complete and commit
+6. /parked review                  # Review captured ideas
 ```
 
-### Commit Flow
+### Managing Epics
 
 ```
-Identify task → Gather beads context → Gather git context → Generate message → Commit
-                      ↓                       ↓
-                 title, desc,           staged diff,
-                 design, acc            file changes
+1. /epic create "Auth System"      # Create epic
+2. /plan "..." --epic "Auth..."    # Add decomposed work
+3. /epic progress <id>             # Track progress
+4. /epic close <id>                # Close when done
+```
+
+### Understanding Dependencies
+
+```
+1. /deps graph                     # See full picture
+2. /deps show <task>               # What blocks this?
+3. /backlog blocked                # All blocked work
+4. /task next                      # What's ready?
 ```
 
 ## Plugin Structure
@@ -228,26 +292,50 @@ Identify task → Gather beads context → Gather git context → Generate messa
 task-decomposer/
 ├── .claude-plugin/
 │   └── plugin.json
+├── commands/
+│   ├── plan.md           # Task decomposition command
+│   ├── task.md           # Single task operations
+│   ├── park.md           # Quick idea parking
+│   ├── parked.md         # Manage parked ideas
+│   ├── backlog.md        # Dashboard views
+│   ├── epic.md           # Epic management
+│   └── deps.md           # Dependency management
 ├── skills/
-│   ├── understand.md         # Deep task exploration (7 dimensions)
-│   ├── decompose.md          # Main decomposition workflow
-│   ├── park-idea.md          # Quick idea capture
-│   ├── review-parked.md      # Review parked ideas
-│   └── task-commit.md        # Commit with beads context
+│   ├── understand.md     # Deep task exploration
+│   ├── decompose.md      # Main decomposition workflow
+│   ├── park-idea.md      # Quick idea capture
+│   ├── review-parked.md  # Review parked ideas
+│   └── task-commit.md    # Commit with beads context
 ├── hooks/
-│   └── review-after-commit.md  # Auto-prompt after task commits
+│   └── review-after-commit.md  # Auto-prompt after commits
 ├── agents/
-│   └── issue-writer.md       # Executes beads CLI commands
+│   └── issue-writer.md   # Executes beads CLI commands
 └── README.md
 ```
 
 ## Tips
 
-- **Understand before decomposing**: For fuzzy tasks, use `/understand` first to build clarity
+- **Commands vs Skills**: Use commands for explicit control, skills trigger automatically
+- **Understand before decomposing**: For fuzzy tasks, use `/understand` first
 - **Don't over-decompose**: 3-7 tasks is usually the sweet spot
 - **Park liberally**: Capturing ideas is cheap, losing them is expensive
 - **Review regularly**: Parked ideas can become stale
-- **Use task-commit for traceability**: Links code changes to issues
+- **Use /task next**: Let it recommend based on priorities and dependencies
+- **Visualize with /deps graph**: Understand the big picture
+
+## Changelog
+
+### v1.2.0
+- Added 7 commands: `/plan`, `/task`, `/park`, `/parked`, `/backlog`, `/epic`, `/deps`
+- Commands provide explicit argument control complementing auto-invoked skills
+
+### v1.1.0
+- Added `/understand` skill for deep task exploration
+
+### v1.0.0
+- Initial release with decompose, park-idea, review-parked, task-commit skills
+- Issue-writer agent for beads CLI execution
+- Review-after-commit hook
 
 ## License
 

@@ -1,10 +1,10 @@
 {
   "name": "task-decomposer",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Transform complex tasks into structured beads issues through understanding, design, and creation phases",
   "author": {
     "name": "Krishnaswamy Subramanian",
     "email": "jskswamy@gmail.com"
   },
-  "keywords": ["beads", "planning", "decomposition", "issues", "epic", "workflow", "tasks"]
+  "keywords": ["beads", "planning", "decomposition", "issues", "epic", "workflow", "tasks", "dependencies", "backlog"]
 }
