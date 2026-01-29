@@ -2,6 +2,75 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [task-decomposer-v1.1.0] - 2026-01-29
+
+### Added
+
+- Add task-decomposer plugin for beads workflow integration
+
+New plugin that enhances beads-based project management with four
+main capabilities:
+
+- Task decomposition: Transform complex work into structured beads
+  issues through Understanding → Designing → Creating phases with
+  user gates between each phase
+
+- Idea parking: Quick capture of side thoughts while working without
+  breaking flow, using deferred status and parked-idea labels
+
+- Parked idea review: On-demand or automatic (after task commits)
+  review of parked ideas with promote/keep/discard options
+
+- Task-aware commits: Generate rich commit messages combining beads
+  context (what/why/acceptance) with actual code changes
+
+Includes issue-writer agent for executing beads CLI commands in
+correct dependency order. by @jskswamy
+- Add auto-activation to git-commit plugin
+
+The plugin previously required explicit /commit invocation. Now it
+triggers automatically when users express intent to commit, such as
+"commit these changes" or "let's commit".
+
+Changes:
+- Add intent-based commit skill that recognizes action phrases
+- Add PreToolUse hooks to intercept direct git commit attempts
+- Update commit-style skill to clarify it handles educational queries
+- Document auto-activation, trigger phrases, and hook architecture
+
+The hooks intercept both MCP git_commit tool and bash git commit
+commands, redirecting to the /commit workflow for proper atomic
+validation and style-consistent message generation.
+
+Closes: claude-plugins-n1c, claude-plugins-l2t, claude-plugins-2g5
+- Add understand skill to task-decomposer plugin
+
+New skill for deep task exploration through structured questioning
+before any planning begins. Unlike decompose which quickly moves to
+issue creation, understand systematically probes seven dimensions:
+
+- Goal clarity: What does "done" look like?
+- Context & background: What triggered this?
+- Scope boundaries: What's in/out?
+- Constraints & requirements: Performance, security, tech limits?
+- Dependencies & integration: What systems does this touch?
+- Risks & unknowns: What could go wrong?
+- Success criteria: How will we verify it works?
+
+The skill uses a five-phase conversation flow (discovery, probing,
+assumption surfacing, synthesis, transition) and adapts questioning
+based on task type (technical, product, bug fix, refactoring).
+
+Output is an understanding summary that can feed into the decompose
+skill for issue creation.
+
+### Other
+
+- Release task-decomposer v1.1.0
+
+Bump task-decomposer plugin version from 1.0.0 to 1.1.0.
+Update marketplace registry with new version and bump
+marketplace metadata version to 1.1.5.
 ## [1.0.2] - 2026-01-23
 
 ### Added
@@ -19,7 +88,22 @@ Includes jot integration that resolves note paths
 via workbench_path config, preference persistence
 across sessions, and compile.sh with --root / for
 correct absolute imports. Bundled Inter, Source
-Serif, and JetBrains Mono fonts.
+Serif, and JetBrains Mono fonts. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG for v1.0.2
+
+Document all changes included in the v1.0.2 release.
+Generated using git-cliff with plugin-specific filtering. by @jskswamy
+
+### Other
+
+- Release typst-notes v1.0.2
+
+Bump typst-notes plugin version from 1.0.0 to 1.0.2.
+Update marketplace registry with new version and bump
+marketplace metadata version to 1.1.4. by @jskswamy
 ## [1.3.1] - 2026-01-23
 
 ### Added
@@ -589,6 +673,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[task-decomposer-v1.1.0]: https://github.com/jskswamy/claude-plugins/compare/v1.0.2..task-decomposer-v1.1.0
 [1.0.2]: https://github.com/jskswamy/claude-plugins/compare/v1.3.1..v1.0.2
 [1.3.1]: https://github.com/jskswamy/claude-plugins/compare/v1.1.2..v1.3.1
 [1.1.2]: https://github.com/jskswamy/claude-plugins/compare/v1.1.1..v1.1.2
