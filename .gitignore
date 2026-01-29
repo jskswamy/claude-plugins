@@ -26,3 +26,6 @@ Thumbs.db
 # Claude local settings
 .claude/*.local.json
 .claude/*.local.md
+
+# bv (beads viewer) local config and caches
+.bv/
