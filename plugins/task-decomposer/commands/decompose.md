@@ -1,5 +1,5 @@
 ---
-name: plan
+name: decompose
 description: Decompose complex tasks into structured beads issues with direct argument control
 argument-hint: "[task-description] [--epic|-e <title>] [--priority|-p 0-4] [--skip-questions|-q] [--dry-run|-d] [--quick]"
 allowed-tools:
@@ -12,7 +12,7 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /plan Command
+# /decompose Command
 
 Decompose complex tasks into well-structured beads issues. This command provides direct entry point for task decomposition with explicit control over workflow phases.
 
@@ -31,11 +31,11 @@ Parse the command arguments:
 
 **Examples:**
 ```
-/plan "Add user authentication"
-/plan "Add caching" --epic "Performance Improvements"
-/plan -e "Auth System" -p 1 "Implement OAuth2 login"
-/plan --dry-run "Refactor database layer"
-/plan --quick "Add logout button"
+/decompose "Add user authentication"
+/decompose "Add caching" --epic "Performance Improvements"
+/decompose -e "Auth System" -p 1 "Implement OAuth2 login"
+/decompose --dry-run "Refactor database layer"
+/decompose --quick "Add logout button"
 ```
 
 ---
@@ -47,7 +47,7 @@ Parse the command arguments:
 If no task description provided, prompt for it:
 
 ```
-What task would you like to plan?
+What task would you like to decompose?
 ```
 
 Extract all flags and the task description from the input.
@@ -224,8 +224,8 @@ Run `bd ready` to see what's available to work on.
 ```
 Error: No task description provided.
 
-Usage: /plan [task-description] [--flags]
-Example: /plan "Add user authentication"
+Usage: /decompose [task-description] [--flags]
+Example: /decompose "Add user authentication"
 ```
 
 ### Invalid priority

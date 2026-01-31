@@ -65,7 +65,7 @@ Add tasks to this epic:
 - /epic add {id} <task-id>
 - /task create "Task title" --parent {id}
 
-Or plan tasks: /plan "..." --epic "{title}"
+Or decompose tasks: /decompose "..." --epic "{title}"
 ```
 
 ---

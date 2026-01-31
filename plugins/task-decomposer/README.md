@@ -10,7 +10,7 @@ Commands provide explicit entry points with argument control. Use these when you
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/plan` | Decompose tasks into beads issues | `/plan "Add auth" --dry-run` |
+| `/decompose` | Decompose tasks into beads issues | `/decompose "Add auth" --dry-run` |
 | `/task` | Single task operations | `/task start abc123` |
 | `/park` | Quick idea parking with metadata | `/park "Add caching" -p 3` |
 | `/parked` | Manage parked ideas | `/parked promote xyz` |
@@ -34,16 +34,16 @@ Skills are auto-invoked based on conversation context. They complement the comma
 
 ## Command Reference
 
-### /plan - Task Decomposition
+### /decompose - Task Decomposition
 
 Decompose complex tasks into structured beads issues with explicit control.
 
 ```bash
-/plan "Add user authentication"                    # Full workflow
-/plan "Add caching" --epic "Performance"           # Create as epic
-/plan -p 1 "Critical security fix"                 # Set priority
-/plan --dry-run "Refactor database"                # Preview only
-/plan --quick --skip-questions "Simple task"       # Fast mode
+/decompose "Add user authentication"                    # Full workflow
+/decompose "Add caching" --epic "Performance"           # Create as epic
+/decompose -p 1 "Critical security fix"                 # Set priority
+/decompose --dry-run "Refactor database"                # Preview only
+/decompose --quick --skip-questions "Simple task"       # Fast mode
 ```
 
 **Arguments:**
@@ -260,7 +260,7 @@ Or add to your Claude Code settings.
 ### Planning New Work
 
 ```
-1. /plan "Add feature X"           # Decompose into issues
+1. /decompose "Add feature X"      # Decompose into issues
 2. bd ready                        # See what's available
 3. /task start <id>                # Start working
 4. /park "Related idea"            # Capture side thoughts
@@ -272,7 +272,7 @@ Or add to your Claude Code settings.
 
 ```
 1. /epic create "Auth System"      # Create epic
-2. /plan "..." --epic "Auth..."    # Add decomposed work
+2. /decompose "..." --epic "Auth..." # Add decomposed work
 3. /epic progress <id>             # Track progress
 4. /epic close <id>                # Close when done
 ```
@@ -293,7 +293,7 @@ task-decomposer/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── commands/
-│   ├── plan.md           # Task decomposition command
+│   ├── decompose.md      # Task decomposition command
 │   ├── task.md           # Single task operations
 │   ├── park.md           # Quick idea parking
 │   ├── parked.md         # Manage parked ideas
@@ -325,8 +325,11 @@ task-decomposer/
 
 ## Changelog
 
+### v1.3.0
+- **Breaking:** Renamed `/plan` command to `/decompose` to avoid conflict with Claude Code's built-in `/plan` command
+
 ### v1.2.0
-- Added 7 commands: `/plan`, `/task`, `/park`, `/parked`, `/backlog`, `/epic`, `/deps`
+- Added 7 commands: `/decompose`, `/task`, `/park`, `/parked`, `/backlog`, `/epic`, `/deps`
 - Commands provide explicit argument control complementing auto-invoked skills
 
 ### v1.1.0
