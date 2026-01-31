@@ -2,6 +2,54 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.1.8] - 2026-01-31
+
+### Changed
+
+- Rename commit skill to commit-action to avoid name collision
+
+The skill and command both had name "commit", causing the command's
+short description to appear in the system reminder instead of the
+skill's trigger phrases. This prevented auto-invocation when users
+said "commit the changes".
+
+Renamed skill to "commit-action" so both are distinctly visible
+and the skill's trigger phrase list is properly exposed.
+
+Fixes: claude-plugins-z9l
+
+### Fixed
+
+- Fix incorrect bd CLI flags in park and parked commands
+
+The bd CLI uses -l/--label (singular) not --labels (plural).
+Also fixed bd label remove syntax and added instructions
+for setting deferred status when updating existing issues.
+
+Files fixed:
+- commands/park.md - fixed --labels and added update flow
+- commands/parked.md - fixed --labels and label remove syntax
+- commands/task.md - fixed --labels
+- skills/park-idea.md - fixed --labels
+- skills/review-parked.md - fixed --labels and label remove
+- hooks/review-after-commit.md - fixed --labels
+
+Fixes: claude-plugins-1uw
+
+### Other
+
+- Simplify /release to unified marketplace versioning
+
+Remove plugin-specific tagging in favor of single marketplace version
+tags. Since Claude installs plugins via git SHA, individual plugin tags
+add no value - one marketplace version equals one snapshot of all
+plugins.
+
+Changes:
+- Remove plugin-name argument from /release command
+- Always release entire marketplace with single v{version} tag
+- Auto-sync plugin.json versions to marketplace.json during release
+- Simplify documentation and examples throughout
 ## [task-decomposer-v1.3.0] - 2026-01-31
 
 ### Changed
@@ -15,7 +63,21 @@ existing decompose skill and clearly describes the action.
 Changes:
 - Rename commands/plan.md to commands/decompose.md
 - Update all command references in README.md and epic.md
-- Bump version to 1.3.0 (breaking change)
+- Bump version to 1.3.0 (breaking change) by @jskswamy
+- Update CHANGELOG and README for task-decomposer-v1.3.0
+
+Document the /plan to /decompose rename in changelog.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
+
+### Other
+
+- Release task-decomposer v1.3.0
+
+Bump task-decomposer plugin version to 1.3.0 in marketplace.
+Update marketplace metadata version to 1.1.7.
+
+Breaking change: /plan command renamed to /decompose to avoid
+conflict with Claude Code's built-in /plan command. by @jskswamy
 ## [task-decomposer-v1.2.0] - 2026-01-29
 
 ### Added
@@ -772,6 +834,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.1.8]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.3.0..v1.1.8
 [task-decomposer-v1.3.0]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.2.0..task-decomposer-v1.3.0
 [task-decomposer-v1.2.0]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.1.0..task-decomposer-v1.2.0
 [task-decomposer-v1.1.0]: https://github.com/jskswamy/claude-plugins/compare/v1.0.2..task-decomposer-v1.1.0
