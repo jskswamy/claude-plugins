@@ -1,7 +1,7 @@
 ---
 name: release
-description: Release plugins with version bumping, changelog generation via git-cliff, and git tagging
-argument-hint: "[plugin-name] [--bump major|minor|patch] [--dry-run]"
+description: Release marketplace with version bumping, changelog generation via git-cliff, and git tagging
+argument-hint: "[--bump major|minor|patch] [--dry-run]"
 allowed-tools:
   - Read
   - Write
@@ -19,7 +19,9 @@ allowed-tools:
 
 # Release Command
 
-Release plugins or the entire marketplace with version bumping, changelog generation via git-cliff, and git tagging. Uses the `/commit` skill for consistent commit messages.
+Release the marketplace with version bumping, changelog generation via git-cliff, and git tagging. Uses the `/commit` skill for consistent commit messages.
+
+**Philosophy:** One tag = one snapshot of all plugins. The marketplace is released as a unit since Claude installs plugins via git SHA.
 
 ## Argument Parsing
 
@@ -27,18 +29,16 @@ Parse the command arguments to extract:
 
 | Argument | Short | Type | Default | Description |
 |----------|-------|------|---------|-------------|
-| `plugin-name` | | string | (all) | Specific plugin to release, or empty for full marketplace release |
 | `--bump` | `-b` | enum | `patch` | Version bump type: `major`, `minor`, or `patch` |
 | `--dry-run` | `-n` | boolean | `false` | Preview changes without committing or tagging |
 
 **Examples:**
 ```
-/release                           # Release all plugins, patch bump
-/release sketch-note               # Release specific plugin, patch bump
-/release devenv --bump minor       # Minor version bump for devenv
-/release -b major                  # Major release for entire marketplace
-/release jot --dry-run             # Preview jot release without changes
-/release -n -b minor               # Dry run with minor bump
+/release                    # Release marketplace, patch bump
+/release --bump minor       # Minor version bump
+/release -b major           # Major release
+/release --dry-run          # Preview changes without committing
+/release -n -b minor        # Dry run with minor bump
 ```
 
 ---
@@ -48,7 +48,6 @@ Parse the command arguments to extract:
 ### Step 1: Parse Arguments and Validate
 
 1. **Parse arguments:**
-   - First non-flag argument is `plugin-name` (optional)
    - `--bump` or `-b`: major, minor, patch (default: patch)
    - `--dry-run` or `-n`: boolean flag
 
@@ -76,20 +75,7 @@ Parse the command arguments to extract:
    ○ Cancel - Exit and commit changes first
    ```
 
-4. **Validate plugin (if specified):**
-   - Check if `plugins/<plugin-name>/.claude-plugin/plugin.json` exists
-   - If not found:
-     ```
-     Error: Plugin 'foo' not found.
-
-     Available plugins:
-       - devenv
-       - git-commit
-       - jot
-       - sketch-note
-     ```
-
-### Step 2: Read Current Versions
+### Step 2: Read Current Versions and Sync
 
 1. **Read marketplace.json:**
    ```bash
@@ -99,34 +85,32 @@ Parse the command arguments to extract:
    - `metadata.version` (marketplace version)
    - Each plugin's version from the `plugins` array
 
-2. **Read plugin.json files:**
-   For each plugin (or just the target plugin):
+2. **Read all plugin.json files:**
    ```bash
    cat plugins/<name>/.claude-plugin/plugin.json
    ```
+   For each plugin in the plugins directory.
 
 3. **Check version consistency:**
    Compare marketplace.json versions with plugin.json versions.
 
    If mismatch detected:
    ```
-   Warning: Version mismatch detected:
+   Version sync needed:
 
-   Plugin        marketplace.json    plugin.json
-   sketch-note   1.0.0               1.2.0          MISMATCH
+   Plugin           marketplace.json    plugin.json
+   task-decomposer  1.3.0               1.3.1          → will sync
+   git-commit       1.1.1               1.1.2          → will sync
 
-   What would you like to do?
-   ○ Sync marketplace to plugin versions (Recommended) - Update marketplace.json
-   ○ Cancel - Fix manually before releasing
+   These will be synced to marketplace.json during release.
    ```
 
-   If "Sync" selected, update marketplace.json to match plugin.json versions before proceeding.
+   Automatically sync marketplace.json to match plugin.json versions.
 
-### Step 3: Calculate New Versions
+### Step 3: Calculate New Marketplace Version
 
-1. **Determine base version:**
-   - For specific plugin: read from `plugins/<name>/.claude-plugin/plugin.json`
-   - For marketplace release: read from `.claude-plugin/marketplace.json` metadata.version
+1. **Get current marketplace version:**
+   Read from `.claude-plugin/marketplace.json` metadata.version
 
 2. **Apply semver bump:**
 
@@ -157,16 +141,17 @@ Display the release plan for confirmation:
 ```
 Release Plan
 
-Target:           sketch-note plugin
-Current Version:  1.2.0
-New Version:      1.3.0
-Bump Type:        minor
-Tag:              v1.3.0
+Marketplace Version:  1.1.7 → 1.1.8
+Tag:                  v1.1.8
+
+Plugin versions to sync:
+  - task-decomposer: 1.3.0 → 1.3.1
+  - git-commit: 1.1.1 → 1.1.2
 
 Files to be modified:
-  - plugins/sketch-note/.claude-plugin/plugin.json
   - .claude-plugin/marketplace.json
   - CHANGELOG.md
+  - README.md
 
 Proceed with release?
 ○ Yes, create release
@@ -177,7 +162,7 @@ Proceed with release?
 If "Show changelog preview" selected, proceed to Step 5 and return here after preview.
 
 **If `--dry-run` mode:**
-Display the plan and skip to Step 10 (Dry Run Summary).
+Display the plan and skip to Step 9 (Dry Run Summary).
 
 ### Step 5: Generate Changelog
 
@@ -195,34 +180,25 @@ Display the plan and skip to Step 10 (Dry Run Summary).
    ○ Cancel
    ```
 
-2. **Generate changelog for specific plugin:**
-   ```bash
-   git cliff --unreleased \
-     --include-path "plugins/<plugin-name>/**" \
-     --exclude-path "CHANGELOG.md" \
-     --tag "v<new-version>"
-   ```
-
-3. **Generate changelog for full marketplace release:**
+2. **Generate changelog for all changes since last tag:**
    ```bash
    git cliff --unreleased \
      --exclude-path "CHANGELOG.md" \
      --tag "v<new-version>"
    ```
 
-4. **Preview the generated changelog:**
+3. **Preview the generated changelog:**
    ```
-   Changelog Preview for v1.3.0:
+   Changelog Preview for v1.1.8:
 
    ────────────────────────────────────────────────────────────────────────
-   ## [1.3.0] - 2026-01-16
+   ## [1.1.8] - 2026-01-31
 
-   ### Added
-   - Add PNG export options to sketch-note plugin
-   - Add multiple output format support
+   ### Fixed
+   - Fix incorrect bd CLI flags in park and parked commands
 
    ### Changed
-   - Update default export settings
+   - Rename commit skill to commit-action to avoid name collision
    ────────────────────────────────────────────────────────────────────────
 
    Accept this changelog?
@@ -232,55 +208,29 @@ Display the plan and skip to Step 10 (Dry Run Summary).
    ○ Skip changelog update
    ```
 
-5. **If "Edit" selected:**
+4. **If "Edit" selected:**
    - Allow user to provide edited changelog text
    - Use the edited version
 
 ### Step 6: Update Version Files
 
-1. **Update plugin.json (if specific plugin release):**
-
-   Edit `plugins/<plugin-name>/.claude-plugin/plugin.json`:
-   - Update `"version": "<new-version>"`
-
-2. **Update marketplace.json:**
+1. **Update marketplace.json:**
 
    Edit `.claude-plugin/marketplace.json`:
-   - Update the specific plugin's version in the `plugins` array
-   - **Always** bump `metadata.version` (apply same bump type to marketplace version)
+   - Sync each plugin's version from their plugin.json
+   - Bump `metadata.version` to new version
 
-   For example, if releasing sketch-note with minor bump:
-   - `plugins[].version` for sketch-note: 1.2.0 → 1.3.0
-   - `metadata.version`: 1.1.0 → 1.2.0
-
-### Step 7: Write Changelog
-
-1. **Read existing CHANGELOG.md:**
-   ```bash
-   cat CHANGELOG.md
-   ```
-
-2. **Generate full changelog with the new version:**
+2. **Write changelog:**
    ```bash
    git cliff --tag "v<new-version>" -o CHANGELOG.md
    ```
 
-   Or for plugin-specific changes only, prepend the new section:
+3. **Update README documentation:**
    ```bash
-   git cliff --unreleased \
-     --include-path "plugins/<plugin-name>/**" \
-     --tag "v<new-version>" \
-     --prepend CHANGELOG.md
+   ./scripts/update-readme.sh
    ```
 
-### Step 7.5: Update README Documentation
-
-Regenerate the plugins section in README.md:
-```bash
-./scripts/update-readme.sh
-```
-
-### Step 8: Commit Changes (Two Commits)
+### Step 7: Commit Changes (Two Commits)
 
 **IMPORTANT:** Use the `/commit` skill for both commits to ensure consistent commit message style.
 
@@ -288,23 +238,21 @@ Regenerate the plugins section in README.md:
 
 1. **Stage version files:**
    ```bash
-   git add plugins/<plugin-name>/.claude-plugin/plugin.json
    git add .claude-plugin/marketplace.json
    ```
 
 2. **Invoke /commit skill:**
    ```
    Use Skill: git-commit:commit
-   Args: Release <plugin-name> v<new-version>
+   Args: Release v<new-version>
    ```
 
    Expected commit message (classic style):
    ```
-   Release sketch-note v1.3.0
+   Release v1.1.8
 
-   Bump sketch-note plugin version from 1.2.0 to 1.3.0.
-   Update marketplace registry with new version and bump
-   marketplace metadata version to 1.2.0.
+   Bump marketplace version from 1.1.7 to 1.1.8.
+   Sync plugin versions: task-decomposer 1.3.1, git-commit 1.1.2.
    ```
 
 #### Commit 2: Changelog and README
@@ -322,9 +270,9 @@ Regenerate the plugins section in README.md:
 
    Expected commit message:
    ```
-   Update CHANGELOG and README for v1.3.0
+   Update CHANGELOG and README for v1.1.8
 
-   Document all changes included in the v1.3.0 release.
+   Document all changes included in the v1.1.8 release.
    Regenerate plugins section in README from marketplace.json.
    ```
 
@@ -334,16 +282,11 @@ Regenerate the plugins section in README.md:
 - Makes it easier to revert if needed
 - Version bump commits are meaningful on their own
 
-### Step 9: Create Git Tag
+### Step 8: Create Git Tag
 
 1. **Create annotated tag:**
    ```bash
    git tag -a "v<new-version>" -m "Release v<new-version>"
-   ```
-
-   For plugin-specific release, include plugin name:
-   ```bash
-   git tag -a "v<new-version>" -m "Release <plugin-name> v<new-version>"
    ```
 
 2. **Verify tag was created:**
@@ -352,25 +295,24 @@ Regenerate the plugins section in README.md:
    git show "v<new-version>" --quiet
    ```
 
-### Step 10: Post-Release Summary
+### Step 9: Post-Release Summary
 
 **For successful release:**
 
 ```
 Release Complete!
 
-Plugin:       sketch-note
-Version:      1.3.0
-Tag:          v1.3.0
+Version:      1.1.8
+Tag:          v1.1.8
 
 Commits created:
-  abc1234 Release sketch-note v1.3.0
-  def5678 Update CHANGELOG for v1.3.0
+  abc1234 Release v1.1.8
+  def5678 Update CHANGELOG and README for v1.1.8
 
 Files modified:
-  - plugins/sketch-note/.claude-plugin/plugin.json
   - .claude-plugin/marketplace.json
   - CHANGELOG.md
+  - README.md
 
 Next steps:
 ○ Push changes and tag - git push && git push --tags
@@ -388,22 +330,26 @@ git push origin "v<new-version>"
 ```
 DRY RUN COMPLETE - No changes were made
 
-Would release: sketch-note v1.3.0
+Would release: v1.1.8
+
+Plugin versions to sync:
+  - task-decomposer: 1.3.0 → 1.3.1
+  - git-commit: 1.1.1 → 1.1.2
 
 Files that would be modified:
-  - plugins/sketch-note/.claude-plugin/plugin.json: 1.2.0 → 1.3.0
-  - .claude-plugin/marketplace.json: sketch-note 1.2.0 → 1.3.0, metadata 1.1.0 → 1.2.0
-  - CHANGELOG.md: prepend v1.3.0 section
+  - .claude-plugin/marketplace.json: metadata 1.1.7 → 1.1.8
+  - CHANGELOG.md: prepend v1.1.8 section
+  - README.md: regenerate plugins section
 
 Commits that would be created:
-  1. Release sketch-note v1.3.0
-  2. Update CHANGELOG for v1.3.0
+  1. Release v1.1.8
+  2. Update CHANGELOG and README for v1.1.8
 
 Tag that would be created:
-  v1.3.0
+  v1.1.8
 
 To perform this release, run:
-  /release sketch-note --bump minor
+  /release --bump patch
 ```
 
 ---
@@ -416,25 +362,14 @@ Error: Not a git repository.
 Run this command from within a git repository.
 ```
 
-### Plugin Not Found
-```
-Error: Plugin 'foo' not found.
-
-Available plugins:
-  - devenv (1.3.0)
-  - git-commit (1.1.1)
-  - jot (1.3.0)
-  - sketch-note (1.2.0)
-```
-
 ### Tag Already Exists
 ```
-Error: Tag v1.3.0 already exists.
+Error: Tag v1.1.8 already exists.
 
-The tag v1.3.0 was created on 2026-01-15.
+The tag v1.1.8 was created on 2026-01-15.
 To release this version, either:
-  - Choose a different version (--bump patch for v1.3.1)
-  - Delete the existing tag: git tag -d v1.3.0
+  - Choose a different version (--bump minor for v1.2.0)
+  - Delete the existing tag: git tag -d v1.1.8
 ```
 
 ### git-cliff Not Available
@@ -454,8 +389,8 @@ Error: Failed to create commit.
 
 The /commit skill encountered an error. You can:
   1. Review the staged changes: git status
-  2. Commit manually: git commit -m "Release <plugin> v<version>"
-  3. Retry the release: /release <plugin> --bump <type>
+  2. Commit manually: git commit -m "Release v<version>"
+  3. Retry the release: /release --bump <type>
 ```
 
 ### Recovery Instructions
@@ -473,17 +408,17 @@ To recover:
   git reset --hard HEAD~<N>  # Undo commits
   git tag -d v<version>      # Remove tag if created
 
-Then retry: /release <plugin> --bump <type>
+Then retry: /release --bump <type>
 ```
 
 ---
 
 ## Important Notes
 
+- **Unified versioning:** One marketplace version = one snapshot of all plugins
+- **Auto-sync:** Plugin versions from plugin.json are automatically synced to marketplace.json
 - **Two-commit workflow:** Version bumps and changelog are always in separate commits
-- **Marketplace version always bumps:** Any plugin release also bumps marketplace metadata.version
 - **Uses /commit skill:** All commits go through the git-commit plugin for consistent messages
 - **git-cliff required:** Changelog generation requires git-cliff (available via nix develop)
-- **Tag format:** Always `v<version>` (e.g., v1.3.0)
-- **Path filtering:** Plugin-specific releases only include commits touching that plugin's files
+- **Tag format:** Always `v<version>` (e.g., v1.1.8)
 - **Dry run is safe:** Use `--dry-run` to preview without any modifications
