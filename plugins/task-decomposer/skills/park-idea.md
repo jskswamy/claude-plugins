@@ -41,7 +41,7 @@ bd create "PARKED: {brief title from idea}" \
   -t task \
   -p 4 \
   --status deferred \
-  --labels "parked-idea" \
+  -l parked-idea \
   --description "## Idea
 {user's idea text}
 
@@ -86,7 +86,7 @@ Then **immediately** return focus to what the user was doing before.
 
 **Response:**
 ```bash
-bd create "PARKED: Add rate limiting to API" -t task -p 4 --status deferred --labels "parked-idea" --description "..."
+bd create "PARKED: Add rate limiting to API" -t task -p 4 --status deferred -l parked-idea --description "..."
 ```
 > Parked as claude-plugins-abc! Continuing...
 
@@ -110,5 +110,5 @@ bd create "PARKED: Use JSON schema for config validation" ...
 
 Users can review parked ideas with:
 - `/review-parked` - dedicated review skill
-- `bd list --status=deferred --labels=parked-idea` - direct command
+- `bd list --status=deferred -l parked-idea` - direct command
 - Automatic prompt after task commits (via hook)

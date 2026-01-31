@@ -34,7 +34,7 @@ If no task reference found, skip this hook silently.
 
 ```bash
 # List all parked ideas
-bd list --status=deferred --labels=parked-idea --json
+bd list --status=deferred -l parked-idea --json
 ```
 
 Filter for ideas that:

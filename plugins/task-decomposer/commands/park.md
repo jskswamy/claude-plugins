@@ -57,14 +57,15 @@ Silently gather context without prompting:
    - What file/code was being discussed
    - What triggered this idea (recent topic)
 
-### Step 3: Create Parked Issue
+### Step 3: Create or Update Parked Issue
 
+**If creating a new issue:**
 ```bash
 bd create "PARKED: {brief title from idea}" \
   -t task \
   -p {priority} \
   --status deferred \
-  --labels "{tags}" \
+  -l parked-idea \
   --description "## Idea
 {user's idea text}
 
@@ -73,6 +74,24 @@ Parked while working on: {task-id or 'no active task'}
 Triggered by: {what was being discussed}
 File context: {current file if any, or 'N/A'}"
 ```
+
+For additional tags, add multiple `-l` flags:
+```bash
+bd create ... -l parked-idea -l performance -l database
+```
+
+**If updating an existing related issue:**
+When you find an existing issue that matches the parked idea, you MUST:
+1. Add notes with the new context
+2. Set status to deferred
+3. Add the parked-idea label
+
+```bash
+bd update {existing-id} --status deferred --notes "{new context}"
+bd label add {existing-id} parked-idea
+```
+
+This ensures the issue appears in `/parked list`.
 
 ### Step 4: Link to Source Task (if applicable)
 

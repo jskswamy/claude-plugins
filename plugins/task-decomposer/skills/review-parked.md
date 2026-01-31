@@ -14,7 +14,7 @@ Help users review ideas they parked during work sessions and decide what to do w
 ### 1. Find Parked Ideas
 
 ```bash
-bd list --status=deferred --labels=parked-idea --json
+bd list --status=deferred -l parked-idea --json
 ```
 
 If no parked ideas exist:
@@ -62,7 +62,7 @@ Show full context:
 **Promote:**
 ```bash
 bd update {id} --status open
-bd update {id} --labels remove:parked-idea
+bd label remove {id} parked-idea
 # Optionally update title to remove "PARKED:" prefix
 bd update {id} --title "{title without PARKED: prefix}"
 ```
@@ -103,7 +103,7 @@ If user wants to handle all at once:
 **Discard all:**
 ```bash
 # Get all parked idea IDs
-bd list --status=deferred --labels=parked-idea --json | jq -r '.[].id'
+bd list --status=deferred -l parked-idea --json | jq -r '.[].id'
 # Delete each
 bd delete {id1} {id2} ...
 ```
@@ -117,7 +117,7 @@ If user asks about ideas from a specific task:
 
 ```bash
 # Find ideas that have dependency on specific task
-bd list --status=deferred --labels=parked-idea --json | \
+bd list --status=deferred -l parked-idea --json | \
   jq '.[] | select(.dependencies[]? | contains("{task-id}"))'
 ```
 

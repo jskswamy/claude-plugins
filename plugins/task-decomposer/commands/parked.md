@@ -50,7 +50,7 @@ List all parked ideas with filtering options.
 ### Execution
 
 ```bash
-bd list --status=deferred --labels=parked-idea --json
+bd list --status=deferred -l parked-idea --json
 ```
 
 **Brief format:**
@@ -97,7 +97,7 @@ Show ideas parked while working on a specific task.
 
 ```bash
 # Find ideas that have dependency on specific task
-bd list --status=deferred --labels=parked-idea --json | \
+bd list --status=deferred -l parked-idea --json | \
   jq '.[] | select(.dependencies[]? | contains("{task-id}"))'
 ```
 
@@ -148,10 +148,10 @@ Promote one or more parked ideas to real issues.
 
 For each ID:
 
-1. **Update status and labels:**
+1. **Update status and remove parked label:**
    ```bash
    bd update {id} --status open
-   bd update {id} --labels remove:parked-idea
+   bd label remove {id} parked-idea
    ```
 
 2. **Update title (remove PARKED: prefix):**
@@ -292,12 +292,12 @@ This invokes the review-parked skill for an interactive session.
 
 ### Promote all
 ```bash
-/parked promote $(bd list --status=deferred --labels=parked-idea --json | jq -r '.[].id' | tr '\n' ' ')
+/parked promote $(bd list --status=deferred -l parked-idea --json | jq -r '.[].id' | tr '\n' ' ')
 ```
 
 ### Discard all
 ```bash
-/parked discard --force $(bd list --status=deferred --labels=parked-idea --json | jq -r '.[].id' | tr '\n' ' ')
+/parked discard --force $(bd list --status=deferred -l parked-idea --json | jq -r '.[].id' | tr '\n' ' ')
 ```
 
 ---

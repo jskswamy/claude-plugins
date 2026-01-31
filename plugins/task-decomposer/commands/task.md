@@ -164,7 +164,7 @@ Close a completed task, optionally creating a commit with full context.
 
 3. **Check for parked ideas:**
    ```bash
-   bd list --status=deferred --labels=parked-idea --json | \
+   bd list --status=deferred -l parked-idea --json | \
      jq '.[] | select(.dependencies[]? | contains("{id}"))'
    ```
 
