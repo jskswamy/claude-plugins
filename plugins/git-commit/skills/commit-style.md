@@ -1,6 +1,6 @@
 ---
 name: commit-style
-description: Provides educational guidance on writing good git commit messages. Activates when users ASK QUESTIONS about commit message formats, styles, conventional commits, classic commits, atomic commit principles, or git best practices. Does NOT activate when users want to PERFORM a commit (use the commit skill instead).
+description: Provides educational guidance on writing good git commit messages. Activates when users ASK QUESTIONS about commit message formats, styles, conventional commits, classic commits, atomic commit principles, or git best practices. Does NOT activate when users want to PERFORM a commit (use the commit-action skill instead).
 ---
 
 # Git Commit Message Guidelines

@@ -1,5 +1,5 @@
 ---
-name: commit
+name: commit-action
 description: Triggers when user wants to PERFORM a git commit action. Activates on phrases like "commit these changes", "commit this", "let's commit", "make a commit", "create a commit", "commit my work", "commit the changes", "time to commit", "ready to commit", "commit what I've done", "save my changes" (git context), "commit for me", "do the commit", "commit now", "go ahead and commit", "please commit", "can you commit", "would you commit"
 ---
 
