@@ -2,6 +2,20 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [task-decomposer-v1.3.0] - 2026-01-31
+
+### Changed
+
+- Rename /plan to /decompose to avoid built-in command conflict
+
+The /plan command conflicted with Claude Code's built-in /plan command
+which enters plan mode. Renamed to /decompose which aligns with the
+existing decompose skill and clearly describes the action.
+
+Changes:
+- Rename commands/plan.md to commands/decompose.md
+- Update all command references in README.md and epic.md
+- Bump version to 1.3.0 (breaking change)
 ## [task-decomposer-v1.2.0] - 2026-01-29
 
 ### Added
@@ -37,7 +51,7 @@ Changes:
 
 The template extracts features from plugin READMEs (bold bullets or
 numbered headings) and falls back to marketplace tags. Usage examples
-are extracted from the first code block in each plugin's Usage section.
+are extracted from the first code block in each plugin's Usage section. by @jskswamy
 - Add beads viewer setup and agent instructions
 
 Configure gitignore for .bv/ directory (beads viewer local config and
@@ -48,7 +62,7 @@ The AGENTS.md additions cover:
 - Workflow pattern (ready → claim → work → complete → sync)
 - Key concepts (dependencies, priority, types, blocking)
 - Session close protocol checklist
-- Best practices for issue tracking
+- Best practices for issue tracking by @jskswamy
 - Add commands to task-decomposer plugin
 
 Add 7 explicit commands to complement existing auto-invoked skills:
@@ -64,7 +78,22 @@ Commands follow kubectl/unix conventions with noun-verb patterns and
 provide explicit argument control for workflows that skills handle
 automatically.
 
-Bump version to 1.2.0.
+Bump version to 1.2.0. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG and README for task-decomposer-v1.2.0
+
+Document all changes included in the v1.2.0 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
+
+### Other
+
+- Release task-decomposer v1.2.0
+
+Sync marketplace.json with plugin.json version 1.2.0 which added
+7 commands to complement auto-invoked skills. Bump marketplace
+metadata version to 1.1.6. by @jskswamy
 ## [task-decomposer-v1.1.0] - 2026-01-29
 
 ### Added
@@ -743,6 +772,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[task-decomposer-v1.3.0]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.2.0..task-decomposer-v1.3.0
 [task-decomposer-v1.2.0]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.1.0..task-decomposer-v1.2.0
 [task-decomposer-v1.1.0]: https://github.com/jskswamy/claude-plugins/compare/v1.0.2..task-decomposer-v1.1.0
 [1.0.2]: https://github.com/jskswamy/claude-plugins/compare/v1.3.1..v1.0.2
