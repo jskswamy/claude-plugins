@@ -57,3 +57,9 @@ plugin-name/
 ├── hooks/               # Event handlers (*.md files)
 └── README.md            # Plugin documentation
 ```
+
+## Git Commits
+
+Always use the `/commit` command instead of `git commit` directly. The
+`/commit` plugin provides atomic commit validation, intelligent message
+generation from conversation context, and style enforcement.

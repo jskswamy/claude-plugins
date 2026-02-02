@@ -281,12 +281,30 @@ The plugin uses PreToolUse hooks to intercept direct git commits:
 
 ```
 hooks/
-├── hooks.json              # Hook configuration
-├── intercept-mcp-commit.md # Blocks MCP git_commit tool
-└── intercept-bash-commit.md # Blocks bash git commit commands
+├── hooks.json                          # Hook configuration
+├── scripts/
+│   └── intercept-git-commit.sh         # Deterministic bash pattern matching
+├── intercept-mcp-commit.md             # Blocks MCP git_commit tool
+└── intercept-bash-commit.md            # (Legacy) Prompt-based interception
 ```
 
+**Hook types:**
+- **Command hook (v1.2.0+):** Uses deterministic bash pattern matching for reliable `git commit` detection
+- **Prompt hook:** Uses LLM evaluation for MCP tool interception
+
 **Why hooks?** Even with the intent-based skill, Claude might decide to commit directly using git tools. The hooks ensure ALL commits go through the plugin workflow.
+
+### CLAUDE.md Integration
+
+When `/commit` runs, it checks if your project's CLAUDE.md includes instructions to use the commit plugin. If not, it offers to add:
+
+```markdown
+## Git Commits
+
+Always use the `/commit` command instead of `git commit` directly.
+```
+
+This helps ensure agents use the plugin workflow for future sessions.
 
 ### Styles
 
@@ -303,6 +321,26 @@ styles/
 - [How to Write a Git Commit Message](https://cbea.ms/git-commit/) - The 7 rules
 - [Conventional Commits](https://www.conventionalcommits.org/) - Specification
 - [Atomic Git Commits](https://www.aleksandrhovhannisyan.com/blog/atomic-git-commits/) - Best practices
+
+## Changelog
+
+### v1.2.0
+- **Fix:** Replace unreliable prompt-based Bash hook with deterministic command hook
+  - Prompt-based hooks were non-deterministic (LLM evaluation varied between calls)
+  - New command hook uses bash pattern matching for reliable `git commit` detection
+- **Feature:** Auto-add CLAUDE.md instructions on first use
+  - When `/commit` runs, offers to add instructions to project's CLAUDE.md
+  - Helps ensure agents use the plugin in future sessions
+- **Improvement:** Better hook architecture documentation
+
+### v1.1.0
+- Added commit interception hooks (PreToolUse)
+- Added session context awareness for commit message generation
+
+### v1.0.0
+- Initial release with classic and conventional commit styles
+- Atomic commit validation
+- Pair programming support
 
 ## License
 

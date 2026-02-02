@@ -15,8 +15,9 @@
         "matcher": "Bash",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "${CLAUDE_PLUGIN_ROOT}/hooks/intercept-bash-commit.md"
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/intercept-git-commit.sh",
+            "timeout": 5000
           }
         ]
       }

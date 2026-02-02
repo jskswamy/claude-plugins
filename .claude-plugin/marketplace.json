@@ -34,7 +34,7 @@
     {
       "name": "git-commit",
       "description": "Generate intelligent git commit messages with classic or conventional commit style support, strict atomic commit validation, and session context awareness",
-      "version": "1.1.2",
+      "version": "1.2.0",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
