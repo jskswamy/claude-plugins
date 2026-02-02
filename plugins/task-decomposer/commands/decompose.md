@@ -23,7 +23,8 @@ Parse the command arguments:
 | Argument | Short | Type | Default | Description |
 |----------|-------|------|---------|-------------|
 | `task-description` | | string | (prompt) | The task to decompose |
-| `--epic` | `-e` | string | (none) | Create as epic with this title |
+| `--epic` | `-e` | string | (none) | Create as single epic with this title |
+| `--epics` | | string | (none) | Create multiple epics (comma-separated titles) |
 | `--priority` | `-p` | number | 2 | Default priority (0-4) |
 | `--skip-questions` | `-q` | boolean | false | Skip clarifying questions |
 | `--dry-run` | `-d` | boolean | false | Preview without creating |
@@ -36,7 +37,13 @@ Parse the command arguments:
 /decompose -e "Auth System" -p 1 "Implement OAuth2 login"
 /decompose --dry-run "Refactor database layer"
 /decompose --quick "Add logout button"
+
+# Multi-epic decomposition
+/decompose "Build payment system" --epics "Payment UI,Payment Backend,Payment Security"
+/decompose "Full-stack feature" --epics "Frontend Components,API Endpoints,Database Schema"
 ```
+
+**Note:** `--epic` and `--epics` are mutually exclusive. Use `--epic` for a single epic, `--epics` for multiple.
 
 ---
 
@@ -107,26 +114,36 @@ If `--quick` flag is set, skip confirmations and proceed directly.
 Break the task into logical work units:
 
 1. **Determine hierarchy:**
-   - If `--epic` flag provided, create epic with that title
-   - Otherwise, determine if epic is needed based on scope
-   - Break into 3-7 tasks (avoid over-decomposition)
+   - If `--epic` flag provided, create single epic with that title
+   - If `--epics` flag provided, create multiple epics from comma-separated list
+   - Otherwise, determine if epic(s) needed based on scope:
+     - Analyze tasks for natural theme clusters
+     - Suggest single epic, multiple epics, or no epic
+   - Break into 3-7 tasks per epic (avoid over-decomposition)
 
-2. **Map dependencies:**
+2. **Group tasks into epics** (when multiple epics):
+   - Assign each task to its most relevant epic
+   - Tasks can be standalone if they don't fit any epic
+   - Present grouping for user confirmation
+
+3. **Map dependencies:**
    - What must complete before what?
    - What can be done in parallel?
+   - Cross-epic dependencies are supported
 
-3. **Define acceptance criteria** for each task:
+4. **Define acceptance criteria** for each task:
    - Specific and testable
    - Clear definition of "done"
 
-4. **Apply priority:**
+5. **Apply priority:**
    - Use `--priority` value as default
    - Adjust individual tasks if some are clearly higher/lower
 
-5. **Draft design approach** for significant tasks
+6. **Draft design approach** for significant tasks
 
 ### Step 5: Present Decomposition Preview
 
+**Single epic format:**
 ```
 ## Decomposition Preview
 
@@ -145,12 +162,40 @@ Break the task into logical work units:
    ...
 
 ### Dependency Graph:
-```
 {epic}
   ├── Task 1 (no deps)
   ├── Task 2 (no deps)
   └── Task 3 → depends on Task 1, Task 2
 ```
+
+**Multi-epic format:**
+```
+## Decomposition Preview
+
+### Epic 1: {title} (P{priority})
+{description}
+
+Tasks:
+1. **{task title}** (P{priority})
+   - Description: {what}
+   - Design: {how}
+   - Acceptance: {criteria}
+
+### Epic 2: {title} (P{priority})
+{description}
+
+Tasks:
+1. **{task title}** (P{priority})
+   - Description: {what}
+   - Dependencies: Epic 1 > Task 1
+
+### Dependency Graph:
+Epic 1: {title}
+  ├── Task 1.1 (no deps)
+  └── Task 1.2 (no deps)
+
+Epic 2: {title}
+  └── Task 2.1 → depends on Epic 1, Task 1.1
 ```
 
 ### Step 6: Handle --dry-run or Proceed to Creation
@@ -160,7 +205,7 @@ If `--dry-run` is set:
 (Dry run - no issues will be created)
 
 The above decomposition would create:
-- 1 epic
+- {X} epic(s)
 - {N} tasks
 - {M} dependency relationships
 
@@ -192,6 +237,7 @@ The agent will:
 
 ### Step 8: Report Results
 
+**Single epic:**
 ```
 ## Created Issues
 
@@ -199,6 +245,23 @@ The agent will:
   - Task: {id} - {title}
   - Task: {id} - {title} (depends on {id})
   ...
+
+Run `bd ready` to see what's available to work on.
+```
+
+**Multi-epic:**
+```
+## Created Issues
+
+- Epic: {id} - {title}
+  - Task: {id} - {title}
+  - Task: {id} - {title}
+
+- Epic: {id} - {title}
+  - Task: {id} - {title} (depends on {other-epic-task-id})
+
+- Standalone:
+  - Task: {id} - {title}
 
 Run `bd ready` to see what's available to work on.
 ```
@@ -236,6 +299,17 @@ Error: Invalid priority "{value}". Priority must be 0-4.
 - P2: Medium priority (default)
 - P3: Low priority
 - P4: Backlog
+```
+
+### Conflicting epic flags
+```
+Error: Cannot use both --epic and --epics flags.
+
+Use --epic for a single epic:
+  /decompose "task" --epic "Epic Title"
+
+Use --epics for multiple epics (comma-separated):
+  /decompose "task" --epics "Epic 1,Epic 2,Epic 3"
 ```
 
 ### Beads not initialized

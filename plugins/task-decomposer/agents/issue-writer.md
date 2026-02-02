@@ -17,24 +17,29 @@ You are an agent that creates beads issues from an approved decomposition plan. 
 ## Input
 
 You receive an approved decomposition plan containing:
-- Optional epic with title, description, design, acceptance criteria, priority
+- Optional epic(s) with title, description, design, acceptance criteria, priority
+  - Can be zero, one, or multiple epics
+  - Each task indicates which epic it belongs to (if any)
 - Tasks with titles, descriptions, designs, acceptance criteria, priorities, and dependency relationships
-- The dependency graph showing what depends on what
+- Standalone tasks (not belonging to any epic)
+- The dependency graph showing what depends on what (including cross-epic dependencies)
 
 ## Execution Strategy
 
 ### 1. Parse the Plan
 
 Extract from the input:
-- Epic details (if any)
-- List of tasks with their details
-- Dependency map (task X depends on task Y)
+- Epic details (zero, one, or multiple)
+- For each epic: list of tasks that belong to it
+- Standalone tasks (not belonging to any epic)
+- Dependency map (task X depends on task Y, including cross-epic dependencies)
 
 ### 2. Determine Creation Order
 
-1. **Epic first** (if present) - becomes parent for tasks
-2. **Independent tasks** - tasks with no dependencies
+1. **All epics first** (if present) - each becomes parent for its tasks
+2. **Independent tasks** - tasks with no dependencies, grouped by their parent epic
 3. **Dependent tasks** - in topological order (dependencies created first)
+4. **Dependencies last** - including cross-epic dependencies
 
 ### 3. Create Issues
 
@@ -110,18 +115,25 @@ bd dep add {task-3-id} {task-1-id}
 
 ### 6. Track Created IDs
 
-Maintain a mapping of plan items to created issue IDs:
+Maintain a mapping of plan items to created issue IDs, grouped by epic:
 ```
-Epic "Implement Auth" → claude-plugins-abc
-Task "Add login endpoint" → claude-plugins-def
-Task "Add logout endpoint" → claude-plugins-ghi
-Task "Write auth tests" → claude-plugins-jkl (depends on def, ghi)
+Epic "Payment UI" → claude-plugins-abc
+  Task "Build checkout form" → claude-plugins-def
+  Task "Add payment icons" → claude-plugins-ghi
+
+Epic "Payment Backend" → claude-plugins-jkl
+  Task "Create payment API" → claude-plugins-mno
+  Task "Add Stripe integration" → claude-plugins-pqr (depends on mno)
+
+Standalone:
+  Task "Update docs" → claude-plugins-stu (depends on pqr)
 ```
 
 ### 7. Report Results
 
 After all issues are created:
 
+**Single epic:**
 ```
 ## Created Issues
 
@@ -138,6 +150,39 @@ claude-plugins-abc (Epic)
 ├── claude-plugins-def (no deps)
 ├── claude-plugins-ghi (no deps)
 └── claude-plugins-jkl → depends on def, ghi
+
+Run `bd ready` to see what's available to work on.
+Run `bd show {id}` to see full details of any issue.
+```
+
+**Multi-epic:**
+```
+## Created Issues
+
+**Epic 1:** claude-plugins-abc - Payment UI
+- claude-plugins-def - Build checkout form (P2)
+- claude-plugins-ghi - Add payment icons (P2)
+
+**Epic 2:** claude-plugins-jkl - Payment Backend
+- claude-plugins-mno - Create payment API (P2)
+- claude-plugins-pqr - Add Stripe integration (P2)
+  └── depends on: claude-plugins-mno
+
+**Standalone:**
+- claude-plugins-stu - Update docs (P3)
+  └── depends on: claude-plugins-pqr (cross-epic)
+
+**Dependency Graph:**
+Epic 1: Payment UI (claude-plugins-abc)
+├── claude-plugins-def (no deps)
+└── claude-plugins-ghi (no deps)
+
+Epic 2: Payment Backend (claude-plugins-jkl)
+├── claude-plugins-mno (no deps)
+└── claude-plugins-pqr → depends on mno
+
+Standalone:
+└── claude-plugins-stu → depends on pqr (cross-epic)
 
 Run `bd ready` to see what's available to work on.
 Run `bd show {id}` to see full details of any issue.

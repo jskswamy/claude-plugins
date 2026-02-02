@@ -40,20 +40,27 @@ Decompose complex tasks into structured beads issues with explicit control.
 
 ```bash
 /decompose "Add user authentication"                    # Full workflow
-/decompose "Add caching" --epic "Performance"           # Create as epic
+/decompose "Add caching" --epic "Performance"           # Create as single epic
 /decompose -p 1 "Critical security fix"                 # Set priority
 /decompose --dry-run "Refactor database"                # Preview only
 /decompose --quick --skip-questions "Simple task"       # Fast mode
+
+# Multi-epic decomposition
+/decompose "Build payment system" --epics "Payment UI,Payment Backend,Payment Security"
+/decompose "Full-stack feature" --epics "Frontend,API,Database"
 ```
 
 **Arguments:**
 | Flag | Short | Description |
 |------|-------|-------------|
-| `--epic` | `-e` | Create as epic with title |
+| `--epic` | `-e` | Create as single epic with title |
+| `--epics` | | Create multiple epics (comma-separated titles) |
 | `--priority` | `-p` | Default priority 0-4 |
 | `--skip-questions` | `-q` | Skip clarifying questions |
 | `--dry-run` | `-d` | Preview without creating |
 | `--quick` | | No confirmations |
+
+**Note:** `--epic` and `--epics` are mutually exclusive.
 
 ### /task - Single Task Operations
 
@@ -277,6 +284,26 @@ Or add to your Claude Code settings.
 4. /epic close <id>                # Close when done
 ```
 
+### Multi-Epic Decomposition
+
+When work spans multiple themes or areas, decompose into multiple epics:
+
+```
+# Explicit multi-epic
+/decompose "Build payment system" --epics "Payment UI,Payment Backend,Payment Security"
+
+# Auto-detected grouping (no flags)
+/decompose "Implement full-stack authentication with OAuth, UI components, and security hardening"
+# → Suggests: Epic 1: "Auth UI", Epic 2: "Auth Backend", Epic 3: "Security"
+# → You can accept, adjust, or flatten to single epic
+```
+
+**Auto-grouping detection:**
+- Analyzes task descriptions for theme keywords (UI, backend, security, etc.)
+- Groups tasks with 2+ related items into epics
+- Presents suggestions for user confirmation
+- Handles cross-epic dependencies correctly
+
 ### Understanding Dependencies
 
 ```
@@ -324,6 +351,14 @@ task-decomposer/
 - **Visualize with /deps graph**: Understand the big picture
 
 ## Changelog
+
+### v1.4.0
+- **Feature:** Multi-epic support in `/decompose` command
+  - New `--epics` flag for explicit multi-epic decomposition (comma-separated titles)
+  - Auto-grouping heuristics detect when multiple epics are appropriate
+  - Theme-based task clustering (UI, backend, security, testing, etc.)
+  - Cross-epic dependency support
+  - Updated issue-writer agent for multi-epic creation
 
 ### v1.3.0
 - **Breaking:** Renamed `/plan` command to `/decompose` to avoid conflict with Claude Code's built-in `/plan` command
