@@ -2,6 +2,50 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.2.0] - 2026-02-02
+
+### Added
+
+- Add multi-epic support to task-decomposer
+
+Enable decomposition to create multiple epics when breaking down
+complex work that spans multiple themes or areas. Previously limited
+to creating at most one epic per decomposition.
+
+Changes:
+- Add --epics flag for explicit multi-epic specification (comma-sep)
+- Add auto-grouping heuristics with theme detection keywords
+- Update issue-writer agent to handle multiple epics and cross-epic
+  dependencies
+- Update decomposition preview format for multi-epic output
+- Bump version to 1.4.0
+
+The auto-grouping feature analyzes task descriptions for common
+themes (UI, backend, security, etc.) and suggests epic groupings
+when tasks naturally cluster together.
+
+Closes: claude-plugins-4j4 by @jskswamy
+
+### Fixed
+
+- Fix unreliable commit interception with deterministic hook
+
+The prompt-based PreToolUse hook for intercepting git commit commands
+was non-deterministic - LLM evaluation varied between calls, sometimes
+blocking unrelated commands while allowing actual git commits through.
+
+Changes:
+- Replace prompt hook with command hook using bash pattern matching
+- Add intercept-git-commit.sh script for reliable git commit detection
+- Add Step 1b to /commit command: check CLAUDE.md for commit
+  instructions and offer to add them on first use
+- Update README with changelog and new hook architecture docs
+- Bump version to 1.2.0
+
+The CLAUDE.md integration helps ensure agents use /commit in future
+sessions by adding explicit instructions to the project configuration.
+
+Closes: claude-plugins-qy5 by @jskswamy
 ## [1.1.8] - 2026-01-31
 
 ### Changed
@@ -16,7 +60,11 @@ said "commit the changes".
 Renamed skill to "commit-action" so both are distinctly visible
 and the skill's trigger phrase list is properly exposed.
 
-Fixes: claude-plugins-z9l
+Fixes: claude-plugins-z9l by @jskswamy
+- Update CHANGELOG and README for v1.1.8
+
+Document all changes included in the v1.1.8 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
 
 ### Fixed
 
@@ -34,7 +82,7 @@ Files fixed:
 - skills/review-parked.md - fixed --labels and label remove
 - hooks/review-after-commit.md - fixed --labels
 
-Fixes: claude-plugins-1uw
+Fixes: claude-plugins-1uw by @jskswamy
 
 ### Other
 
@@ -49,7 +97,11 @@ Changes:
 - Remove plugin-name argument from /release command
 - Always release entire marketplace with single v{version} tag
 - Auto-sync plugin.json versions to marketplace.json during release
-- Simplify documentation and examples throughout
+- Simplify documentation and examples throughout by @jskswamy
+- Release v1.1.8
+
+Bump marketplace version from 1.1.7 to 1.1.8.
+Sync plugin versions: task-decomposer 1.3.1, git-commit 1.1.2. by @jskswamy
 ## [task-decomposer-v1.3.0] - 2026-01-31
 
 ### Changed
@@ -834,6 +886,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.2.0]: https://github.com/jskswamy/claude-plugins/compare/v1.1.8..v1.2.0
 [1.1.8]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.3.0..v1.1.8
 [task-decomposer-v1.3.0]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.2.0..task-decomposer-v1.3.0
 [task-decomposer-v1.2.0]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.1.0..task-decomposer-v1.2.0
