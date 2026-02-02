@@ -154,11 +154,11 @@ Generate visual sketch notes in Excalidraw format from conversations, code archi
 Transform complex tasks into structured beads issues with proper dependencies, capture ideas without breaking flow, and create rich commit messages
 
 **Features:**
-- Beads
-- Planning
-- Decomposition
-- Issues
-- Epic
+- Task Decomposition: Break down complex work into structured beads issues with dependencies and acceptance criteria
+- Multi-Epic Support: Create multiple epics per decomposition with auto-grouping based on themes
+- Idea Parking: Capture side thoughts without breaking flow, review and promote later
+- Backlog Dashboard: View all work with filters for ready, blocked, priorities, and epic progress
+- Dependency Management: Visualize and manage task dependencies with tree and mermaid formats
 
 **Install:**
 ```
@@ -167,7 +167,12 @@ Transform complex tasks into structured beads issues with proper dependencies, c
 
 **Usage:**
 ```
-/taskdecomposer
+/decompose "Add user authentication"                    # Full workflow
+/decompose "Add caching" --epic "Performance"           # Create as single epic
+/decompose --epics "Frontend,Backend" "Full-stack"      # Multi-epic
+/task start abc123                                      # Start working on task
+/park "Consider rate limiting"                          # Park an idea
+/backlog ready                                          # See ready tasks
 ```
 
 [View documentation](./plugins/task-decomposer/README.md)
@@ -178,11 +183,11 @@ Transform complex tasks into structured beads issues with proper dependencies, c
 Generate beautiful PDF/HTML shareable notes using Typst with 7 professional templates, infographics, and modern typography
 
 **Features:**
-- Typst
-- Pdf
-- Html
-- Notes
-- Templates
+- 7 Professional Templates: Executive summary, cheat sheet, sketchnote, meeting minutes, study guide, technical brief, portfolio
+- Multiple Themes: Light, dark, minimal, and vibrant color schemes
+- Auto Infographics: CeTZ charts, Fletcher flowcharts, Pintorita sequence diagrams
+- Multi-Format Output: Generate PDF, HTML, or both from the same source
+- Jot Integration: Publish your jot captures directly as beautiful documents
 
 **Install:**
 ```

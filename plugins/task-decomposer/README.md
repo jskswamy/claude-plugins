@@ -4,6 +4,25 @@ Transform complex tasks into well-structured beads issues through a thoughtful w
 
 ## Features
 
+- **Task Decomposition:** Break down complex work into structured beads issues with dependencies and acceptance criteria
+- **Multi-Epic Support:** Create multiple epics per decomposition with auto-grouping based on themes
+- **Idea Parking:** Capture side thoughts without breaking flow, review and promote later
+- **Backlog Dashboard:** View all work with filters for ready, blocked, priorities, and epic progress
+- **Dependency Management:** Visualize and manage task dependencies with tree and mermaid formats
+
+## Usage
+
+```bash
+/decompose "Add user authentication"                    # Full workflow
+/decompose "Add caching" --epic "Performance"           # Create as single epic
+/decompose --epics "Frontend,Backend" "Full-stack"      # Multi-epic
+/task start abc123                                      # Start working on task
+/park "Consider rate limiting"                          # Park an idea
+/backlog ready                                          # See ready tasks
+```
+
+## Commands and Skills
+
 ### Commands
 
 Commands provide explicit entry points with argument control. Use these when you want direct control over the workflow.

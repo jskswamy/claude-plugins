@@ -2,6 +2,14 @@
 
 Generate beautiful PDF/HTML shareable notes using [Typst](https://typst.app) with 7 professional templates, infographics support, and modern typography.
 
+## Features
+
+- **7 Professional Templates:** Executive summary, cheat sheet, sketchnote, meeting minutes, study guide, technical brief, portfolio
+- **Multiple Themes:** Light, dark, minimal, and vibrant color schemes
+- **Auto Infographics:** CeTZ charts, Fletcher flowcharts, Pintorita sequence diagrams
+- **Multi-Format Output:** Generate PDF, HTML, or both from the same source
+- **Jot Integration:** Publish your jot captures directly as beautiful documents
+
 ## Installation
 
 ```bash
