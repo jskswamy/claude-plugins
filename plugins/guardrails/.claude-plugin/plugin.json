@@ -1,0 +1,20 @@
+{
+  "name": "guardrails",
+  "version": "1.0.0",
+  "description": "Efficiency guardrails for Claude - IDE refactoring handoff, extensible to security, cost, and testing patterns",
+  "author": {
+    "name": "Krishnaswamy Subramanian",
+    "email": "jskswamy@gmail.com"
+  },
+  "keywords": [
+    "guardrails",
+    "refactoring",
+    "ide",
+    "efficiency",
+    "handoff",
+    "intellij",
+    "goland",
+    "vscode",
+    "semantic-refactoring"
+  ]
+}

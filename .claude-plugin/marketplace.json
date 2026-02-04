@@ -137,6 +137,28 @@
         "parking",
         "commit"
       ]
+    },
+    {
+      "name": "guardrails",
+      "description": "Efficiency guardrails for Claude - IDE refactoring handoff with automatic pattern detection, extensible to security, cost, and testing patterns",
+      "version": "1.0.0",
+      "author": {
+        "name": "Krishnaswamy Subramanian"
+      },
+      "source": "./plugins/guardrails",
+      "category": "workflow",
+      "tags": [
+        "guardrails",
+        "refactoring",
+        "ide",
+        "efficiency",
+        "handoff",
+        "intellij",
+        "goland",
+        "vscode",
+        "semantic-refactoring",
+        "ast"
+      ]
     }
   ]
 }
