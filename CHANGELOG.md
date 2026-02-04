@@ -2,6 +2,62 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.3.0] - 2026-02-04
+
+### Added
+
+- Add guardrails plugin for IDE refactoring handoff
+
+New plugin that provides efficiency guardrails, starting with IDE
+refactoring handoff. IDEs use AST-based semantic refactoring (instant,
+atomic, accurate) while AI uses text-based pattern matching (slower,
+sequential). This plugin teaches Claude when to delegate structural
+changes to the user's IDE.
+
+Components:
+- Background knowledge skill (ide-handoff.md) - primary mechanism where
+  Claude self-regulates based on understanding refactoring patterns
+- Safety net hook - detects repeated edit patterns (3+ identical
+  substitutions) and suggests handoff
+- /handoff command - generates IDE-specific instructions for IntelliJ/
+  GoLand and VSCode
+- Templates for both IDE families with keyboard shortcuts
+
+Triggers handoff for: package moves, cross-file renames, signature
+changes, interface extraction, any 10+ file coordinated structural
+change.
+
+Extensible design allows adding future guardrails for security, cost
+awareness, and testing patterns. by @jskswamy
+
+### Fixed
+
+- Fix README template extraction for task-decomposer and typst-notes
+
+The gomplate template extracts features using bold bullet patterns like
+"- **Feature:** description". Both plugins had formats that didn't match:
+
+- task-decomposer: Used tables and subsection headers instead of bullets
+- typst-notes: Missing the ## Features section entirely
+
+This caused the README generator to fall back to marketplace.json tags,
+displaying keyword-only features ("Beads", "Typst") instead of real
+descriptions. task-decomposer also showed wrong usage "/taskdecomposer"
+instead of "/decompose".
+
+Changes:
+- Add ## Features section with bold bullets to both plugin READMEs
+- Add ## Usage section with /decompose examples to task-decomposer
+- Regenerate main README.md via update-readme.sh by @jskswamy
+
+### Other
+
+- Release v1.3.0
+
+Bump marketplace version from 1.2.0 to 1.3.0.
+
+New plugin: guardrails v1.0.0 - IDE refactoring handoff with automatic
+pattern detection.
 ## [1.2.0] - 2026-02-02
 
 ### Added
@@ -26,6 +82,13 @@ when tasks naturally cluster together.
 
 Closes: claude-plugins-4j4 by @jskswamy
 
+### Changed
+
+- Update CHANGELOG and README for v1.2.0
+
+Document all changes included in the v1.2.0 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
+
 ### Fixed
 
 - Fix unreliable commit interception with deterministic hook
@@ -46,6 +109,13 @@ The CLAUDE.md integration helps ensure agents use /commit in future
 sessions by adding explicit instructions to the project configuration.
 
 Closes: claude-plugins-qy5 by @jskswamy
+
+### Other
+
+- Release v1.2.0
+
+Bump marketplace version from 1.1.8 to 1.2.0.
+Plugin versions: task-decomposer 1.4.0, git-commit 1.2.0. by @jskswamy
 ## [1.1.8] - 2026-01-31
 
 ### Changed
@@ -886,6 +956,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.3.0]: https://github.com/jskswamy/claude-plugins/compare/v1.2.0..v1.3.0
 [1.2.0]: https://github.com/jskswamy/claude-plugins/compare/v1.1.8..v1.2.0
 [1.1.8]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.3.0..v1.1.8
 [task-decomposer-v1.3.0]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.2.0..task-decomposer-v1.3.0

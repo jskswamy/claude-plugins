@@ -93,6 +93,30 @@ Generate intelligent git commit messages with classic or conventional commit sty
 [View documentation](./plugins/git-commit/README.md)
 
 
+### guardrails
+
+Efficiency guardrails for Claude - IDE refactoring handoff with automatic pattern detection, extensible to security, cost, and testing patterns
+
+**Features:**
+- Guardrails
+- Refactoring
+- Ide
+- Efficiency
+- Handoff
+
+**Install:**
+```
+/plugin install guardrails@claude-plugins
+```
+
+**Usage:**
+```
+/handoff
+```
+
+[View documentation](./plugins/guardrails/README.md)
+
+
 ### jot
 
 Quick, low-friction capture of notes, tasks, ideas, session summaries, tech radar blips, and Feynman-style teaching notes with Obsidian-style auto-linking
