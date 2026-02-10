@@ -594,9 +594,13 @@ Based on user selection:
 
 **Creating the commit:**
 
+The `__GIT_COMMIT_PLUGIN__=1` prefix bypasses the PreToolUse hook that
+blocks direct `git commit` commands. This token is recognized by the
+hook script to allow commits originating from this plugin workflow.
+
 ```bash
 # Standard commit (no co-author)
-git commit -m "$(cat <<'EOF'
+__GIT_COMMIT_PLUGIN__=1 git commit -m "$(cat <<'EOF'
 Subject line here
 
 Body text here, wrapped at 72 characters as required by
@@ -605,7 +609,7 @@ EOF
 )"
 
 # Only if --pair flag was used and human co-author was selected:
-git commit -m "$(cat <<'EOF'
+__GIT_COMMIT_PLUGIN__=1 git commit -m "$(cat <<'EOF'
 Subject line here
 
 Body text here, wrapped at 72 characters as required by
@@ -621,7 +625,7 @@ EOF
 **If `--amend` flag:**
 
 ```bash
-git commit --amend -m "$(cat <<'EOF'
+__GIT_COMMIT_PLUGIN__=1 git commit --amend -m "$(cat <<'EOF'
 ...
 EOF
 )"
