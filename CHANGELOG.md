@@ -2,6 +2,20 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.3.2] - 2026-02-10
+
+### Fixed
+
+- Fix commit plugin hook blocking its own commit
+
+The PreToolUse Bash hook intercepted git commit commands issued
+by the /commit workflow itself, creating a circular block. The
+hook regex also missed env-var-prefixed commands, allowing
+accidental bypasses like `SKIP_COMMIT_HOOK=1 git commit`.
+
+- Broaden hook regex to catch env-var-prefixed git commits
+- Add `__GIT_COMMIT_PLUGIN__=1` bypass token to hook script
+- Prefix all git commit templates in commit.md with the token
 ## [1.3.0] - 2026-02-04
 
 ### Added
@@ -30,6 +44,13 @@ change.
 Extensible design allows adding future guardrails for security, cost
 awareness, and testing patterns. by @jskswamy
 
+### Changed
+
+- Update CHANGELOG and README for v1.3.0
+
+Document all changes included in the v1.3.0 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
+
 ### Fixed
 
 - Fix README template extraction for task-decomposer and typst-notes
@@ -49,15 +70,6 @@ Changes:
 - Add ## Features section with bold bullets to both plugin READMEs
 - Add ## Usage section with /decompose examples to task-decomposer
 - Regenerate main README.md via update-readme.sh by @jskswamy
-
-### Other
-
-- Release v1.3.0
-
-Bump marketplace version from 1.2.0 to 1.3.0.
-
-New plugin: guardrails v1.0.0 - IDE refactoring handoff with automatic
-pattern detection.
 ## [1.2.0] - 2026-02-02
 
 ### Added
@@ -956,6 +968,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.3.2]: https://github.com/jskswamy/claude-plugins/compare/v1.3.0..v1.3.2
 [1.3.0]: https://github.com/jskswamy/claude-plugins/compare/v1.2.0..v1.3.0
 [1.2.0]: https://github.com/jskswamy/claude-plugins/compare/v1.1.8..v1.2.0
 [1.1.8]: https://github.com/jskswamy/claude-plugins/compare/task-decomposer-v1.3.0..v1.1.8
