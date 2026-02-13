@@ -1,5 +1,5 @@
 {
-  "description": "Safety net for detecting refactoring patterns in Edit tool calls",
+  "description": "Safety nets for refactoring detection and commit message validation",
   "hooks": {
     "PreToolUse": [
       {
@@ -9,6 +9,15 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/detect-refactoring-edit.sh",
             "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "${CLAUDE_PLUGIN_ROOT}/hooks/commit-message-eval.md"
           }
         ]
       }

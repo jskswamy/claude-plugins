@@ -9,6 +9,7 @@ allowed-tools:
   - Bash
   - Glob
   - Grep
+  - Task
   - AskUserQuestion
   - mcp__1mcp__git_1mcp_git_status
   - mcp__1mcp__git_1mcp_git_diff_staged
@@ -548,6 +549,38 @@ Add validation to login
 
 Add email validation and rate limiting.
 ```
+
+### Step 7b: Validate Commit Message (LLM as Judge)
+
+**CRITICAL:** Before presenting the commit message to the user, evaluate it for leaked internal context. This is a self-check — you are acting as both generator and judge.
+
+**Review the generated message and REJECT it if it contains ANY of:**
+
+1. **Task Tracker IDs:**
+   - Beads IDs (`beads-*`), or any internal tracker prefix not intended for git history
+   - **Allowed:** GitHub `#123`, Jira `PROJ-123`
+
+2. **Workflow Phase Labels:**
+   - "Phase 1", "Phase 2", "Step 2 of 4", "Part 3/5" etc. used as structural labels
+   - **Allowed:** Technical terms like "two-phase commit", "multi-phase migration"
+
+3. **AI Attribution:**
+   - Any `Co-Authored-By:` mentioning Claude, Anthropic, GPT, OpenAI, Copilot, or any AI
+   - Emails like `noreply@anthropic.com`
+   - Model references like "Claude Sonnet 4.5", "Claude Opus 4.6"
+   - **Allowed:** Nothing — AI attribution must NEVER appear
+
+4. **Progress Tracking Artifacts:**
+   - Completion metrics as workflow markers: "Total: 24 tests, 990 lines", "Coverage: >90%"
+   - **Allowed:** Meaningful context: "Improve coverage from 60% to 90%"
+
+**If any violations found:**
+- Silently regenerate the message with violations removed
+- Preserve all meaningful content — only strip the leaked artifacts
+- Do NOT ask the user about this; just produce a clean message
+- Continue to Step 8 with the cleaned message
+
+**If message is clean:** Continue to Step 8.
 
 ### Step 8: Present and Confirm
 

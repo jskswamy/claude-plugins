@@ -1,7 +1,7 @@
 {
   "name": "guardrails",
   "version": "1.0.0",
-  "description": "Efficiency guardrails for Claude - IDE refactoring handoff, extensible to security, cost, and testing patterns",
+  "description": "Guardrails for Claude - IDE refactoring handoff, commit message validation, extensible to security, cost, and testing patterns",
   "author": {
     "name": "Krishnaswamy Subramanian",
     "email": "jskswamy@gmail.com"
