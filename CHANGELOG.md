@@ -2,7 +2,29 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.3.3] - 2026-02-19
+
+### Added
+
+- Add commit message validation guardrails
+
+Prevent internal workflow context from leaking into git
+history. Commit messages are now evaluated for task tracker
+IDs, workflow phase labels, AI attribution, and progress
+tracking artifacts before they enter the log.
+
+- Add LLM-as-judge validation step (Step 7b) to /commit
+  command that silently strips violations during generation
+- Add commit-eval agent for standalone message evaluation
+  and auditing existing history
+- Add prompt-based PreToolUse hook on Bash as advisory
+  safety net for commits bypassing /commit
+- Update guardrails plugin description and hooks config by @jskswamy
 ## [1.3.2] - 2026-02-10
+
+### Changed
+
+- Update CHANGELOG and README for v1.3.2 by @jskswamy
 
 ### Fixed
 
@@ -15,7 +37,13 @@ accidental bypasses like `SKIP_COMMIT_HOOK=1 git commit`.
 
 - Broaden hook regex to catch env-var-prefixed git commits
 - Add `__GIT_COMMIT_PLUGIN__=1` bypass token to hook script
-- Prefix all git commit templates in commit.md with the token
+- Prefix all git commit templates in commit.md with the token by @jskswamy
+
+### Other
+
+- Release v1.3.2
+
+Bump marketplace version from 1.3.0 to 1.3.2. by @jskswamy
 ## [1.3.0] - 2026-02-04
 
 ### Added
@@ -968,6 +996,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.3.3]: https://github.com/jskswamy/claude-plugins/compare/v1.3.2..v1.3.3
 [1.3.2]: https://github.com/jskswamy/claude-plugins/compare/v1.3.0..v1.3.2
 [1.3.0]: https://github.com/jskswamy/claude-plugins/compare/v1.2.0..v1.3.0
 [1.2.0]: https://github.com/jskswamy/claude-plugins/compare/v1.1.8..v1.2.0
