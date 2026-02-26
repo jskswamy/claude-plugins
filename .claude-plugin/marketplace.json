@@ -139,6 +139,26 @@
       ]
     },
     {
+      "name": "task-executor",
+      "description": "Execute decomposed beads tasks using isolated subagents with batch processing, dual-stage review, and atomic commits",
+      "version": "1.0.0",
+      "author": {
+        "name": "Krishnaswamy Subramanian"
+      },
+      "source": "./plugins/task-executor",
+      "category": "workflow",
+      "tags": [
+        "beads",
+        "execution",
+        "subagent",
+        "review",
+        "batch",
+        "automation",
+        "commit",
+        "workflow"
+      ]
+    },
+    {
       "name": "guardrails",
       "description": "Efficiency guardrails for Claude - IDE refactoring handoff with automatic pattern detection, extensible to security, cost, and testing patterns",
       "version": "1.0.0",

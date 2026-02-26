@@ -1,0 +1,8 @@
+{
+  "name": "task-executor",
+  "version": "1.0.0",
+  "description": "Execute decomposed beads tasks using isolated subagents with batch processing, dual-stage review, and atomic commits",
+  "autoActivation": {
+    "onKeyword": ["execute tasks", "run tasks", "dispatch tasks", "execute plan", "run the plan"]
+  }
+}
