@@ -29,6 +29,7 @@ Parse the command arguments:
 | `--skip-questions` | `-q` | boolean | false | Skip clarifying questions |
 | `--dry-run` | `-d` | boolean | false | Preview without creating |
 | `--quick` | | boolean | false | No confirmations, proceed quickly |
+| `--skip-design` | | boolean | false | Skip design exploration phase |
 
 **Examples:**
 ```
@@ -109,9 +110,39 @@ If `--skip-questions` is NOT set:
 
 If `--quick` flag is set, skip confirmations and proceed directly.
 
+### Step 3b: Design Exploration (unless --skip-design or --quick)
+
+If `--skip-design` is NOT set and `--quick` is NOT set:
+
+1. **Explore project context:**
+   - Read relevant source files, docs, and recent commits
+   - Understand existing patterns and conventions
+
+2. **Propose 2-3 approaches** with trade-offs:
+   ```
+   ## Design Exploration
+
+   ### Approach A: {name}
+   **How:** {brief description}
+   **Pros/Cons:** {trade-offs}
+   **Files affected:** {list}
+
+   ### Approach B: {name}
+   **How:** {brief description}
+   **Pros/Cons:** {trade-offs}
+   **Files affected:** {list}
+
+   ### Recommendation: Approach {X}
+   **Why:** {reasoning}
+
+   Which approach? [A / B / Adjust]
+   ```
+
+3. **Wait for design approval** before proceeding to planning.
+
 ### Step 4: Design Phase
 
-Break the task into logical work units:
+Break the task into logical work units using the **Do/Verify pattern** (inspired by superpowers methodology):
 
 1. **Determine hierarchy:**
    - If `--epic` flag provided, create single epic with that title
@@ -121,27 +152,40 @@ Break the task into logical work units:
      - Suggest single epic, multiple epics, or no epic
    - Break into 3-7 tasks per epic (avoid over-decomposition)
 
-2. **Group tasks into epics** (when multiple epics):
+2. **Size each task to 2-5 minutes of focused work:**
+   - If a task is larger, decompose it further
+   - Each task should be independently executable by a fresh agent
+
+3. **Structure each task with Do/Verify:**
+   - **Context**: Self-contained background (a fresh agent can work from this alone)
+   - **Do**: Specific actions with exact file paths and code examples
+   - **Verify**: Exact commands with expected outputs (the Iron Law)
+
+4. **Group tasks into epics** (when multiple epics):
    - Assign each task to its most relevant epic
    - Tasks can be standalone if they don't fit any epic
    - Present grouping for user confirmation
 
-3. **Map dependencies:**
+5. **Map dependencies:**
    - What must complete before what?
    - What can be done in parallel?
    - Cross-epic dependencies are supported
 
-4. **Define acceptance criteria** for each task:
-   - Specific and testable
-   - Clear definition of "done"
+6. **Define acceptance criteria as verification commands:**
+   - Every criterion MUST map to a runnable command
+   - Include expected output for each command
+   - No vague criteria — if you can't verify it with a command, make it concrete
 
-5. **Apply priority:**
+7. **Apply priority:**
    - Use `--priority` value as default
    - Adjust individual tasks if some are clearly higher/lower
 
-6. **Draft design approach** for significant tasks
+8. **Draft design approach** with actionable detail:
+   - Exact file paths for files to create/modify
+   - Step-by-step implementation actions
+   - TDD cycle where applicable
 
-### Step 5: Present Decomposition Preview
+### Step 5: Present Decomposition Preview (Do/Verify format)
 
 **Single epic format:**
 ```
@@ -152,14 +196,22 @@ Break the task into logical work units:
 
 ### Tasks:
 
-1. **{task title}** (P{priority})
-   - Description: {what}
-   - Design: {how}
-   - Acceptance: {criteria}
-   - Dependencies: {none | depends on #N}
+#### Task 1: {descriptive name} (P{priority})
 
-2. **{task title}** (P{priority})
-   ...
+**Context:**
+{Self-contained background for a fresh agent}
+
+**Do:**
+- {Action with exact file path}
+- {Action with code example if needed}
+
+**Verify:**
+- `{command}` → {expected result}
+
+**Dependencies:** none
+
+#### Task 2: {descriptive name} (P{priority})
+...
 
 ### Dependency Graph:
 {epic}
@@ -175,19 +227,32 @@ Break the task into logical work units:
 ### Epic 1: {title} (P{priority})
 {description}
 
-Tasks:
-1. **{task title}** (P{priority})
-   - Description: {what}
-   - Design: {how}
-   - Acceptance: {criteria}
+#### Task 1.1: {descriptive name} (P{priority})
+
+**Context:**
+{Self-contained background for a fresh agent}
+
+**Do:**
+- {Action with exact file path}
+
+**Verify:**
+- `{command}` → {expected result}
 
 ### Epic 2: {title} (P{priority})
 {description}
 
-Tasks:
-1. **{task title}** (P{priority})
-   - Description: {what}
-   - Dependencies: Epic 1 > Task 1
+#### Task 2.1: {descriptive name} (P{priority})
+
+**Context:**
+{Self-contained background for a fresh agent}
+
+**Do:**
+- {Action with exact file path}
+
+**Verify:**
+- `{command}` → {expected result}
+
+**Dependencies:** depends on Epic 1, Task 1.1
 
 ### Dependency Graph:
 Epic 1: {title}
@@ -273,8 +338,9 @@ Run `bd ready` to see what's available to work on.
 | Flags | Behavior |
 |-------|----------|
 | (none) | Full workflow with confirmations |
-| `--quick` | Skip confirmations, still ask questions |
+| `--quick` | Skip confirmations and design exploration |
 | `--skip-questions` | Skip questions, still confirm |
+| `--skip-design` | Skip design exploration, still confirm |
 | `--quick --skip-questions` | Fastest: straight to design → create |
 | `--dry-run` | Full workflow but no creation |
 | `--dry-run --quick` | Fast preview only |

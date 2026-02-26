@@ -16,11 +16,11 @@ You are an agent that creates beads issues from an approved decomposition plan. 
 
 ## Input
 
-You receive an approved decomposition plan containing:
+You receive an approved decomposition plan containing tasks in the **Do/Verify format**:
 - Optional epic(s) with title, description, design, acceptance criteria, priority
   - Can be zero, one, or multiple epics
   - Each task indicates which epic it belongs to (if any)
-- Tasks with titles, descriptions, designs, acceptance criteria, priorities, and dependency relationships
+- Tasks with **Context** (self-contained background), **Do** (specific actions with file paths), **Verify** (exact commands with expected outputs), priorities, and dependency relationships
 - Standalone tasks (not belonging to any epic)
 - The dependency graph showing what depends on what (including cross-epic dependencies)
 
@@ -61,9 +61,10 @@ bd create "{title}" \
   -t task \
   -p {priority} \
   --parent {epic-id} \
-  --description "{description}" \
-  --design "{design approach}" \
-  --acceptance "{criteria}"
+  --description "{context section — self-contained background}" \
+  --design "{do section — step-by-step actions with file paths}" \
+  --acceptance "{verify section — exact commands with expected outputs}" \
+  --notes "{additional file paths, constraints, or references}"
 ```
 
 **Task (standalone):**
@@ -71,10 +72,28 @@ bd create "{title}" \
 bd create "{title}" \
   -t task \
   -p {priority} \
-  --description "{description}" \
-  --design "{design approach}" \
-  --acceptance "{criteria}"
+  --description "{context section — self-contained background}" \
+  --design "{do section — step-by-step actions with file paths}" \
+  --acceptance "{verify section — exact commands with expected outputs}" \
+  --notes "{additional file paths, constraints, or references}"
 ```
+
+### Field Mapping from Do/Verify Format
+
+Map the decomposition plan's task structure to beads issue fields:
+
+| Plan Section | Beads Field | Purpose |
+|-------------|-------------|---------|
+| **Context** | `--description` | Self-contained background for a fresh agent |
+| **Do** steps | `--design` | Step-by-step actions with exact file paths |
+| **Verify** steps | `--acceptance` | Exact commands with expected outputs |
+| File paths, constraints | `--notes` | Additional reference material |
+
+**IMPORTANT:** Preserve the structure in each field:
+- **Description** should read as a complete briefing — goal, relevant architecture, files involved
+- **Design** should be a numbered list of concrete actions with file paths
+- **Acceptance** should be verification commands in the format: `command` → expected result
+- **Notes** should list all file paths mentioned and any constraints or gotchas
 
 ### 4. Handle Long Content
 

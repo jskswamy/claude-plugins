@@ -142,6 +142,7 @@ Close a completed task, optionally creating a commit with full context.
 | `id` | | string | (required) | Task ID to close |
 | `--commit` | `-c` | boolean | false | Trigger task-commit skill |
 | `--reason` | `-r` | string | (none) | Reason for closing |
+| `--skip-verify` | | boolean | false | Skip verification evidence check |
 
 ### Examples
 
@@ -149,16 +150,58 @@ Close a completed task, optionally creating a commit with full context.
 /task done abc123
 /task done abc123 --commit
 /task done abc123 -c -r "Completed as designed"
+/task done abc123 --skip-verify
 ```
 
 ### Execution
 
-1. **Close the task:**
+1. **Verify completion evidence** (unless `--skip-verify` flag is set):
+
+   Before closing, read the task's acceptance criteria and verify each one:
+
+   ```bash
+   bd show {id} --json
+   ```
+
+   a. Parse the acceptance field for verification commands (lines matching `command` → expected result pattern)
+
+   b. For each verification command found:
+      - Run the command
+      - Compare output to expected result
+      - Record pass/fail with evidence
+
+   c. Present verification report:
+      ```
+      ## Verification Report for {id}
+
+      | # | Verification | Result | Evidence |
+      |---|-------------|--------|----------|
+      | 1 | `npm test` → all pass | PASS | 24 tests, 0 failures |
+      | 2 | `npm run build` → exit 0 | PASS | Build completed |
+      | 3 | `curl /api/health` → 200 | FAIL | Connection refused |
+
+      {If all pass}: All verifications passed. Ready to close.
+      {If any fail}: Some verifications failed. Fix issues before closing?
+      ○ Fix and retry - Address the failures
+      ○ Close anyway - Mark done despite failures (--skip-verify)
+      ○ Cancel - Don't close yet
+      ```
+
+   d. If no verification commands found in acceptance criteria:
+      ```
+      No verification commands found in acceptance criteria.
+      Proceeding without automated verification.
+      ```
+
+   **The Iron Law:** No completion claims without fresh verification evidence.
+   If verification commands exist, they MUST be run before closing.
+
+2. **Close the task:**
    ```bash
    bd close {id}
    ```
 
-2. **If `--commit` flag is set:**
+3. **If `--commit` flag is set:**
    - Invoke the task-commit skill to create a rich commit message
    - The skill will gather beads context + git changes
 
