@@ -2,6 +2,56 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.4.0] - 2026-02-26
+
+### Added
+
+- Add task tracker noise filtering to commit styles
+
+When agents use tools like beads for task tracking, internal
+references (tracker IDs, workflow phases, agent metadata) were
+leaking into commit messages. Someone reading git history without
+context of these tools would find the references confusing.
+
+Changes:
+- Add "Content Filtering" section to both classic and conventional
+  style files with explicit rules and before/after examples
+- Expand Step 7b validation in the commit command to catch broader
+  patterns: bd commands, dependency references, acceptance criteria
+  leaks, agent dispatch metadata, and specification fragments
+- Add superpowers-inspired task structure to decomposer
+
+The decomposer now produces richer, more actionable tasks using
+the Do/Verify pattern: each task includes self-contained context,
+exact file paths, step-by-step actions, and verification commands
+with expected outputs. Tasks are sized to 2-5 minutes of work so
+a fresh agent can execute any task independently.
+
+Key enhancements:
+- Tasks use Context/Do/Verify structure instead of flat
+  Description/Design/Acceptance fields
+- Issue-writer maps Do to design, Verify to acceptance, and
+  Context to description for richer beads issues
+- Task completion requires running verification commands before
+  closing (the "Iron Law"), with --skip-verify escape hatch
+- Design exploration gate between understanding and planning
+  proposes 2-3 approaches with trade-offs before decomposing
+- Add task-executor plugin for subagent-driven execution
+
+New plugin that executes decomposed tasks using isolated subagents.
+Each task gets a fresh agent with self-contained context from the
+Do/Verify structure, followed by dual-stage review and an atomic
+commit via the /commit plugin.
+
+Components:
+- /execute command with batch processing, dependency-ordered
+  dispatch, and human checkpoints between batches
+- Spec compliance reviewer agent that independently runs
+  verification commands and checks requirement coverage
+- Code quality reviewer agent that categorizes issues as
+  Critical/Important/Minor with security focus
+- Auto-detection skill for natural execution triggers
+- Registered in marketplace under workflow category
 ## [1.3.3] - 2026-02-19
 
 ### Added
@@ -20,6 +70,19 @@ tracking artifacts before they enter the log.
 - Add prompt-based PreToolUse hook on Bash as advisory
   safety net for commits bypassing /commit
 - Update guardrails plugin description and hooks config by @jskswamy
+
+### Changed
+
+- Update CHANGELOG and README for v1.3.3
+
+Document all changes included in the v1.3.3 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
+
+### Other
+
+- Release v1.3.3
+
+Bump marketplace version from 1.3.2 to 1.3.3. by @jskswamy
 ## [1.3.2] - 2026-02-10
 
 ### Changed
@@ -996,6 +1059,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.4.0]: https://github.com/jskswamy/claude-plugins/compare/v1.3.3..v1.4.0
 [1.3.3]: https://github.com/jskswamy/claude-plugins/compare/v1.3.2..v1.3.3
 [1.3.2]: https://github.com/jskswamy/claude-plugins/compare/v1.3.0..v1.3.2
 [1.3.0]: https://github.com/jskswamy/claude-plugins/compare/v1.2.0..v1.3.0

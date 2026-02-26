@@ -202,6 +202,30 @@ Transform complex tasks into structured beads issues with proper dependencies, c
 [View documentation](./plugins/task-decomposer/README.md)
 
 
+### task-executor
+
+Execute decomposed beads tasks using isolated subagents with batch processing, dual-stage review, and atomic commits
+
+**Features:**
+- Beads
+- Execution
+- Subagent
+- Review
+- Batch
+
+**Install:**
+```
+/plugin install task-executor@claude-plugins
+```
+
+**Usage:**
+```
+/taskexecutor
+```
+
+[View documentation](./plugins/task-executor/README.md)
+
+
 ### typst-notes
 
 Generate beautiful PDF/HTML shareable notes using Typst with 7 professional templates, infographics, and modern typography
