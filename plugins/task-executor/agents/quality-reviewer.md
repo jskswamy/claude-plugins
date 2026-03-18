@@ -3,6 +3,7 @@ name: quality-reviewer
 description: |
   Reviews code quality after spec compliance passes. Checks for style,
   security, error handling, and maintainability issues.
+isolation: worktree
 tools:
   - Bash
   - Read

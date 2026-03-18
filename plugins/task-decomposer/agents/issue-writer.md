@@ -4,6 +4,7 @@ description: |
   Executes beads CLI commands to create issues from a decomposition plan.
   Use this agent when you have an approved decomposition and need to create
   the actual beads issues with proper ordering and dependencies.
+memory: project
 tools:
   - Bash
   - Read

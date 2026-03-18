@@ -17,6 +17,13 @@ arguments:
   - name: source
     description: "Content source: conversation, jot:<note-path>, or file:<path>"
     required: false
+allowed-tools:
+  - Bash
+  - Read
+  - Write
+  - Glob
+  - Grep
+  - AskUserQuestion
 ---
 
 # Publish Command

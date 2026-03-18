@@ -22,6 +22,7 @@ Paper-based solidification - confirms engagement before proceeding.
 
 model: inherit
 color: yellow
+memory: user
 tools:
   - Read
   - Write
