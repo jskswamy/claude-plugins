@@ -2,6 +2,21 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.6.1] - 2026-03-18
+
+### Changed
+
+- Migrate devenv command to v2.0 skills directory format
+
+Move commands/devenv.md to skills/devenv/SKILL.md and remove
+the legacy commands/ directory. Bump devenv 1.3.1 → 1.3.2.
+
+### Other
+
+- Release v1.6.1
+
+Bump marketplace version from 1.6.0 to 1.6.1.
+Complete v2.0 migration: devenv 1.3.1 → 1.3.2 (skill dir format).
 ## [1.6.0] - 2026-03-18
 
 ### Changed
@@ -19,7 +34,12 @@ reference material accessible via ${CLAUDE_PLUGIN_ROOT}.
 Add allowed-tools to typst-notes publish command. Add v2.0
 agent frontmatter: isolation: worktree for task-executor
 reviewers, memory: project for issue-writer, memory: user
-for jot learning-tutor.
+for jot learning-tutor. by @jskswamy
+- Update CHANGELOG and README for v1.6.0
+
+Document plugin v2.0 migration: skills directory format,
+hooks.json conversion, agent frontmatter fields, and
+${CLAUDE_PLUGIN_ROOT} usage across all plugins. by @jskswamy
 
 ### Fixed
 
@@ -33,7 +53,7 @@ with event: Stop frontmatter to hooks/hooks.json prompt-type format.
 
 Remove unused legacy hook .md files from git-commit plugin
 (intercept-bash-commit.md, intercept-mcp-commit.md) — hooks.json
-already handles the functionality.
+already handles the functionality. by @jskswamy
 
 ### Other
 
@@ -41,7 +61,7 @@ already handles the functionality.
 
 Replace find-based framework file lookup with direct
 ${CLAUDE_PLUGIN_ROOT}/skills/decompose/frameworks/ paths
-in both the decompose skill and command.
+in both the decompose skill and command. by @jskswamy
 - Bump plugin versions for v2.0 migration
 
 Patch bumps for format-only changes:
@@ -53,13 +73,13 @@ Patch bumps for format-only changes:
 
 Minor bumps for feature additions:
   task-decomposer 1.5.0 → 1.6.0
-  task-executor 1.1.0 → 1.2.0
+  task-executor 1.1.0 → 1.2.0 by @jskswamy
 - Release v1.6.0
 
 Bump marketplace version from 1.5.0 to 1.6.0.
 Migrate all plugins to Claude Code v2.0 structure:
 skills/<name>/SKILL.md format, hooks.json, agent name
-fields, memory/isolation frontmatter, ${CLAUDE_PLUGIN_ROOT}.
+fields, memory/isolation frontmatter, ${CLAUDE_PLUGIN_ROOT}. by @jskswamy
 ## [1.5.0] - 2026-03-18
 
 ### Added
@@ -1179,6 +1199,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.6.1]: https://github.com/jskswamy/claude-plugins/compare/v1.6.0..v1.6.1
 [1.6.0]: https://github.com/jskswamy/claude-plugins/compare/v1.5.0..v1.6.0
 [1.5.0]: https://github.com/jskswamy/claude-plugins/compare/v1.4.0..v1.5.0
 [1.4.0]: https://github.com/jskswamy/claude-plugins/compare/v1.3.3..v1.4.0
