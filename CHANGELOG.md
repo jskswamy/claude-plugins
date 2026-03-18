@@ -2,6 +2,64 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.6.0] - 2026-03-18
+
+### Changed
+
+- Migrate all plugin skills to v2.0 directory format
+
+Convert all flat skills/<name>.md files to the new
+skills/<name>/SKILL.md directory structure across 7 plugins:
+task-decomposer (5), task-executor (1), git-commit (2),
+jot (1), sketch-note (1), guardrails (1), typst-notes (2).
+
+Move task-decomposer frameworks/ into skills/decompose/ as
+reference material accessible via ${CLAUDE_PLUGIN_ROOT}.
+
+Add allowed-tools to typst-notes publish command. Add v2.0
+agent frontmatter: isolation: worktree for task-executor
+reviewers, memory: project for issue-writer, memory: user
+for jot learning-tutor.
+
+### Fixed
+
+- Fix plugin v2.0 critical issues
+
+Add missing name: field to agent frontmatter in task-decomposer
+(issue-writer) and task-executor (spec-reviewer, quality-reviewer).
+
+Convert task-decomposer legacy hook from review-after-commit.md
+with event: Stop frontmatter to hooks/hooks.json prompt-type format.
+
+Remove unused legacy hook .md files from git-commit plugin
+(intercept-bash-commit.md, intercept-mcp-commit.md) — hooks.json
+already handles the functionality.
+
+### Other
+
+- Use ${CLAUDE_PLUGIN_ROOT} for framework file paths
+
+Replace find-based framework file lookup with direct
+${CLAUDE_PLUGIN_ROOT}/skills/decompose/frameworks/ paths
+in both the decompose skill and command.
+- Bump plugin versions for v2.0 migration
+
+Patch bumps for format-only changes:
+  git-commit 1.2.0 → 1.2.1
+  jot 1.4.1 → 1.4.2
+  sketch-note 1.2.1 → 1.2.2
+  guardrails 1.0.0 → 1.0.1
+  typst-notes 1.0.2 → 1.0.3
+
+Minor bumps for feature additions:
+  task-decomposer 1.5.0 → 1.6.0
+  task-executor 1.1.0 → 1.2.0
+- Release v1.6.0
+
+Bump marketplace version from 1.5.0 to 1.6.0.
+Migrate all plugins to Claude Code v2.0 structure:
+skills/<name>/SKILL.md format, hooks.json, agent name
+fields, memory/isolation frontmatter, ${CLAUDE_PLUGIN_ROOT}.
 ## [1.5.0] - 2026-03-18
 
 ### Added
@@ -25,6 +83,13 @@ single source of truth across sessions and context compaction.
 - task-decomposer v1.4.0 → v1.5.0
 - task-executor v1.0.0 → v1.1.0 by @jskswamy
 
+### Changed
+
+- Update CHANGELOG and README for v1.5.0
+
+Document all changes included in the v1.5.0 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
+
 ### Fixed
 
 - Fix invalid autoActivation key in task-executor manifest
@@ -40,6 +105,10 @@ keywords fields matching the format of other plugins. by @jskswamy
 The previous beads database was missing from the dolt server.
 Ran bd init --force to bootstrap a fresh dolt-backed database
 with updated hooks (v0.61.0) and agent instructions. by @jskswamy
+- Release v1.5.0
+
+Bump marketplace version from 1.4.0 to 1.5.0.
+Plugin versions: task-decomposer 1.5.0, task-executor 1.1.0. by @jskswamy
 ## [1.4.0] - 2026-02-26
 
 ### Added
@@ -1110,6 +1179,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.6.0]: https://github.com/jskswamy/claude-plugins/compare/v1.5.0..v1.6.0
 [1.5.0]: https://github.com/jskswamy/claude-plugins/compare/v1.4.0..v1.5.0
 [1.4.0]: https://github.com/jskswamy/claude-plugins/compare/v1.3.3..v1.4.0
 [1.3.3]: https://github.com/jskswamy/claude-plugins/compare/v1.3.2..v1.3.3
