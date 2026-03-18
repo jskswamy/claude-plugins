@@ -1,6 +1,6 @@
 {
   "name": "task-decomposer",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Transform complex tasks into structured beads issues using configurable decomposition frameworks (built-in, superpowers, speckit, bmad)",
   "author": {
     "name": "Krishnaswamy Subramanian",
