@@ -76,6 +76,7 @@ Then **immediately** return focus to what the user was doing before.
 4. **Label consistently** - `parked-idea` label enables easy filtering
 5. **Link to source** - Dependency shows where idea came from
 6. **Return to work fast** - The whole interaction should take seconds
+7. **Beads is the memory** - All parked ideas live in beads, not in markdown files or framework-specific storage. This ensures they survive across sessions, compaction, and context limits. No matter which decomposition framework the project uses, parked ideas are always beads issues.
 
 ---
 

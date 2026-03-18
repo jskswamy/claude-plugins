@@ -1,7 +1,7 @@
 ---
 name: decompose
 description: Decompose complex tasks into structured beads issues with direct argument control
-argument-hint: "[task-description] [--epic|-e <title>] [--priority|-p 0-4] [--skip-questions|-q] [--dry-run|-d] [--quick]"
+argument-hint: "[task-description] [--epic|-e <title>] [--priority|-p 0-4] [--skip-questions|-q] [--dry-run|-d] [--quick] [--framework <name>]"
 allowed-tools:
   - Bash
   - Read
@@ -30,6 +30,7 @@ Parse the command arguments:
 | `--dry-run` | `-d` | boolean | false | Preview without creating |
 | `--quick` | | boolean | false | No confirmations, proceed quickly |
 | `--skip-design` | | boolean | false | Skip design exploration phase |
+| `--framework` | `-f` | string | (persisted) | Decomposition framework to use |
 
 **Examples:**
 ```
@@ -38,6 +39,8 @@ Parse the command arguments:
 /decompose -e "Auth System" -p 1 "Implement OAuth2 login"
 /decompose --dry-run "Refactor database layer"
 /decompose --quick "Add logout button"
+/decompose --framework superpowers "Build payment system"
+/decompose -f speckit "Add search feature"
 
 # Multi-epic decomposition
 /decompose "Build payment system" --epics "Payment UI,Payment Backend,Payment Security"
@@ -49,6 +52,77 @@ Parse the command arguments:
 ---
 
 ## Execution Flow
+
+### Step 0: Resolve Decomposition Framework
+
+Before anything else, determine which decomposition framework to use:
+
+1. **Check `--framework` flag**: If provided, use that framework directly.
+
+2. **Check persisted setting**: Read `.claude/task-decomposer.local.md` for a previously saved framework choice.
+   ```bash
+   cat .claude/task-decomposer.local.md 2>/dev/null
+   ```
+   If the file exists and has a `framework:` field in its YAML frontmatter, use that framework.
+
+3. **Detect and ask**: If no framework is set, detect available frameworks and ask the user to choose:
+
+   **Detection logic** — run these checks to determine which frameworks are available:
+
+   a. **Built-in (Do/Verify)** — always available.
+
+   b. **Superpowers** — check for:
+      - Plugin installed: grep `installed_plugins.json` for `superpowers`
+      - OR directory exists: `.claude/plugins/superpowers` or similar
+      - OR CLAUDE.md references superpowers methodology
+      ```bash
+      grep -qi "superpowers" ~/.claude/plugins/installed_plugins.json 2>/dev/null && echo "found" || echo "not found"
+      grep -rqi "superpowers" CLAUDE.md .claude/*.md 2>/dev/null && echo "referenced" || echo "not referenced"
+      ```
+
+   c. **Spec Kit** — check for:
+      - Plugin installed: grep for `spec-kit` or `speckit` in installed_plugins.json
+      - OR CLI available: `which speckit`
+      - OR project files: `.speckit/`, `specs/constitution.md`, `constitution.md`
+      ```bash
+      grep -qi "spec.kit\|speckit" ~/.claude/plugins/installed_plugins.json 2>/dev/null && echo "found" || echo "not found"
+      which speckit 2>/dev/null && echo "cli found" || echo "cli not found"
+      ls .speckit/ specs/constitution.md constitution.md 2>/dev/null
+      ```
+
+   d. **BMAD Method** — check for:
+      - Plugin installed: grep for `bmad` in installed_plugins.json
+      - OR project files: `.bmad/`, `.bmad-config.json`, `bmad-agent/`
+      ```bash
+      grep -qi "bmad" ~/.claude/plugins/installed_plugins.json 2>/dev/null && echo "found" || echo "not found"
+      ls .bmad/ .bmad-config.json bmad-agent/ 2>/dev/null
+      ```
+
+   **Present framework options** via AskUserQuestion:
+   - Show ALL known frameworks
+   - Mark detected/available ones with indicators
+   - Include a brief description of each
+   - The question should explain this is a one-time choice per project
+
+4. **Persist the choice**: After user selects a framework, save it to `.claude/task-decomposer.local.md`:
+   ```bash
+   mkdir -p .claude
+   cat > .claude/task-decomposer.local.md << 'EOF'
+   ---
+   framework: {selected-framework-name}
+   ---
+
+   # Task Decomposer Settings
+
+   Framework: {display name} — {one-line description}
+   Selected on: {date}
+   EOF
+   ```
+
+5. **Load the framework template**: Read the framework file from the plugin's `frameworks/` directory:
+   - Find the plugin install path or source path
+   - Read `frameworks/{framework-name}.md`
+   - The framework template defines the phases, task structure, and field mapping
 
 ### Step 1: Parse Arguments and Gather Task Description
 
@@ -72,226 +146,33 @@ If related issues found, present them and ask if we should:
 - Update existing issues instead
 - Link new work to existing
 
-### Step 3: Understanding Phase (unless --skip-questions)
+### Step 3: Execute Framework Phases
 
-If `--skip-questions` is NOT set:
+Follow the phases defined by the selected framework template (loaded in Step 0). Each framework defines its own phase structure:
 
-1. Parse the task description for:
-   - Primary goals and desired outcomes
-   - Scope boundaries (what's in/out)
-   - Constraints (time, technology, dependencies)
-   - Success criteria
+- **Built-in**: Understanding → Design Exploration → Designing (Do/Verify) → Creating
+- **Superpowers**: Brainstorming → Planning (Steps/Verification) → Review
+- **Spec Kit**: Constitution → Specification → Planning → Tasks → Implementation
+- **BMAD**: Analysis → PRD → Architecture → Epic Sharding → Development
 
-2. Ask 2-3 clarifying questions via AskUserQuestion:
-   - Focus on ambiguities or missing information
-   - Keep questions targeted, not overwhelming
+Respect the `--skip-questions`, `--skip-design`, and `--quick` flags by skipping the appropriate phases:
+- `--skip-questions`: Skip clarifying questions / understanding / analysis phases
+- `--skip-design`: Skip design exploration / brainstorming / architecture phases
+- `--quick`: Skip all confirmations, proceed directly
 
-3. If code changes involved, explore the codebase:
-   - Read relevant files to understand current implementation
-   - Find patterns and conventions to follow
-   - Identify integration points
+### Step 4: Present Decomposition Preview
 
-4. Present Understanding Summary (unless --quick):
-   ```
-   ## Understanding Summary
+Present the decomposition using the framework's task structure format. Regardless of framework, the preview MUST include:
+- Task titles with priorities
+- Dependency graph
+- Enough detail for each task to be independently executable
 
-   **Goal:** {what we're trying to achieve}
+If `--dry-run` is set, show the preview and stop.
+If `--quick` is NOT set, ask for approval.
 
-   **Scope:**
-   - In scope: {list}
-   - Out of scope: {list}
+### Step 5: Create Issues (via issue-writer agent)
 
-   **Constraints:** {any limitations}
-
-   **Related existing issues:** {if any found}
-
-   Does this capture the work correctly? [Confirm / Adjust]
-   ```
-
-If `--quick` flag is set, skip confirmations and proceed directly.
-
-### Step 3b: Design Exploration (unless --skip-design or --quick)
-
-If `--skip-design` is NOT set and `--quick` is NOT set:
-
-1. **Explore project context:**
-   - Read relevant source files, docs, and recent commits
-   - Understand existing patterns and conventions
-
-2. **Propose 2-3 approaches** with trade-offs:
-   ```
-   ## Design Exploration
-
-   ### Approach A: {name}
-   **How:** {brief description}
-   **Pros/Cons:** {trade-offs}
-   **Files affected:** {list}
-
-   ### Approach B: {name}
-   **How:** {brief description}
-   **Pros/Cons:** {trade-offs}
-   **Files affected:** {list}
-
-   ### Recommendation: Approach {X}
-   **Why:** {reasoning}
-
-   Which approach? [A / B / Adjust]
-   ```
-
-3. **Wait for design approval** before proceeding to planning.
-
-### Step 4: Design Phase
-
-Break the task into logical work units using the **Do/Verify pattern** (inspired by superpowers methodology):
-
-1. **Determine hierarchy:**
-   - If `--epic` flag provided, create single epic with that title
-   - If `--epics` flag provided, create multiple epics from comma-separated list
-   - Otherwise, determine if epic(s) needed based on scope:
-     - Analyze tasks for natural theme clusters
-     - Suggest single epic, multiple epics, or no epic
-   - Break into 3-7 tasks per epic (avoid over-decomposition)
-
-2. **Size each task to 2-5 minutes of focused work:**
-   - If a task is larger, decompose it further
-   - Each task should be independently executable by a fresh agent
-
-3. **Structure each task with Do/Verify:**
-   - **Context**: Self-contained background (a fresh agent can work from this alone)
-   - **Do**: Specific actions with exact file paths and code examples
-   - **Verify**: Exact commands with expected outputs (the Iron Law)
-
-4. **Group tasks into epics** (when multiple epics):
-   - Assign each task to its most relevant epic
-   - Tasks can be standalone if they don't fit any epic
-   - Present grouping for user confirmation
-
-5. **Map dependencies:**
-   - What must complete before what?
-   - What can be done in parallel?
-   - Cross-epic dependencies are supported
-
-6. **Define acceptance criteria as verification commands:**
-   - Every criterion MUST map to a runnable command
-   - Include expected output for each command
-   - No vague criteria — if you can't verify it with a command, make it concrete
-
-7. **Apply priority:**
-   - Use `--priority` value as default
-   - Adjust individual tasks if some are clearly higher/lower
-
-8. **Draft design approach** with actionable detail:
-   - Exact file paths for files to create/modify
-   - Step-by-step implementation actions
-   - TDD cycle where applicable
-
-### Step 5: Present Decomposition Preview (Do/Verify format)
-
-**Single epic format:**
-```
-## Decomposition Preview
-
-### Epic: {title} (P{priority})
-{description}
-
-### Tasks:
-
-#### Task 1: {descriptive name} (P{priority})
-
-**Context:**
-{Self-contained background for a fresh agent}
-
-**Do:**
-- {Action with exact file path}
-- {Action with code example if needed}
-
-**Verify:**
-- `{command}` → {expected result}
-
-**Dependencies:** none
-
-#### Task 2: {descriptive name} (P{priority})
-...
-
-### Dependency Graph:
-{epic}
-  ├── Task 1 (no deps)
-  ├── Task 2 (no deps)
-  └── Task 3 → depends on Task 1, Task 2
-```
-
-**Multi-epic format:**
-```
-## Decomposition Preview
-
-### Epic 1: {title} (P{priority})
-{description}
-
-#### Task 1.1: {descriptive name} (P{priority})
-
-**Context:**
-{Self-contained background for a fresh agent}
-
-**Do:**
-- {Action with exact file path}
-
-**Verify:**
-- `{command}` → {expected result}
-
-### Epic 2: {title} (P{priority})
-{description}
-
-#### Task 2.1: {descriptive name} (P{priority})
-
-**Context:**
-{Self-contained background for a fresh agent}
-
-**Do:**
-- {Action with exact file path}
-
-**Verify:**
-- `{command}` → {expected result}
-
-**Dependencies:** depends on Epic 1, Task 1.1
-
-### Dependency Graph:
-Epic 1: {title}
-  ├── Task 1.1 (no deps)
-  └── Task 1.2 (no deps)
-
-Epic 2: {title}
-  └── Task 2.1 → depends on Epic 1, Task 1.1
-```
-
-### Step 6: Handle --dry-run or Proceed to Creation
-
-If `--dry-run` is set:
-```
-(Dry run - no issues will be created)
-
-The above decomposition would create:
-- {X} epic(s)
-- {N} tasks
-- {M} dependency relationships
-
-Remove --dry-run to create these issues.
-```
-
-If `--quick` is NOT set, ask for approval:
-```
-Ready to create these issues? [Create / Adjust / Cancel]
-```
-
-If `--quick` IS set, proceed directly to creation.
-
-### Step 7: Create Issues (via issue-writer agent)
-
-Spawn the issue-writer agent with the approved decomposition:
-
-```
-Use the issue-writer agent to create:
-{paste the decomposition preview}
-```
+Spawn the issue-writer agent with the approved decomposition. The agent maps framework-specific fields to beads fields using the framework's field mapping table.
 
 The agent will:
 1. Create epic first (if applicable)
@@ -300,7 +181,7 @@ The agent will:
 4. Add dependency edges
 5. Report created issue IDs
 
-### Step 8: Report Results
+### Step 6: Report Results
 
 **Single epic:**
 ```
@@ -344,6 +225,7 @@ Run `bd ready` to see what's available to work on.
 | `--quick --skip-questions` | Fastest: straight to design → create |
 | `--dry-run` | Full workflow but no creation |
 | `--dry-run --quick` | Fast preview only |
+| `--framework X` | Use specific framework (overrides persisted) |
 
 ---
 
@@ -378,6 +260,17 @@ Use --epics for multiple epics (comma-separated):
   /decompose "task" --epics "Epic 1,Epic 2,Epic 3"
 ```
 
+### Unknown framework
+```
+Error: Unknown framework "{name}".
+
+Available frameworks:
+- builtin    — Built-in Do/Verify methodology
+- superpowers — Brainstorm, plan, verify (obra/superpowers)
+- speckit    — Spec-driven development (GitHub spec-kit)
+- bmad       — Agile AI-driven development (BMAD Method)
+```
+
 ### Beads not initialized
 ```
 Error: Beads not initialized in this project.
@@ -391,10 +284,11 @@ Then try again.
 ## Delegation Notes
 
 This command delegates to:
-- **decompose skill** - Core decomposition logic
+- **decompose skill** - Core decomposition logic (framework-aware)
 - **issue-writer agent** - Issue creation execution
 
 The command adds:
 - Argument parsing and validation
+- Framework resolution and persistence
 - Flag-controlled workflow customization
 - Dry-run capability

@@ -119,8 +119,8 @@
     },
     {
       "name": "task-decomposer",
-      "description": "Transform complex tasks into structured beads issues with proper dependencies, capture ideas without breaking flow, and create rich commit messages",
-      "version": "1.4.0",
+      "description": "Transform complex tasks into structured beads issues using configurable decomposition frameworks (built-in, superpowers, speckit, bmad) with proper dependencies",
+      "version": "1.5.0",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -140,8 +140,8 @@
     },
     {
       "name": "task-executor",
-      "description": "Execute decomposed beads tasks using isolated subagents with batch processing, dual-stage review, and atomic commits",
-      "version": "1.0.0",
+      "description": "Execute decomposed beads tasks using framework-adaptive subagents with batch processing, dual-stage review, and atomic commits",
+      "version": "1.1.0",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },

@@ -16,11 +16,18 @@ You are an agent that creates beads issues from an approved decomposition plan. 
 
 ## Input
 
-You receive an approved decomposition plan containing tasks in the **Do/Verify format**:
+You receive an approved decomposition plan containing tasks. The plan may use different task structures depending on the decomposition framework used:
+
+- **Built-in (Do/Verify)**: Context / Do / Verify sections
+- **Superpowers**: Context / Steps / Verification / Done when
+- **Spec Kit**: User Story / Specification / Implementation / Acceptance Criteria
+- **BMAD**: Goal / Context / Implementation Details / Definition of Done
+
+Regardless of framework, the plan contains:
 - Optional epic(s) with title, description, design, acceptance criteria, priority
   - Can be zero, one, or multiple epics
   - Each task indicates which epic it belongs to (if any)
-- Tasks with **Context** (self-contained background), **Do** (specific actions with file paths), **Verify** (exact commands with expected outputs), priorities, and dependency relationships
+- Tasks with self-contained context, implementation steps, verification criteria, priorities, and dependency relationships
 - Standalone tasks (not belonging to any epic)
 - The dependency graph showing what depends on what (including cross-epic dependencies)
 
@@ -78,18 +85,43 @@ bd create "{title}" \
   --notes "{additional file paths, constraints, or references}"
 ```
 
-### Field Mapping from Do/Verify Format
+### Field Mapping (Framework-Adaptive)
 
-Map the decomposition plan's task structure to beads issue fields:
+Map the decomposition plan's task structure to beads issue fields. The mapping depends on which framework was used:
 
-| Plan Section | Beads Field | Purpose |
-|-------------|-------------|---------|
-| **Context** | `--description` | Self-contained background for a fresh agent |
-| **Do** steps | `--design` | Step-by-step actions with exact file paths |
-| **Verify** steps | `--acceptance` | Exact commands with expected outputs |
-| File paths, constraints | `--notes` | Additional reference material |
+**Built-in (Do/Verify):**
+| Plan Section | Beads Field |
+|-------------|-------------|
+| Context | `--description` |
+| Do steps | `--design` |
+| Verify steps | `--acceptance` |
+| File paths, constraints | `--notes` |
 
-**IMPORTANT:** Preserve the structure in each field:
+**Superpowers:**
+| Plan Section | Beads Field |
+|-------------|-------------|
+| Context | `--description` |
+| Steps | `--design` |
+| Verification + Done when | `--acceptance` |
+| File paths, patterns | `--notes` |
+
+**Spec Kit:**
+| Plan Section | Beads Field |
+|-------------|-------------|
+| User Story + Specification | `--description` |
+| Implementation | `--design` |
+| Acceptance Criteria | `--acceptance` |
+| Constitution ref, dependencies | `--notes` |
+
+**BMAD:**
+| Plan Section | Beads Field |
+|-------------|-------------|
+| Goal + Context | `--description` |
+| Implementation Details | `--design` |
+| Definition of Done | `--acceptance` |
+| Epic ref, complexity, deps | `--notes` |
+
+**IMPORTANT:** Regardless of framework, preserve the structure in each field:
 - **Description** should read as a complete briefing — goal, relevant architecture, files involved
 - **Design** should be a numbered list of concrete actions with file paths
 - **Acceptance** should be verification commands in the format: `command` → expected result
