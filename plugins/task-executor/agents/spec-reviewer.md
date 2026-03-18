@@ -1,4 +1,5 @@
 ---
+name: spec-reviewer
 description: |
   Reviews task implementations for spec compliance. Use after a subagent
   completes a task to verify all requirements were met.

@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if a git commit was made in recent conversation turns that references a beads task ID (patterns: #claude-plugins-xxx, Closes: claude-plugins-xxx, Fixes: {id}, Refs: {id}). If so, check for parked ideas linked to that task:\n\n1. Get recent commit: git log -1 --pretty=format:\"%B\"\n2. If no task reference found, skip silently.\n3. Find parked ideas: bd list --status=deferred -l parked-idea\n4. Filter for ideas with dependency on the committed task or 'Parked while working on' that task.\n5. If parked ideas found, prompt the user:\n   - Show each parked idea title and first line\n   - Offer: Review each / Keep all parked / Discard all\n6. Handle choices: Promote (bd update {id} --status open), Keep (no action), Discard (bd delete {id})\n7. If no commit or no parked ideas, skip silently."
+          }
+        ]
+      }
+    ]
+  }
+}
