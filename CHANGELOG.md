@@ -2,6 +2,38 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.6.2] - 2026-03-18
+
+### Fixed
+
+- Fix Stop hook JSON validation failure in task-decomposer
+
+The prompt-type Stop hook produced natural language output instead
+of valid JSON, causing validation errors on every Claude response.
+
+Replace with a command-type hook that runs a shell script:
+- Checks last commit for beads task ID references
+- If found, checks for linked parked ideas
+- Exits silently (code 0, no output) when nothing to surface
+- Only prints when parked ideas exist after a task commit
+
+Bump task-decomposer 1.6.0 → 1.6.1.
+
+### Other
+
+- Restore MCP commit intercept prompt deleted during v2.0 migration
+
+The v2.0 migration incorrectly deleted intercept-mcp-commit.md
+which is actively referenced by hooks.json as a prompt-type
+PreToolUse hook. Without it, the hook fails when Claude attempts
+to use the MCP git commit tool directly.
+
+Bump git-commit 1.2.1 → 1.2.2.
+- Release v1.6.2
+
+Bump marketplace version from 1.6.1 to 1.6.2.
+Bugfixes: task-decomposer 1.6.1 (Stop hook), git-commit 1.2.2
+(restored MCP intercept prompt).
 ## [1.6.1] - 2026-03-18
 
 ### Changed
@@ -9,14 +41,17 @@ All notable changes to the Claude Code Plugin Marketplace will be documented in 
 - Migrate devenv command to v2.0 skills directory format
 
 Move commands/devenv.md to skills/devenv/SKILL.md and remove
-the legacy commands/ directory. Bump devenv 1.3.1 → 1.3.2.
+the legacy commands/ directory. Bump devenv 1.3.1 → 1.3.2. by @jskswamy
+- Update CHANGELOG and README for v1.6.1
+
+Document devenv migration to v2.0 skills directory format. by @jskswamy
 
 ### Other
 
 - Release v1.6.1
 
 Bump marketplace version from 1.6.0 to 1.6.1.
-Complete v2.0 migration: devenv 1.3.1 → 1.3.2 (skill dir format).
+Complete v2.0 migration: devenv 1.3.1 → 1.3.2 (skill dir format). by @jskswamy
 ## [1.6.0] - 2026-03-18
 
 ### Changed
@@ -1199,6 +1234,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.6.2]: https://github.com/jskswamy/claude-plugins/compare/v1.6.1..v1.6.2
 [1.6.1]: https://github.com/jskswamy/claude-plugins/compare/v1.6.0..v1.6.1
 [1.6.0]: https://github.com/jskswamy/claude-plugins/compare/v1.5.0..v1.6.0
 [1.5.0]: https://github.com/jskswamy/claude-plugins/compare/v1.4.0..v1.5.0
