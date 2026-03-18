@@ -1,6 +1,6 @@
 {
   "name": "guardrails",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Guardrails for Claude - IDE refactoring handoff, commit message validation, extensible to security, cost, and testing patterns",
   "author": {
     "name": "Krishnaswamy Subramanian",

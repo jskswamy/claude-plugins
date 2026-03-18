@@ -1,6 +1,6 @@
 {
   "name": "task-executor",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Execute decomposed beads tasks using framework-adaptive subagents with batch processing, dual-stage review, and atomic commits",
   "author": {
     "name": "Krishnaswamy Subramanian",

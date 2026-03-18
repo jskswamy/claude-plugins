@@ -34,7 +34,7 @@
     {
       "name": "git-commit",
       "description": "Generate intelligent git commit messages with classic or conventional commit style support, strict atomic commit validation, and session context awareness",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -53,7 +53,7 @@
     {
       "name": "jot",
       "description": "Quick, low-friction capture of notes, tasks, ideas, session summaries, tech radar blips, and Feynman-style teaching notes with Obsidian-style auto-linking",
-      "version": "1.4.1",
+      "version": "1.4.2",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -80,7 +80,7 @@
     {
       "name": "sketch-note",
       "description": "Generate visual sketch notes in Excalidraw format from conversations, code architecture, or custom content",
-      "version": "1.2.1",
+      "version": "1.2.2",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -101,7 +101,7 @@
     {
       "name": "typst-notes",
       "description": "Generate beautiful PDF/HTML shareable notes using Typst with 7 professional templates, infographics, and modern typography",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -120,7 +120,7 @@
     {
       "name": "task-decomposer",
       "description": "Transform complex tasks into structured beads issues using configurable decomposition frameworks (built-in, superpowers, speckit, bmad) with proper dependencies",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -141,7 +141,7 @@
     {
       "name": "task-executor",
       "description": "Execute decomposed beads tasks using framework-adaptive subagents with batch processing, dual-stage review, and atomic commits",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -161,7 +161,7 @@
     {
       "name": "guardrails",
       "description": "Efficiency guardrails for Claude - IDE refactoring handoff with automatic pattern detection, extensible to security, cost, and testing patterns",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
