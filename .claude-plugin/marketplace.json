@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "A curated collection of Claude Code plugins",
-    "version": "1.6.1"
+    "version": "1.6.2"
   },
   "plugins": [
     {
