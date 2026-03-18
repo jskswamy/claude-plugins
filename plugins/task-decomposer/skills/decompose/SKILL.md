@@ -61,12 +61,11 @@ Before starting decomposition, determine which framework to use:
    Framework: {display_name}
    ```
 
-4. **Load framework template**: Use Glob to find the framework file in the plugin's `frameworks/` directory, then Read it. The framework defines phases, task structure, and field mapping.
+4. **Load framework template**: Read the framework file using `${CLAUDE_PLUGIN_ROOT}`:
    ```bash
-   # Find the frameworks directory (in plugin source or cache)
-   find ~/.claude/plugins -path "*/task-decomposer/frameworks/{name}.md" 2>/dev/null | head -1
+   cat "${CLAUDE_PLUGIN_ROOT}/skills/decompose/frameworks/{name}.md"
    ```
-   If not found in plugin cache, check the project's plugin source directory.
+   The `${CLAUDE_PLUGIN_ROOT}` variable resolves to the plugin's installation directory automatically.
 
 ---
 

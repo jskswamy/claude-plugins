@@ -119,10 +119,11 @@ Before anything else, determine which decomposition framework to use:
    EOF
    ```
 
-5. **Load the framework template**: Read the framework file from the plugin's `frameworks/` directory:
-   - Find the plugin install path or source path
-   - Read `frameworks/{framework-name}.md`
-   - The framework template defines the phases, task structure, and field mapping
+5. **Load the framework template**: Read the framework file using `${CLAUDE_PLUGIN_ROOT}`:
+   ```bash
+   cat "${CLAUDE_PLUGIN_ROOT}/skills/decompose/frameworks/{framework-name}.md"
+   ```
+   The `${CLAUDE_PLUGIN_ROOT}` variable resolves to the plugin's installation directory automatically.
 
 ### Step 1: Parse Arguments and Gather Task Description
 
