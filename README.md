@@ -175,7 +175,7 @@ Generate visual sketch notes in Excalidraw format from conversations, code archi
 
 ### task-decomposer
 
-Transform complex tasks into structured beads issues with proper dependencies, capture ideas without breaking flow, and create rich commit messages
+Transform complex tasks into structured beads issues using configurable decomposition frameworks (built-in, superpowers, speckit, bmad) with proper dependencies
 
 **Features:**
 - Task Decomposition: Break down complex work into structured beads issues with dependencies and acceptance criteria
@@ -204,7 +204,7 @@ Transform complex tasks into structured beads issues with proper dependencies, c
 
 ### task-executor
 
-Execute decomposed beads tasks using isolated subagents with batch processing, dual-stage review, and atomic commits
+Execute decomposed beads tasks using framework-adaptive subagents with batch processing, dual-stage review, and atomic commits
 
 **Features:**
 - Beads

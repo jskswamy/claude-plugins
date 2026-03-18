@@ -2,6 +2,44 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.5.0] - 2026-03-18
+
+### Added
+
+- Add configurable decomposition framework support
+
+Wrap different task decomposition methodologies (superpowers, speckit,
+bmad) under a unified UX. On first /decompose, the plugin detects
+available frameworks, asks the user to choose, and persists the
+selection per-project in .claude/task-decomposer.local.md.
+
+The /execute command now reads the persisted framework and adapts
+subagent prompts and review criteria accordingly — TDD enforcement
+for superpowers, requirements traceability for speckit, architecture
+compliance for bmad.
+
+All framework artifacts (constitutions, PRDs, architecture docs) are
+stored in beads rather than framework-specific files, ensuring a
+single source of truth across sessions and context compaction.
+
+- task-decomposer v1.4.0 → v1.5.0
+- task-executor v1.0.0 → v1.1.0 by @jskswamy
+
+### Fixed
+
+- Fix invalid autoActivation key in task-executor manifest
+
+The plugin.json used an unrecognized autoActivation key which
+caused installation to fail. Replace with valid author and
+keywords fields matching the format of other plugins. by @jskswamy
+
+### Other
+
+- Reinitialize beads with dolt backend
+
+The previous beads database was missing from the dolt server.
+Ran bd init --force to bootstrap a fresh dolt-backed database
+with updated hooks (v0.61.0) and agent instructions. by @jskswamy
 ## [1.4.0] - 2026-02-26
 
 ### Added
@@ -18,7 +56,7 @@ Changes:
   style files with explicit rules and before/after examples
 - Expand Step 7b validation in the commit command to catch broader
   patterns: bd commands, dependency references, acceptance criteria
-  leaks, agent dispatch metadata, and specification fragments
+  leaks, agent dispatch metadata, and specification fragments by @jskswamy
 - Add superpowers-inspired task structure to decomposer
 
 The decomposer now produces richer, more actionable tasks using
@@ -35,7 +73,7 @@ Key enhancements:
 - Task completion requires running verification commands before
   closing (the "Iron Law"), with --skip-verify escape hatch
 - Design exploration gate between understanding and planning
-  proposes 2-3 approaches with trade-offs before decomposing
+  proposes 2-3 approaches with trade-offs before decomposing by @jskswamy
 - Add task-executor plugin for subagent-driven execution
 
 New plugin that executes decomposed tasks using isolated subagents.
@@ -51,7 +89,20 @@ Components:
 - Code quality reviewer agent that categorizes issues as
   Critical/Important/Minor with security focus
 - Auto-detection skill for natural execution triggers
-- Registered in marketplace under workflow category
+- Registered in marketplace under workflow category by @jskswamy
+
+### Changed
+
+- Update CHANGELOG and README for v1.4.0
+
+Document all changes included in the v1.4.0 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
+
+### Other
+
+- Release v1.4.0
+
+Bump marketplace version from 1.3.3 to 1.4.0. by @jskswamy
 ## [1.3.3] - 2026-02-19
 
 ### Added
@@ -1059,6 +1110,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.5.0]: https://github.com/jskswamy/claude-plugins/compare/v1.4.0..v1.5.0
 [1.4.0]: https://github.com/jskswamy/claude-plugins/compare/v1.3.3..v1.4.0
 [1.3.3]: https://github.com/jskswamy/claude-plugins/compare/v1.3.2..v1.3.3
 [1.3.2]: https://github.com/jskswamy/claude-plugins/compare/v1.3.0..v1.3.2
