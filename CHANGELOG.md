@@ -2,7 +2,35 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.6.3] - 2026-03-30
+
+### Added
+
+- Add review-commits design spec for clean-merge plugin
+
+Document the approved design for a standalone clean-merge plugin
+with two skills: review-commits (workflow for regrouping, rewording,
+and merging branch commits) and validate-commits (deterministic
+post-commit checks for AI co-author leaks, conflict markers, and
+squash residue). Produced through collaborative brainstorming to
+automate the repetitive commit-cleanup workflow.
+- Add clean-merge plugin with commit review and validation
+
+Introduce a standalone plugin for cleaning up commits before pushing.
+Two skills: review-commits (auto-detects branch vs main, orchestrates
+squashing/regrouping/rewording via /commit delegation) and
+validate-commits (five deterministic checks — clean worktree, tests,
+AI co-author leaks, conflict markers, squash residue).
+
+Registered in marketplace under the git category.
 ## [1.6.2] - 2026-03-18
+
+### Changed
+
+- Update CHANGELOG and README for v1.6.2
+
+Document bugfixes for Stop hook validation and restored
+MCP commit intercept prompt. by @jskswamy
 
 ### Fixed
 
@@ -17,7 +45,7 @@ Replace with a command-type hook that runs a shell script:
 - Exits silently (code 0, no output) when nothing to surface
 - Only prints when parked ideas exist after a task commit
 
-Bump task-decomposer 1.6.0 → 1.6.1.
+Bump task-decomposer 1.6.0 → 1.6.1. by @jskswamy
 
 ### Other
 
@@ -28,12 +56,12 @@ which is actively referenced by hooks.json as a prompt-type
 PreToolUse hook. Without it, the hook fails when Claude attempts
 to use the MCP git commit tool directly.
 
-Bump git-commit 1.2.1 → 1.2.2.
+Bump git-commit 1.2.1 → 1.2.2. by @jskswamy
 - Release v1.6.2
 
 Bump marketplace version from 1.6.1 to 1.6.2.
 Bugfixes: task-decomposer 1.6.1 (Stop hook), git-commit 1.2.2
-(restored MCP intercept prompt).
+(restored MCP intercept prompt). by @jskswamy
 ## [1.6.1] - 2026-03-18
 
 ### Changed
@@ -1234,6 +1262,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.6.3]: https://github.com/jskswamy/claude-plugins/compare/v1.6.2..v1.6.3
 [1.6.2]: https://github.com/jskswamy/claude-plugins/compare/v1.6.1..v1.6.2
 [1.6.1]: https://github.com/jskswamy/claude-plugins/compare/v1.6.0..v1.6.1
 [1.6.0]: https://github.com/jskswamy/claude-plugins/compare/v1.5.0..v1.6.0

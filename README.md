@@ -45,6 +45,30 @@ This is a personal collection of useful Claude Code plugins that I've built to e
 <!-- PLUGINS:START -->
 
 
+### clean-merge
+
+Commit review, regrouping, and validation for clean git history — standalone or as part of branch merge workflows
+
+**Features:**
+- Git
+- Merge
+- Squash
+- Review
+- Validate
+
+**Install:**
+```
+/plugin install clean-merge@claude-plugins
+```
+
+**Usage:**
+```
+/cleanmerge
+```
+
+[View documentation](./plugins/clean-merge/README.md)
+
+
 ### devenv
 
 Initialize and manage Nix flake development environments with auto-detection and security tooling
