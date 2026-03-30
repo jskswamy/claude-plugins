@@ -179,6 +179,28 @@
         "semantic-refactoring",
         "ast"
       ]
+    },
+    {
+      "name": "clean-merge",
+      "description": "Commit review, regrouping, and validation for clean git history — standalone or as part of branch merge workflows",
+      "version": "1.0.0",
+      "author": {
+        "name": "Krishnaswamy Subramanian"
+      },
+      "source": "./plugins/clean-merge",
+      "category": "git",
+      "tags": [
+        "git",
+        "merge",
+        "squash",
+        "review",
+        "validate",
+        "commits",
+        "cleanup",
+        "co-author",
+        "branch",
+        "workflow"
+      ]
     }
   ]
 }

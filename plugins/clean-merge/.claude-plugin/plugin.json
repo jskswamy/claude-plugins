@@ -1,0 +1,19 @@
+{
+  "name": "clean-merge",
+  "version": "1.0.0",
+  "description": "Commit review, regrouping, and validation for clean git history — standalone or as part of branch merge workflows",
+  "author": {
+    "name": "Krishnaswamy Subramanian",
+    "email": "jskswamy@gmail.com"
+  },
+  "keywords": [
+    "git",
+    "merge",
+    "squash",
+    "review",
+    "validate",
+    "commits",
+    "cleanup",
+    "co-author"
+  ]
+}
