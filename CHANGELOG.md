@@ -2,6 +2,17 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.6.4] - 2026-03-30
+
+### Removed
+
+- Remove commit message validation hook from guardrails
+
+The Bash PreToolUse prompt hook fired an LLM evaluation on every
+bash command, not just git commit. The LLM non-deterministically
+blocked legitimate commands by overriding its own allow instruction.
+The git-commit plugin already validates commit messages in its own
+workflow, making this hook redundant.
 ## [1.6.3] - 2026-03-30
 
 ### Added
@@ -13,7 +24,7 @@ with two skills: review-commits (workflow for regrouping, rewording,
 and merging branch commits) and validate-commits (deterministic
 post-commit checks for AI co-author leaks, conflict markers, and
 squash residue). Produced through collaborative brainstorming to
-automate the repetitive commit-cleanup workflow.
+automate the repetitive commit-cleanup workflow. by @jskswamy
 - Add clean-merge plugin with commit review and validation
 
 Introduce a standalone plugin for cleaning up commits before pushing.
@@ -22,7 +33,20 @@ squashing/regrouping/rewording via /commit delegation) and
 validate-commits (five deterministic checks — clean worktree, tests,
 AI co-author leaks, conflict markers, squash residue).
 
-Registered in marketplace under the git category.
+Registered in marketplace under the git category. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG and README for v1.6.3
+
+Document all changes included in the v1.6.3 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
+
+### Other
+
+- Release v1.6.3
+
+Bump marketplace version from 1.6.2 to 1.6.3. by @jskswamy
 ## [1.6.2] - 2026-03-18
 
 ### Changed
@@ -1262,6 +1286,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.6.4]: https://github.com/jskswamy/claude-plugins/compare/v1.6.3..v1.6.4
 [1.6.3]: https://github.com/jskswamy/claude-plugins/compare/v1.6.2..v1.6.3
 [1.6.2]: https://github.com/jskswamy/claude-plugins/compare/v1.6.1..v1.6.2
 [1.6.1]: https://github.com/jskswamy/claude-plugins/compare/v1.6.0..v1.6.1
