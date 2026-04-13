@@ -2,6 +2,35 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.8.1] - 2026-04-13
+
+### Fixed
+
+- Fix codebase plugin commands blocking MCP tool access
+
+The allowed-tools whitelist in all four codebase commands (ask, graph,
+index, impact) only listed Bash/Read/Grep/Glob/AskUserQuestion. This
+prevented codebase-memory-mcp tools (list_projects, search_graph,
+trace_path, etc.) from being called, causing the commands to always
+fall back to grep/read instead of using the semantic index.
+
+Remove allowed-tools from all commands so MCP tools are accessible
+when the server is connected. The explore skill already had no
+restriction and worked correctly.
+
+### Removed
+
+- Remove allowed-tools from all plugin commands and skills
+
+The allowed-tools frontmatter whitelist blocks MCP tools that
+commands are designed to use. This caused codebase-memory-mcp,
+git MCP, and nix MCP tools to be silently unavailable, forcing
+fallback to grep/bash workarounds.
+
+Since allowed-tools has never prevented an actual misuse, remove
+it from all 17 commands and skills across 9 plugins: clean-merge,
+codebase (already fixed), devenv, git-commit, guardrails, jot,
+refactor, sketch-note, task-decomposer, task-executor, typst-notes.
 ## [1.8.0] - 2026-04-13
 
 ### Added
@@ -22,14 +51,21 @@ The rebase plan maps each commit to pick/fixup/squash/edit/drop/
 reword actions, presented for user approval before execution via
 GIT_SEQUENCE_EDITOR. Soft-reset remains as an escape hatch.
 
-Closes #1
+Closes #1 by @jskswamy
+
+### Changed
+
+- Update CHANGELOG and README for v1.8.0
+
+Document all changes included in the v1.8.0 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
 
 ### Other
 
 - Release v1.8.0
 
 Bump marketplace version from 1.7.0 to 1.8.0.
-Bump clean-merge plugin from 1.0.0 to 1.1.0.
+Bump clean-merge plugin from 1.0.0 to 1.1.0. by @jskswamy
 
 ### Removed
 
@@ -37,7 +73,7 @@ Bump clean-merge plugin from 1.0.0 to 1.1.0.
 
 Remove implementation plans for already-shipped plugins (clean-merge,
 codebase, refactor, review-commits rebase-first). The code is the
-source of truth; plans for completed work add noise.
+source of truth; plans for completed work add noise. by @jskswamy
 ## [1.7.0] - 2026-04-13
 
 ### Added
@@ -1386,6 +1422,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.8.1]: https://github.com/jskswamy/claude-plugins/compare/v1.8.0..v1.8.1
 [1.8.0]: https://github.com/jskswamy/claude-plugins/compare/v1.7.0..v1.8.0
 [1.7.0]: https://github.com/jskswamy/claude-plugins/compare/v1.6.4..v1.7.0
 [1.6.4]: https://github.com/jskswamy/claude-plugins/compare/v1.6.3..v1.6.4
