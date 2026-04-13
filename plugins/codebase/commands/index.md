@@ -2,11 +2,6 @@
 name: index
 description: Index or re-index the codebase using codebase-memory-mcp
 argument-hint: "[--mode full|moderate|fast]"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - AskUserQuestion
 ---
 
 # /codebase:index Command

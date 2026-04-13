@@ -2,13 +2,6 @@
 name: impact
 description: Analyze the impact of recent code changes — blast radius, risk levels, affected tests
 argument-hint: "[--base <sha>]"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Grep
-  - Glob
-  - AskUserQuestion
 ---
 
 # /codebase:impact Command

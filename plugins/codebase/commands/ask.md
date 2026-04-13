@@ -2,13 +2,6 @@
 name: ask
 description: Ask a natural language question about the codebase
 argument-hint: "<question>"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Grep
-  - Glob
-  - AskUserQuestion
 ---
 
 # /codebase:ask Command

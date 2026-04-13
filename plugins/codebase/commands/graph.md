@@ -2,12 +2,6 @@
 name: graph
 description: Explore a symbol's callers, callees, and relationships in the codebase graph
 argument-hint: "<symbol> [--depth 1-5] [--direction inbound|outbound|both]"
-allowed-tools:
-  - Bash
-  - Read
-  - Grep
-  - Glob
-  - AskUserQuestion
 ---
 
 # /codebase:graph Command
