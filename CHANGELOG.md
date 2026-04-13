@@ -2,7 +2,56 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.7.0] - 2026-04-13
+
+### Added
+
+- Add codebase plugin for intelligent code exploration
+
+New plugin wrapping codebase-memory-mcp with four commands and
+an auto-trigger skill:
+
+- /codebase:ask — natural language queries with intent-based
+  routing (location, understanding, similarity, onboarding)
+- /codebase:impact — change impact analysis with risk levels
+- /codebase:graph — symbol relationship traversal
+- /codebase:index — index management wrapper
+- explore skill — auto-enriches brainstorming and planning
+  sessions with indexed codebase knowledge
+
+Reduces token usage by querying a semantic index instead of
+repeated grep/glob/read exploration across the repo.
+- Add refactor plugin for cross-codebase duplication detection
+
+Two-agent design that scans committed code against the semantic
+index to find refactoring opportunities invisible to per-file
+code review:
+
+- Scanner agent runs 3 passes: semantic similarity (Fowler
+  structural patterns, GoF), structural analysis (code smells,
+  SOLID/DRY), and language idiom checks (Go, Python, TypeScript)
+- Validator agent confirms candidates by reading source files,
+  then creates beads issues with TDD-first refactoring plans
+- /refactor:scan orchestrates the pipeline, delegating index
+  management to the codebase plugin
+- Auto-trigger skill hooks into task-executor after task close
+
+Includes design spec, implementation plan, and marketplace
+registration for both codebase and refactor plugins.
 ## [1.6.4] - 2026-03-30
+
+### Changed
+
+- Update CHANGELOG and README for v1.6.4
+
+Document all changes included in the v1.6.4 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
+
+### Other
+
+- Release v1.6.4
+
+Bump marketplace version from 1.6.3 to 1.6.4. by @jskswamy
 
 ### Removed
 
@@ -12,7 +61,7 @@ The Bash PreToolUse prompt hook fired an LLM evaluation on every
 bash command, not just git commit. The LLM non-deterministically
 blocked legitimate commands by overriding its own allow instruction.
 The git-commit plugin already validates commit messages in its own
-workflow, making this hook redundant.
+workflow, making this hook redundant. by @jskswamy
 ## [1.6.3] - 2026-03-30
 
 ### Added
@@ -1286,6 +1335,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.7.0]: https://github.com/jskswamy/claude-plugins/compare/v1.6.4..v1.7.0
 [1.6.4]: https://github.com/jskswamy/claude-plugins/compare/v1.6.3..v1.6.4
 [1.6.3]: https://github.com/jskswamy/claude-plugins/compare/v1.6.2..v1.6.3
 [1.6.2]: https://github.com/jskswamy/claude-plugins/compare/v1.6.1..v1.6.2

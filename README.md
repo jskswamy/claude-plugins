@@ -69,6 +69,30 @@ Commit review, regrouping, and validation for clean git history — standalone o
 [View documentation](./plugins/clean-merge/README.md)
 
 
+### codebase
+
+Intelligent codebase exploration powered by codebase-memory-mcp. Natural language queries, change impact analysis, symbol graph traversal, and automatic brainstorming/planning integration.
+
+**Features:**
+- Codebase
+- Exploration
+- Semantic Search
+- Impact Analysis
+- Codebase Memory
+
+**Install:**
+```
+/plugin install codebase@claude-plugins
+```
+
+**Usage:**
+```
+/codebase
+```
+
+[View documentation](./plugins/codebase/README.md)
+
+
 ### devenv
 
 Initialize and manage Nix flake development environments with auto-detection and security tooling
@@ -166,6 +190,31 @@ Quick, low-friction capture of notes, tasks, ideas, session summaries, tech rada
 ```
 
 [View documentation](./plugins/jot/README.md)
+
+
+### refactor
+
+Semantic refactoring opportunity detection. Scans committed code for structural duplication (Fowler catalog), code smells (Fowler/Beck), GoF design pattern opportunities, SOLID/DRY principle violations, and language-idiomatic anti-patterns (Go, Python, TypeScript). Creates beads issues with TDD-first refactoring plans. Hooks into task-executor after each task closes.
+
+**Features:**
+- Refactoring
+- Duplication
+- Fowler
+- Beads
+- Codebase Memory
+
+**Install:**
+```
+/plugin install refactor@claude-plugins
+```
+
+**Usage:**
+```
+/refactor:scan                   # scan changes since upstream
+/refactor:scan --base abc1234    # scan changes since specific SHA
+```
+
+[View documentation](./plugins/refactor/README.md)
 
 
 ### sketch-note
