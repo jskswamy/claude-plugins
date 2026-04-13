@@ -2,6 +2,42 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.8.0] - 2026-04-13
+
+### Added
+
+- Add rebase-first workflow and commit hygiene analysis to review-commits
+
+Replace soft-reset with interactive rebase as the default commit
+cleanup mechanism. Add three-layer commit hygiene analysis that
+detects introduce-then-fix pairs, non-atomic commits, and unrelated
+changes before building a rebase plan.
+
+Layer 1 (subject-based) catches introduce-then-fix pairs from git
+log subjects. Layer 2 (file-structural) flags commits touching
+unrelated directories. Layer 3 (semantic) uses codebase-memory-mcp
+to verify atomicity through symbol clusters and call chains.
+
+The rebase plan maps each commit to pick/fixup/squash/edit/drop/
+reword actions, presented for user approval before execution via
+GIT_SEQUENCE_EDITOR. Soft-reset remains as an escape hatch.
+
+Closes #1
+
+### Other
+
+- Release v1.8.0
+
+Bump marketplace version from 1.7.0 to 1.8.0.
+Bump clean-merge plugin from 1.0.0 to 1.1.0.
+
+### Removed
+
+- Clean up stale plan files and add .aide.yaml to gitignore
+
+Remove implementation plans for already-shipped plugins (clean-merge,
+codebase, refactor, review-commits rebase-first). The code is the
+source of truth; plans for completed work add noise.
 ## [1.7.0] - 2026-04-13
 
 ### Added
@@ -20,7 +56,7 @@ an auto-trigger skill:
   sessions with indexed codebase knowledge
 
 Reduces token usage by querying a semantic index instead of
-repeated grep/glob/read exploration across the repo.
+repeated grep/glob/read exploration across the repo. by @jskswamy
 - Add refactor plugin for cross-codebase duplication detection
 
 Two-agent design that scans committed code against the semantic
@@ -37,7 +73,22 @@ code review:
 - Auto-trigger skill hooks into task-executor after task close
 
 Includes design spec, implementation plan, and marketplace
-registration for both codebase and refactor plugins.
+registration for both codebase and refactor plugins. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG and README for v1.7.0
+
+Document codebase and refactor plugin additions in the v1.7.0
+release. Regenerate plugins section in README from marketplace. by @jskswamy
+
+### Other
+
+- Release v1.7.0
+
+Bump marketplace version from 1.6.4 to 1.7.0.
+New plugins: codebase (code exploration), refactor (duplication
+detection). by @jskswamy
 ## [1.6.4] - 2026-03-30
 
 ### Changed
@@ -1335,6 +1386,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.8.0]: https://github.com/jskswamy/claude-plugins/compare/v1.7.0..v1.8.0
 [1.7.0]: https://github.com/jskswamy/claude-plugins/compare/v1.6.4..v1.7.0
 [1.6.4]: https://github.com/jskswamy/claude-plugins/compare/v1.6.3..v1.6.4
 [1.6.3]: https://github.com/jskswamy/claude-plugins/compare/v1.6.2..v1.6.3
