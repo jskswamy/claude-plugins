@@ -2,20 +2,6 @@
 name: devenv
 description: Initialize and manage Nix flake development environments with auto-detection and security tooling
 argument-hint: "[add|upgrade|remove|security]"
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Glob
-  - Grep
-  - AskUserQuestion
-  - mcp__1mcp__nixos_1mcp_nixos_search
-  - mcp__1mcp__nixos_1mcp_nixhub_package_versions
-  - mcp__1mcp__nixos_1mcp_nixhub_find_version
-  - mcp__nixos__nix
-  - mcp__plugin_devenv_nixos__nix
-  - mcp__plugin_devenv_nixos__nix_versions
 ---
 
 # Devenv Command

@@ -2,13 +2,6 @@
 name: task
 description: Single task operations - create, start, complete, and view individual tasks
 argument-hint: "<subcommand> [args] [--flags]"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Glob
-  - Grep
-  - AskUserQuestion
 ---
 
 # /task Command

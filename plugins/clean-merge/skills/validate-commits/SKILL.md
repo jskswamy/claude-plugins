@@ -8,12 +8,6 @@ description: >
   "any AI leaks", "check for co-author", "are my commits clean",
   "validate before pushing", "check commits".
 argument-hint: "[--base <ref>]"
-allowed-tools:
-  - Bash
-  - Grep
-  - Glob
-  - Read
-  - AskUserQuestion
 ---
 
 # Validate Commits

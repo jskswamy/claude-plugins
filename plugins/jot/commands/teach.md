@@ -2,14 +2,6 @@
 name: teach
 description: Teach it back to deepen your understanding - requires you to have already engaged with the content (Feynman Technique)
 argument-hint: "[type] <url|topic> [--depth shallow|standard|deep]"
-allowed-tools:
-  - Read
-  - Write
-  - Glob
-  - Grep
-  - Bash
-  - WebFetch
-  - AskUserQuestion
 ---
 
 # Teach Command

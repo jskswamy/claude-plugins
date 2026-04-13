@@ -2,22 +2,6 @@
 name: commit
 description: Generate and create git commit messages with classic or conventional commit style and strict atomic commit validation
 argument-hint: "[--style classic|conventional] [--amend] [--pair] [--no-atomic-check] [context...]"
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Glob
-  - Grep
-  - Task
-  - AskUserQuestion
-  - mcp__1mcp__git_1mcp_git_status
-  - mcp__1mcp__git_1mcp_git_diff_staged
-  - mcp__1mcp__git_1mcp_git_diff_unstaged
-  - mcp__1mcp__git_1mcp_git_commit
-  - mcp__1mcp__git_1mcp_git_log
-  - mcp__1mcp__git_1mcp_git_add
-  - mcp__1mcp__git_1mcp_git_reset
 ---
 
 # Git Commit Command

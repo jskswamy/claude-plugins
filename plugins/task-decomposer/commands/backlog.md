@@ -2,10 +2,6 @@
 name: backlog
 description: Dashboard views of all work with filtering and statistics
 argument-hint: "[overview|ready|blocked|priorities|epics] [--status <status>] [--priority|-p <0-4>] [--epic|-e <id>] [--format|-f <format>] [--limit|-l <n>]"
-allowed-tools:
-  - Bash
-  - Read
-  - AskUserQuestion
 ---
 
 # /backlog Command

@@ -2,13 +2,6 @@
 name: sketch
 description: Generate visual sketch notes in Excalidraw format from conversations, code architecture, or custom content
 argument-hint: "[--mode conversation|code|custom] [--format excalidraw|png|both] [--output <name>] [description...]"
-allowed-tools:
-  - Read
-  - Write
-  - Glob
-  - Grep
-  - Bash
-  - AskUserQuestion
 ---
 
 # Sketch Command

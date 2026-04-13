@@ -2,11 +2,6 @@
 name: epic
 description: Create and manage epics, add/remove tasks, track progress
 argument-hint: "<subcommand> [args] [--flags]"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - AskUserQuestion
 ---
 
 # /epic Command

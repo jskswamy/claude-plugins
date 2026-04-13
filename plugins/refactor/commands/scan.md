@@ -2,14 +2,6 @@
 name: scan
 description: Scan committed code for refactoring opportunities across the codebase
 argument-hint: "[--base <sha>]"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Grep
-  - Glob
-  - Agent
-  - AskUserQuestion
 ---
 
 # /refactor:scan Command

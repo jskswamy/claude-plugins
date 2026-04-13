@@ -2,10 +2,6 @@
 name: deps
 description: Manage and visualize task dependencies
 argument-hint: "<subcommand> [args] [--flags]"
-allowed-tools:
-  - Bash
-  - Read
-  - AskUserQuestion
 ---
 
 # /deps Command

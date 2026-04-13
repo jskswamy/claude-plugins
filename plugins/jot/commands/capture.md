@@ -2,14 +2,6 @@
 name: capture
 description: Capture notes, tasks, ideas, blips, and URL content. Supports quick text captures and full URL-based extraction with auto-linking to related notes.
 argument-hint: "[type] <content|url> [--ring adopt|trial|assess|hold] [--quadrant tools|techniques|platforms|languages]"
-allowed-tools:
-  - Read
-  - Write
-  - Glob
-  - Grep
-  - Bash
-  - WebFetch
-  - AskUserQuestion
 ---
 
 # Capture Command

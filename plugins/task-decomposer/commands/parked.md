@@ -2,11 +2,6 @@
 name: parked
 description: List, filter, and manage parked ideas
 argument-hint: "[list|from|promote|discard|review] [args] [--flags]"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - AskUserQuestion
 ---
 
 # /parked Command

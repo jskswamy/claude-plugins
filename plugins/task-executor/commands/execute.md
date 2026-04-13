@@ -2,15 +2,6 @@
 name: execute
 description: Execute decomposed beads tasks using isolated subagents with batch processing, dual-stage review, and atomic commits
 argument-hint: "[--batch-size N] [--auto] [--no-commit] [--no-review] [--epic <id>] [--task <id>]"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Task
-  - AskUserQuestion
 ---
 
 # /execute Command

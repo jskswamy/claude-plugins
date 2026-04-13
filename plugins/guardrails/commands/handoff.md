@@ -8,12 +8,6 @@ arguments:
   - name: track
     description: Create a beads issue to track the handoff (optional)
     required: false
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - AskUserQuestion
-  - Bash
 ---
 
 # IDE Refactoring Handoff Generator
