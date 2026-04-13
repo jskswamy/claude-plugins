@@ -1,3 +1,25 @@
+# Review-Commits Rebase-First Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Replace soft-reset with interactive rebase as the default mechanism in review-commits, and add automatic commit hygiene analysis with codebase-memory-mcp integration.
+
+**Architecture:** Single skill file rewrite. The review-commits SKILL.md is a prompt-based skill — all logic is expressed as instructions for Claude Code to follow. No scripts, no code files. The skill orchestrates git commands, MCP tool calls, AskUserQuestion prompts, and `/commit` invocations.
+
+**Tech Stack:** Markdown skill definition, git rebase, `GIT_SEQUENCE_EDITOR`, codebase-memory-mcp MCP tools
+
+---
+
+### Task 1: Update Frontmatter and Introduction
+
+**Files:**
+- Modify: `plugins/clean-merge/skills/review-commits/SKILL.md:1-19`
+
+- [ ] **Step 1: Update the frontmatter description**
+
+Replace the current description to reflect rebase-first approach:
+
+```yaml
 ---
 name: review-commits
 description: >
@@ -11,8 +33,20 @@ description: >
   "merge branch to main", "clean up my commits before pushing",
   "review before push".
 argument-hint: "[--tag <version>] [--base <ref>]"
+allowed-tools:
+  - Bash
+  - Read
+  - Glob
+  - Grep
+  - AskUserQuestion
 ---
+```
 
+- [ ] **Step 2: Update the introduction text**
+
+Replace the opening paragraph:
+
+```markdown
 # Review Commits
 
 Review and clean up commits before pushing. Auto-detects whether you
@@ -21,53 +55,29 @@ Uses interactive rebase to surgically clean commit history — squashing
 introduce-then-fix pairs, splitting non-atomic commits, dropping
 unrelated changes. Soft-reset is available as an escape hatch when
 commits are too tangled for rebase.
-
-## Arguments
-
-| Argument | Type | Default | Description |
-|----------|------|---------|-------------|
-| `--tag <version>` | string | none | Tag after completion |
-| `--base <ref>` | string | auto | Override base commit detection |
-
-## Precondition
-
-Require a clean worktree. Run:
-
-```bash
-git status --porcelain
 ```
 
-If output is non-empty, refuse to proceed:
-
-    Your worktree has uncommitted changes. Please commit or stash them
-    before running review-commits.
-
-## Auto-Detection
-
-Check the current branch:
+- [ ] **Step 3: Commit**
 
 ```bash
-branch=$(git branch --show-current)
+git add plugins/clean-merge/skills/review-commits/SKILL.md
 ```
+Then invoke `/commit`.
 
-- If `$branch` is `main` or `master` → **Main Flow**
-- Otherwise → **Branch Flow**
+---
 
-## Test Detection (Shared)
+### Task 2: Add Codebase Index Resolution Section
 
-Before either flow, detect the project's test command by checking for
-project files in the working directory root:
+This new section goes after "Test Detection (Shared)" and before the Branch Flow. It defines how the skill ensures codebase-memory-mcp is available and indexed.
 
-| File | Command |
-|------|---------|
-| `go.mod` | `go test ./...` |
-| `package.json` | `npm test` |
-| `Cargo.toml` | `cargo test` |
-| `pyproject.toml` | `pytest` |
+**Files:**
+- Modify: `plugins/clean-merge/skills/review-commits/SKILL.md:57-71`
 
-Check files in this order. Use the first match. If no project file is
-found, skip testing and warn: "No test command detected. Skipping tests."
+- [ ] **Step 1: Add the Codebase Index Resolution section**
 
+Insert after the "Test Detection (Shared)" section (after line 71) and before "## Branch Flow":
+
+```markdown
 ## Codebase Index Resolution (Shared)
 
 Before either flow, attempt to set up codebase-memory-mcp for semantic
@@ -99,7 +109,29 @@ Call `list_projects` and match against the current repo name (from
 
 If indexing fails for any reason, set `$SEMANTIC_AVAILABLE=false` and
 continue — do not block the workflow.
+```
 
+- [ ] **Step 2: Commit**
+
+```bash
+git add plugins/clean-merge/skills/review-commits/SKILL.md
+```
+Then invoke `/commit`.
+
+---
+
+### Task 3: Add Commit Hygiene Analysis Section
+
+This new section defines the three-layer analysis that runs before the rebase plan is built. It goes after the Codebase Index Resolution section and before the Branch Flow.
+
+**Files:**
+- Modify: `plugins/clean-merge/skills/review-commits/SKILL.md` (insert after Codebase Index Resolution)
+
+- [ ] **Step 1: Add the Commit Hygiene Analysis section**
+
+Insert after the "Codebase Index Resolution" section:
+
+```markdown
 ## Commit Hygiene Analysis (Shared)
 
 Analyze commits in the range `$base..HEAD` for hygiene issues. This
@@ -237,7 +269,29 @@ If no issues detected, display:
 Commit hygiene analysis: all commits are clean and atomic. ✓
 ```
 And proceed directly to the rebase plan.
+```
 
+- [ ] **Step 2: Commit**
+
+```bash
+git add plugins/clean-merge/skills/review-commits/SKILL.md
+```
+Then invoke `/commit`.
+
+---
+
+### Task 4: Rewrite Branch Flow with Rebase-First
+
+Replace the current Branch Flow (Steps 1-6) with the new rebase-first workflow.
+
+**Files:**
+- Modify: `plugins/clean-merge/skills/review-commits/SKILL.md:72-209` (the entire Branch Flow section)
+
+- [ ] **Step 1: Replace Branch Flow Steps 1-2 (unchanged logic, new step numbers)**
+
+Replace the Branch Flow section starting from `## Branch Flow` through the old Step 2. Keep Steps 1-2 the same but update the display text in Step 2:
+
+```markdown
 ## Branch Flow (feature branch → main)
 
 ### Step 1: Verify Tests
@@ -272,7 +326,11 @@ Branch <branch-name> has N commits since main:
 
 Analyzing commit hygiene and building rebase plan...
 ```
+```
 
+- [ ] **Step 2: Add new Steps 3-4 (index + hygiene)**
+
+```markdown
 ### Step 3: Ensure Codebase Index
 
 Run the "Codebase Index Resolution" flow defined above. This sets
@@ -282,7 +340,11 @@ Run the "Codebase Index Resolution" flow defined above. This sets
 
 Run the "Commit Hygiene Analysis" flow defined above against the
 commit range `$base..HEAD`. Collect findings for use in Step 5.
+```
 
+- [ ] **Step 3: Add new Step 5 (build and present rebase plan)**
+
+```markdown
 ### Step 5: Build & Present Rebase Plan
 
 Using the hygiene findings from Step 4, map each commit to a rebase
@@ -322,7 +384,11 @@ If "Modify": use AskUserQuestion to let the user change the action
 for any commit. Re-display the updated plan for confirmation.
 
 If "Reset": fall back to the soft-reset escape hatch (see below).
+```
 
+- [ ] **Step 4: Add new Step 6 (execute rebase)**
+
+```markdown
 ### Step 6: Execute Rebase
 
 Execute the approved rebase plan on the feature branch.
@@ -384,8 +450,6 @@ If the rebase encounters a merge conflict at any step:
 2. Show the conflicting files: `git diff --name-only --diff-filter=U`
 3. Stop and let the user resolve manually
 4. After resolution, user runs `git rebase --continue`
-5. Once rebase completes (user may need to resolve multiple conflicts),
-   resume the workflow from Step 7 (Merge to Main)
 
 #### Soft-Reset Escape Hatch
 
@@ -397,14 +461,18 @@ git reset HEAD
 ```
 
 This unstages all changes. Then propose groupings using AskUserQuestion
-(group files by top-level directory and concern, present via AskUserQuestion).
+(same format as the old Step 3 — group files by directory and concern).
 For each group:
 1. Stage the group's files: `git add <files>`
 2. Invoke `/commit`
 
 The hygiene findings from Step 4 carry forward — display them again
 as context for grouping decisions.
+```
 
+- [ ] **Step 5: Add Steps 7-9 (merge, tag, cleanup)**
+
+```markdown
 ### Step 7: Merge to Main
 
 Move the cleaned-up commits to main:
@@ -453,14 +521,36 @@ Branch <branch> has been merged to main. Delete it?
 
 If "Yes":
 ```bash
-git branch -d <branch>
+git branch -D <branch>
 ```
 
-If a worktree was used (check via `git worktree list`):
+If a worktree was used:
 ```bash
 git worktree remove <path>
 ```
+```
 
+- [ ] **Step 6: Commit**
+
+```bash
+git add plugins/clean-merge/skills/review-commits/SKILL.md
+```
+Then invoke `/commit`.
+
+---
+
+### Task 5: Rewrite Main Flow with Rebase Option
+
+Replace the current Main Flow to use "Rebase" instead of "Regroup" and integrate hygiene analysis.
+
+**Files:**
+- Modify: `plugins/clean-merge/skills/review-commits/SKILL.md` (the entire Main Flow section)
+
+- [ ] **Step 1: Replace the Main Flow section**
+
+Replace everything from `## Main Flow` to the end of the Main Flow:
+
+```markdown
 ## Main Flow (on main/master)
 
 ### Step 1: Verify Tests
@@ -520,30 +610,32 @@ All steps work identically to the Branch Flow — the only difference
 is that there is no merge step afterward (commits are already on main).
 
 **Reword:**
-Walk through commits oldest-to-newest. First, show all commits and
-let the user select which to reword:
+Walk through commits oldest-to-newest using interactive rebase with
+all commits marked as `edit`:
 
 ```bash
-git log --oneline $base..HEAD
+GIT_SEQUENCE_EDITOR='sed -i "" "s/^pick/edit/"' git rebase -i $base
 ```
 
-Use AskUserQuestion to let the user pick which commits to reword.
-Then run interactive rebase with selected commits marked as `reword`
-and all others as `pick`:
+For each stopped commit:
+1. Show the current message:
+   ```
+   Commit <hash>:
+   <current subject>
 
-```bash
-GIT_SEQUENCE_EDITOR='<script that marks selected commits as reword>' git rebase -i $base
-```
-
-For each reword stop, git pauses to let you edit the message.
-Use `GIT_SEQUENCE_EDITOR='true'` to accept the current message
-temporarily, then invoke `/commit --amend` to generate the new
-message via the commit plugin.
-
-If the user wants to abort mid-reword:
-```bash
-git rebase --abort
-```
+   <current body>
+   ```
+2. Use AskUserQuestion:
+   ```
+   ○ Reword — amend this commit message via /commit
+   ○ Keep — leave this commit as-is
+   ○ Skip rest — keep all remaining commits as-is
+   ```
+3. If "Reword": invoke `/commit --amend`
+4. If "Keep": run `git rebase --continue`
+5. If "Skip rest": run `git rebase --continue` for all remaining
+   commits without stopping (use `GIT_SEQUENCE_EDITOR` to change
+   remaining `edit` to `pick`)
 
 ### Step 4: Optional Tag
 
@@ -553,7 +645,29 @@ Same as Branch Flow Step 8.
 
 Invoke `validate-commits` (unless "Validate only" was already selected
 in Step 3, which already ran it).
+```
 
+- [ ] **Step 2: Commit**
+
+```bash
+git add plugins/clean-merge/skills/review-commits/SKILL.md
+```
+Then invoke `/commit`.
+
+---
+
+### Task 6: Update Integration and What-This-Skill-Does-NOT-Do Sections
+
+Update the footer sections to reflect the new capabilities.
+
+**Files:**
+- Modify: `plugins/clean-merge/skills/review-commits/SKILL.md` (Integration and footer sections)
+
+- [ ] **Step 1: Update the Integration section**
+
+Replace the Integration section:
+
+```markdown
 ## Integration
 
 ### With /commit
@@ -579,7 +693,13 @@ semantic analysis for commit hygiene checks.
 
 Run `/review-commits` anytime — before pushing, after a messy session,
 to clean up agent commits.
+```
 
+- [ ] **Step 2: Update the What This Skill Does NOT Do section**
+
+Replace with:
+
+```markdown
 ## What This Skill Does NOT Do
 
 - **Generate commit messages** — delegates to `/commit`
@@ -590,3 +710,34 @@ to clean up agent commits.
 - **Resolve merge conflicts** — reports and stops
 - **Force semantic analysis** — if codebase-memory-mcp is not available,
   Layers 1-2 still provide value
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add plugins/clean-merge/skills/review-commits/SKILL.md
+```
+Then invoke `/commit`.
+
+---
+
+## Self-Review Checklist
+
+**Spec coverage:**
+- ✓ Introduce-then-fix pair detection (Layer 1, Task 3)
+- ✓ Non-atomic commit detection (Layer 2, Task 3)
+- ✓ Unrelated change detection (Layer 2, Task 3)
+- ✓ Semantic analysis via codebase-memory-mcp (Layer 3, Task 3)
+- ✓ Auto-index creation (Task 2)
+- ✓ Interactive rebase as default (Tasks 4, 5)
+- ✓ Rebase plan presentation (Task 4, Step 5)
+- ✓ GIT_SEQUENCE_EDITOR execution (Task 4, Step 6)
+- ✓ Soft-reset escape hatch (Task 4, Step 6)
+- ✓ Branch Flow updated (Task 4)
+- ✓ Main Flow updated with Rebase option (Task 5)
+- ✓ Hygiene findings are mandatory for pairs, suggested for others (Task 3)
+- ✓ `/commit` delegation preserved (all tasks)
+
+**Placeholder scan:** No TBD, TODO, or vague steps. All sections contain complete instructions.
+
+**Consistency:** `$SEMANTIC_AVAILABLE`, `$base`, `/commit`, `/codebase:index` used consistently across all tasks.
