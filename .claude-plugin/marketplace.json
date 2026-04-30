@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "A curated collection of Claude Code plugins",
-    "version": "1.8.1"
+    "version": "1.8.2"
   },
   "plugins": [
     {
@@ -205,7 +205,7 @@
     {
       "name": "codebase",
       "description": "Intelligent codebase exploration powered by codebase-memory-mcp. Natural language queries, change impact analysis, symbol graph traversal, and automatic brainstorming/planning integration.",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
