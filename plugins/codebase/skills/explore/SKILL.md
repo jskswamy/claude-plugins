@@ -31,27 +31,45 @@ Fall back to standard grep/glob/read exploration silently. Do NOT print an error
 
 **If the MCP server IS available:** Continue to Step 2.
 
-### Step 2: Check Index Freshness
+### Step 2: Check Index Freshness and Auto-Index
 
-Read `.claude/codebase.local.md` if it exists. Check the `last_indexed` timestamp.
+Call `list_projects` and match against the current repo (from `git rev-parse --show-toplevel` basename) to determine whether an index exists.
 
-- If `last_indexed` is more than 24 hours old or missing, print:
-  ```
-  ⚠ Codebase index may be stale (last indexed: [time ago]). Results may be incomplete.
-  ```
-- Continue regardless — stale results are better than no results.
+Read `.claude/codebase.local.md` if it exists. Resolve the `auto_index` preference (`always`, `never`, `ask`; default `ask`) and `index_mode` (default `moderate`).
 
-### Step 3: Determine Project Name
+Decide what to do:
 
-Call `list_projects` and match against the current repo (from `git rev-parse --show-toplevel` basename).
+- **No matching indexed project (index missing):** treat as needing an index.
+  - `auto_index: always` → call `index_repository` with the resolved mode, then continue.
+  - `auto_index: ask` (or file missing) → use `AskUserQuestion` to prompt:
+    ```
+    The codebase isn't indexed yet. Index now?
 
-If no match, suggest indexing:
-```
-Codebase is not yet indexed. Run /codebase:index to build the index.
-```
-Then fall back to grep/glob/read exploration.
+    ○ Yes, always (save preference)
+    ○ Yes, just this once
+    ○ No (fall back to grep/glob)
+    ```
+    If a "save" option is selected, write the preference to `.claude/codebase.local.md`. If "Yes", call `index_repository`, then continue. If "No", fall back to grep/glob/read.
+  - `auto_index: never` → print `Codebase is not yet indexed. Run /codebase:index to build the index.` and fall back to grep/glob/read.
 
-### Step 4: Context-Dependent Exploration
+- **Index exists but `last_indexed` is missing or >24h old (stale):**
+  - `auto_index: always` → call `index_repository` with the resolved mode to refresh, then continue.
+  - `auto_index: ask` → use `AskUserQuestion` to prompt:
+    ```
+    Codebase index is stale (last indexed: [time ago]). Refresh now?
+
+    ○ Yes, always (save preference)
+    ○ Yes, just this once
+    ○ No, use stale index
+    ```
+    If "Yes", refresh then continue. If "No", continue with stale data after printing `⚠ Using stale index (last indexed: [time ago]). Results may be incomplete.`
+  - `auto_index: never` → print `⚠ Index may be stale (last indexed: [time ago]). Run /codebase:index to refresh.` and continue with stale data.
+
+- **Index exists and is fresh:** continue.
+
+After a successful auto-index, update `last_indexed` in `.claude/codebase.local.md` (preserving other fields).
+
+### Step 3: Context-Dependent Exploration
 
 **If activated during brainstorming or planning (exploring project context):**
 
@@ -79,7 +97,7 @@ Route the question through the same logic as `/codebase:ask`:
 
 See the `/codebase:ask` command (in `${CLAUDE_PLUGIN_ROOT}/commands/ask.md`) for the full intent classification and tool sequence for each intent type.
 
-### Step 5: Fallback
+### Step 4: Fallback
 
 If any `codebase-memory-mcp` tool call fails during exploration:
 - Do NOT fail the overall workflow
