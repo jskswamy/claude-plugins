@@ -2,6 +2,24 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.8.2] - 2026-04-30
+
+### Other
+
+- Auto-index stale or missing index in codebase explore skill
+
+The explore skill previously only printed a stale-index warning and
+fell back to grep when no index existed. The /codebase:ask command
+already had auto-indexing logic that respected the user's auto_index
+preference (always/ask/never), but explore did not, so brainstorming
+and planning sessions silently degraded to grep when the index was
+missing or stale.
+
+Align explore with ask by mirroring the same auto-index decision
+flow: prompt or auto-run index_repository on a missing or stale
+index according to the resolved preference, then continue. Update
+last_indexed after a successful refresh, and only fall back to
+grep/glob when the user declines or auto_index is never.
 ## [1.8.1] - 2026-04-13
 
 ### Fixed
@@ -16,7 +34,15 @@ fall back to grep/read instead of using the semantic index.
 
 Remove allowed-tools from all commands so MCP tools are accessible
 when the server is connected. The explore skill already had no
-restriction and worked correctly.
+restriction and worked correctly. by @jskswamy
+
+### Other
+
+- Release v1.8.1
+
+Bump marketplace version from 1.8.0 to 1.8.1.
+Sync codebase plugin version 0.1.0 to 0.1.1.
+Update CHANGELOG and regenerate README. by @jskswamy
 
 ### Removed
 
@@ -30,7 +56,7 @@ fallback to grep/bash workarounds.
 Since allowed-tools has never prevented an actual misuse, remove
 it from all 17 commands and skills across 9 plugins: clean-merge,
 codebase (already fixed), devenv, git-commit, guardrails, jot,
-refactor, sketch-note, task-decomposer, task-executor, typst-notes.
+refactor, sketch-note, task-decomposer, task-executor, typst-notes. by @jskswamy
 ## [1.8.0] - 2026-04-13
 
 ### Added
@@ -1422,6 +1448,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.8.2]: https://github.com/jskswamy/claude-plugins/compare/v1.8.1..v1.8.2
 [1.8.1]: https://github.com/jskswamy/claude-plugins/compare/v1.8.0..v1.8.1
 [1.8.0]: https://github.com/jskswamy/claude-plugins/compare/v1.7.0..v1.8.0
 [1.7.0]: https://github.com/jskswamy/claude-plugins/compare/v1.6.4..v1.7.0
