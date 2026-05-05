@@ -34,3 +34,9 @@ Thumbs.db
 # Dolt database files (added by bd init)
 .dolt/
 *.db
+
+# Beads runtime export state (regenerated on each session)
+.beads/export-state.json
+
+# Refactor scan working directories (per-scan artifacts)
+.refactor-scan/

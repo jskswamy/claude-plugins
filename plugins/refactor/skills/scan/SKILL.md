@@ -1,8 +1,11 @@
 ---
 description: |
-  Scan for refactoring opportunities in committed code. Use when:
+  Scan for refactoring opportunities. Use when:
   "scan for refactoring opportunities", "check for code duplication",
   "look for patterns to extract", "refactoring scan",
+  "scan the entire codebase for refactoring",
+  "find architectural issues", "look for refactoring opportunities across the codebase",
+  "audit refactor opportunities", "refactor health check",
   after a batch completes in /execute
 ---
 
@@ -17,6 +20,14 @@ When this skill activates, invoke `/refactor:scan` with appropriate flags:
 1. If the user mentions a specific commit SHA or task, pass it as `--base`.
 2. If activated after a `/execute` batch completes, the base SHA is the commit before the batch started.
 3. Otherwise, let `/refactor:scan` auto-detect the base SHA.
+
+## Codebase-wide invocation
+
+When the user asks for a *codebase-wide* refactor scan (signal phrases: "scan the entire codebase", "look across the codebase", "audit refactor opportunities", "refactor health check", "find architectural issues"), invoke `/refactor:scan --scope=all`.
+
+When the user names a specific package or directory ("scan internal/api for refactor opportunities"), invoke `/refactor:scan --scope=package <path>`.
+
+The codebase-wide scan produces a `findings.md` for human review before any beads issues are filed. Do not auto-proceed past the review gate; let the user inspect and edit the file.
 
 ## Integration with task-executor
 
