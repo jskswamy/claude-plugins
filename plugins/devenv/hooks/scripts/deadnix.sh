@@ -1,21 +1,6 @@
 #!/bin/bash
-set -euo pipefail
-
-# Read tool input from stdin
-input=$(cat)
-
-# Extract file path from tool_input
-file_path=$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.filePath // ""')
-
-# Only run on flake.nix files
-if [[ $file_path == *"flake.nix" ]]; then
-	if command -v nix-shell &>/dev/null; then
-		# --no-lambda-pattern-names preserves 'self' in flake outputs (required by flake system)
-		nix-shell -p deadnix --run "deadnix --no-lambda-pattern-names -e \"$file_path\"" 2>&1 || true
-		echo '{"continue": true, "systemMessage": "Removed unused code with deadnix"}'
-	else
-		echo '{"continue": true, "systemMessage": "nix-shell not available, skipping deadnix"}'
-	fi
-else
-	echo '{"continue": true}'
-fi
+# --no-lambda-pattern-names preserves 'self' in flake outputs (required by flake system)
+exec bash "$(dirname "$0")/lib/run-nix-tool.sh" \
+  "deadnix" \
+  "deadnix --no-lambda-pattern-names -e {{file}}" \
+  "Removed unused code with deadnix"
