@@ -40,3 +40,6 @@ Thumbs.db
 
 # Refactor scan working directories (per-scan artifacts)
 .refactor-scan/
+
+# Git worktrees (isolated implementation workspaces)
+.worktrees/
