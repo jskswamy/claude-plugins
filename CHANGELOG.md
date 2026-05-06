@@ -2,7 +2,186 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.9.0] - 2026-05-06
+
+### Added
+
+- Add design and implementation plan for codebase-wide refactor scan
+
+Design spec extends /refactor:scan from diff-only scanning to a
+sharded codebase-wide pipeline: per-package scanner shards write
+candidate YAML, a synthesizer correlates them into root-cause
+architectural findings, a human review gate via findings.md keeps
+the user in control, and per-section validators create rich beads
+issues with the full evidence dossier embedded in notes.
+
+Coverage targets the cross-codebase subset of Fowler's refactoring
+catalog (Bucket A): similarity-cluster, call-graph, hierarchy,
+type-discriminant, and language idiom passes. Single-file
+refactorings remain out of scope and continue to belong to
+quality-reviewer.
+
+Implementation plan decomposes the work into bite-sized tasks
+covering schema fixtures, the new synthesizer agent, scanner and
+validator extensions, four-step orchestration changes to scan.md,
+skill triggers, README, and an end-to-end smoke test.
+
+Spec: docs/superpowers/specs/2026-05-05-codebase-wide-refactor-scan-design.md
+Plan: docs/superpowers/plans/2026-05-05-codebase-wide-refactor-scan.md
+- Add codebase-wide scope to refactor scan
+
+Extends the refactor plugin from diff-only scanning to whole-
+codebase architectural review. Adds a new agent and reshapes
+the orchestration around a sharded pipeline with a human review
+gate.
+
+Synthesizer agent (new). Correlates raw scanner candidates into
+root-cause architectural findings using six signals: shared
+package locus, repeated pattern, cross-layer concept duplication,
+shared type root, call-graph hub, and architectural seam crossing.
+Writes a human-reviewable findings.md and never touches beads.
+
+Scanner extended. Now supports diff, package, and all scopes. For
+package and all scopes it enumerates functions from the codebase-
+memory-mcp index instead of parsing a diff. Five passes (A through
+E) cover the cross-codebase Fowler refactorings: similarity-cluster
+mining of pre-built SIMILAR_TO edges, call-graph analysis, hierarchy
+patterns, type-discriminant detection, and language idioms. Full
+source snippets are captured via get_code_snippet for each candidate
+so downstream agents need no further codebase access.
+
+Validator switched to section-driven flow. Reads one architectural
+section from a user-reviewed findings.md, resolves evidence-refs
+back to raw candidates, and creates one rich beads issue with the
+full evidence dossier embedded in notes. Nothing collected during
+scanning is dropped; the user's edits to the section body are
+authoritative for title, priority, and narrative.
+
+Scan command grew flags --scope, --limit, --fresh, and --clean.
+State persists to .refactor-scan/<ts>/ enabling disk-based resume:
+a dropped session re-running the command auto-detects in-flight
+state and picks up at the right stage. The human review gate keeps
+users in control: anything still in findings.md when they reply
+"proceed" becomes a beads issue.
+
+Diff-scope behavior is preserved unchanged for the existing
+post-task workflow. The skill description and README document the
+new modes and the resume model.
+
+Working dirs and beads runtime export added to .gitignore.
+
+Smoke-tested end-to-end on the tailsctl Go repo (3923 nodes, 11594
+edges including SIMILAR_TO and SEMANTICALLY_RELATED). Pipeline
+ran scanner shards across packages, synthesizer produced
+architectural findings, the review gate paused for editing, and
+validators created rich beads issues.
+- Add design for multi-agent review-commits
+
+The current /review-commits skill produces wrong-style messages after
+fixup, squash, edit, and reword operations across all stop types.
+Three root causes: GIT_SEQUENCE_EDITOR is set instead of GIT_EDITOR
+so the message editor still pops mid-rebase, "invoke /commit" is
+prose rather than a mechanical contract, and there is no
+post-condition that subjects match the saved style.
+
+The design replaces the skill with a planner/executor split. All
+message authoring moves to the planning phase; the executor replays
+pre-authored messages via git rebase --exec with GIT_EDITOR=true,
+so no editor ever opens. A revalidator walks the rewritten log and
+auto-amends any drifted subject from the synthesizer's saved text,
+avoiding token-wasting aborts.
+
+Reading parallelizes for branches with 10+ commits via subagents in
+batches; smaller branches use a single-agent fast path. The
+synthesizer is always single-agent.
+- Add implementation plan for multi-agent review-commits
+
+Twelve TDD tasks covering: scaffold and test harness, settings loader
+with CLI overrides, classic/conventional style checker, plan-schema
+doc, reader and synthesizer subagent prompts, todo builder, apply-split
+helper for edit actions, revalidator with auto-amend on drift,
+SKILL.md rewrite around the planner/executor flow, first-run threshold
+prompt, and README/changelog updates.
+
+Each task is self-contained, has bite-sized steps with full code,
+exact paths, and verifiable expectations. Self-review confirms every
+spec section is covered.
+- Add review-commits planner/executor skill
+
+The /review-commits skill previously delegated commit-message
+authoring to /commit at execute time. Messages drifted from the
+saved style after every fixup, squash, edit, and reword because
+GIT_EDITOR was left at the user's default — the message editor
+popped mid-rebase and the agent had to improvise inline,
+necessitating a follow-up cycle to fix the style.
+
+Restructure around a planner/executor split. The planner reads
+each commit oldest-to-newest, runs hygiene analysis (subject
+pairs, file-structural, semantic via codebase-memory when
+available), detects logical clusters of 4+ contiguous commits
+sharing a 3-level path prefix, and pre-authors final messages
+in the saved style by reading the style file directly. The
+executor uses GIT_EDITOR=true plus a pre-built todo with exec
+lines, so no editor ever opens during rebase. A revalidator
+walks the rewritten log and auto-amends any drifted subject
+from the saved messages.
+
+Add a library of bash and python helpers under lib/: style-check,
+build-todo, apply-split, revalidate, detect-clusters, plus the
+plan-schema and synthesizer-prompt reference docs. Includes a
+test harness with five unit tests covering each helper. SKILL.md
+drives the flow with a Branch Flow for feature-branch cleanup,
+a Main Flow for on main/master, and a soft-reset escape hatch.
+
+The codebase index freshness check compares the latest commit
+timestamp in the rebase range against the saved last_indexed
+time, with a 24-hour calendar fallback. The skill invokes
+/codebase:index when commits are newer than the graph.
+
+An initial design and a follow-up simplification design are
+both preserved at docs/specs/ to document how this skill landed
+through iteration.
+
+### Other
+
+- Extract shared scaffolding for nix-tool hooks
+
+The three PostToolUse hook scripts (nixfmt, statix, deadnix)
+duplicated identical scaffolding around a single nix-shell
+invocation: stdin JSON parse, flake.nix path gate, nix-shell
+availability gate, and JSON status emission. They differed only
+by package, command template, and success message. Style had
+already drifted between siblings (tabs vs. spaces, quoted vs.
+unquoted variables).
+
+Extract a parameterized run-nix-tool.sh helper that takes the
+package, command template (with {{file}} substitution), and
+success message. Each tool script collapses to a 4-line exec
+invocation. The three identical matcher blocks in hooks.json
+collapse into a single matcher with three hook commands.
+
+Adding a fourth nix tool now needs one ~4-line script and one
+hooks.json entry, with no risk of style drift.
+- Make review-commits parallel threshold configurable
+
+The threshold for switching from single-agent to multi-agent reading
+should not be hard-coded. Different repos and users have different
+tolerance for parallel-agent overhead, and tuning the crossover is
+exactly the kind of preference that belongs in plugin settings.
+
+Add a settings file (.claude/clean-merge.local.md) with
+parallel_threshold and parallel_batch_size, with safe defaults of 10
+and 5. Add per-invocation override flags (--parallel-threshold,
+--no-parallel, --force-parallel) and a first-run prompt that offers
+to save a custom threshold when the default would activate.
+- Ignore .worktrees for isolated implementation workspaces
 ## [1.8.2] - 2026-04-30
+
+### Changed
+
+- Update CHANGELOG for v1.8.2
+
+Document changes included in the v1.8.2 release. by @jskswamy
 
 ### Other
 
@@ -19,7 +198,11 @@ Align explore with ask by mirroring the same auto-index decision
 flow: prompt or auto-run index_repository on a missing or stale
 index according to the resolved preference, then continue. Update
 last_indexed after a successful refresh, and only fall back to
-grep/glob when the user declines or auto_index is never.
+grep/glob when the user declines or auto_index is never. by @jskswamy
+- Release v1.8.2
+
+Bump marketplace version from 1.8.1 to 1.8.2.
+Sync codebase plugin: 0.1.1 → 0.1.2. by @jskswamy
 ## [1.8.1] - 2026-04-13
 
 ### Fixed
@@ -1448,6 +1631,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.9.0]: https://github.com/jskswamy/claude-plugins/compare/v1.8.2..v1.9.0
 [1.8.2]: https://github.com/jskswamy/claude-plugins/compare/v1.8.1..v1.8.2
 [1.8.1]: https://github.com/jskswamy/claude-plugins/compare/v1.8.0..v1.8.1
 [1.8.0]: https://github.com/jskswamy/claude-plugins/compare/v1.7.0..v1.8.0
