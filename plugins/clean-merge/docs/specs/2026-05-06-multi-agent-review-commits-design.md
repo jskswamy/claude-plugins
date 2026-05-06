@@ -96,11 +96,69 @@ This addresses the root causes:
 
 | Commit count | Path |
 |--------------|------|
-| 1–9 | Single-agent fast path: main agent reads each commit sequentially, runs hygiene analysis inline, synthesizes plan |
-| 10+ | Multi-agent path: parallel readers in batches of 5, then single synthesizer |
+| < threshold | Single-agent fast path: main agent reads each commit sequentially, runs hygiene analysis inline, synthesizes plan |
+| ≥ threshold | Multi-agent path: parallel readers in batches of 5, then single synthesizer |
 
 Rationale: parallel reading only pays off when reading is the bottleneck.
-For small branches, dispatch overhead exceeds the read time.
+For small branches, dispatch overhead exceeds the read time. The exact
+crossover depends on commit size, repo, and the user's tolerance for
+parallel-agent overhead, so the threshold is configurable.
+
+### 4.1 Configuration
+
+The threshold lives in `.claude/clean-merge.local.md` (per the standard
+plugin-settings pattern):
+
+```markdown
+---
+parallel_threshold: 10
+parallel_batch_size: 5
+---
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `parallel_threshold` | `10` | Commit count at which the multi-agent path activates. `< threshold` uses single-agent. |
+| `parallel_batch_size` | `5` | Maximum number of reader subagents dispatched concurrently. |
+
+Resolution order (highest to lowest):
+
+1. CLI override (see §4.2)
+2. `.claude/clean-merge.local.md`
+3. Built-in defaults
+
+Defaults are tuned to be safe: parallel only kicks in when there are clearly
+many commits to read (≥10), and concurrency is capped at 5 to stay within
+typical harness limits.
+
+### 4.2 Per-invocation override
+
+Two CLI flags let users override the saved threshold without editing the
+settings file:
+
+| Flag | Effect |
+|------|--------|
+| `--parallel-threshold <N>` | Use N for this run only |
+| `--no-parallel` | Force single-agent path regardless of commit count |
+| `--force-parallel` | Force multi-agent path regardless of commit count |
+
+These compose with the existing `--tag` and `--base` flags.
+
+### 4.3 First-run prompt
+
+If `.claude/clean-merge.local.md` does not exist AND the current run would
+cross the default threshold, the skill asks once:
+
+```
+You have N commits to review. The default threshold for parallel reading
+is 10. Save a custom threshold for this project?
+○ Use default (10) — recommended
+○ Custom value — enter your preferred threshold
+○ Always single-agent — never parallelize for this project
+```
+
+The chosen value is written to `.claude/clean-merge.local.md`. If the user
+declines to save, the default is used for this run only.
 
 ## 5. Components
 
@@ -318,7 +376,7 @@ needed.
 
 None — all blocking decisions resolved during brainstorming:
 
-- Threshold: 1–9 single-agent, 10+ multi-agent
+- Threshold: configurable per project, default 10 (see §4.1)
 - Reader output schema: as specified in §5.1, extensible later
 - Revalidator failure mode: auto-amend
 - Executor strategy: option α (pure git, no /commit at execute)
