@@ -2,6 +2,97 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.0.0] - 2026-05-07
+
+### Breaking changes
+
+This release reorganizes five plugins into three. The plugins
+`git-commit`, `clean-merge`, `task-decomposer`, and `task-executor`
+have been removed. Their commands now ship from `commit-tools` and
+`craft`. Command names and behavior are unchanged.
+
+See `MIGRATION-v2.md` at the repo root for the uninstall/install
+steps and the full namespace mapping.
+
+### Added
+
+- Add v2.0.0 plugin reorganization design spec
+
+Five plugins in the marketplace have boundaries and names that don't
+match how a developer uses them. clean-merge is named for the
+outcome (a clean merge) but its primary command is /review-commits;
+task-decomposer and task-executor are split halves of one continuous
+beads-backed pipeline; both task plugin names tie to today's
+implementation backend rather than the user-facing capability.
+
+This spec captures the agreed reorganization: collapse to three
+capability-named plugins (commit-tools = git-commit + clean-merge,
+craft = task-decomposer + task-executor, refactor unchanged),
+preserve every command name unchanged so day-to-day muscle memory
+keeps working, and ship as marketplace v2.0.0 with a clean break.
+A migration document at the repo root walks users through the
+uninstall/install steps.
+
+The other six plugins are out of scope.
+
+### Other
+
+- Merge git-commit and clean-merge into commit-tools (v2.0.0 reorg)
+
+The two plugins covered halves of one workflow: writing atomic
+styled commits (git-commit) and reviewing/consolidating them before
+push (clean-merge). Splitting them across two installs hid that they
+share style files, share commit philosophy, and naturally chain.
+clean-merge's name also obscured what its primary command actually
+does (/review-commits).
+
+Consolidates both plugins into commit-tools at version 1.0.0:
+- /commit, /commit-style, /commit-action, /review-commits, and
+  /validate-commits all ship from the same plugin
+- The shared style files (classic.md, conventional.md) live at
+  plugins/commit-tools/styles/ and are read by both /commit and
+  /review-commits without crossing plugin boundaries
+- The PreToolUse hook that intercepts direct git commit calls
+  follows commit-tools to its new location; the
+  \${CLAUDE_PLUGIN_ROOT} placeholder auto-rebases
+- All internal absolute path references in moved skill files are
+  updated in this same commit so the tree is never broken
+
+git mv was used throughout to preserve file history. Tests pass
+unchanged at the new path (7 tests in
+plugins/commit-tools/skills/review-commits/tests/).
+
+Part of the v2.0.0 marketplace reorganization. See
+docs/superpowers/specs/2026-05-07-plugin-reorg-v2-design.md.
+- Merge task-decomposer and task-executor into craft (v2.0.0 reorg)
+
+The two plugins were halves of one continuous workflow: decompose
+work into structured units (task-decomposer), then dispatch subagents
+to execute those units (task-executor). The split exposed an
+implementation seam to users when from a creator's perspective they
+are one continuous flow. Both names also tied to today's beads
+backend rather than the user-facing capability.
+
+Consolidates both plugins into craft at version 1.0.0:
+- The full pipeline ships from one plugin: /park, /parked,
+  /review-parked, /understand, /decompose, /epic, /task, /deps,
+  /backlog, /execute, /task-commit
+- The Stop hook that nudges parked-idea triage follows craft to its
+  new location; ${CLAUDE_PLUGIN_ROOT} auto-rebases
+- The agents (issue-writer, quality-reviewer, spec-reviewer) all
+  live under plugins/craft/agents/
+- No internal absolute path references existed between the two
+  plugins, so no path edits were needed in moved files
+
+The name craft was chosen to capture what the user is actually doing
+(making something, with care) rather than the bookkeeping mechanism
+(tasks, work items). It survives any backend swap because nothing
+about "craft" implies beads.
+
+git mv preserved file history throughout.
+
+Part of the v2.0.0 marketplace reorganization. See
+docs/superpowers/specs/2026-05-07-plugin-reorg-v2-design.md.
 ## [1.10.0] - 2026-05-07
 
 ### Added
@@ -19,7 +110,7 @@ authors fresh subject + body in the saved style informed by the
 originals, and the plan review previews bodies before the user
 confirms. No schema or executor change is needed — new_message is
 already a multi-line block; the bug is what the synthesizer writes
-into it.
+into it. by @jskswamy
 - Add design spec for branch-cluster + path-heuristic in review-commits
 
 The path-prefix heuristic in detect-clusters.sh missed a 4-commit
@@ -34,7 +125,18 @@ medium-confidence cluster on any non-main branch with two or more
 commits, while keeping the existing path-prefix heuristic (with the
 depth-3 bug fixed) as a high-confidence sub-cluster refinement. The
 plan-review user gate presents both options when they fire and
-surfaces the reasoning when neither does.
+surfaces the reasoning when neither does. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG and README for v1.10.0
+
+Document the v1.10.0 release. The new section captures the design
+specs and code commits for two review-commits features: preserving
+commit message bodies through squash and amend operations, and
+detecting the whole feature branch as a medium-confidence cluster
+with a path-prefix sub-cluster refinement. Also regenerate the
+plugins section in README from the synced marketplace.json. by @jskswamy
 
 ### Other
 
@@ -47,7 +149,7 @@ change that will start authoring real bodies into new_message.
 
 build-todo.sh itself is unchanged; it already preserves multi-line
 literal blocks via parse_literal_block + rstrip. The test was
-under-asserting.
+under-asserting. by @jskswamy
 - Show body previews in review-commits plan review
 
 Step 4 now points at the git log --format command that includes
@@ -60,7 +162,7 @@ before; fixup, drop, and edit entries do not get a preview line.
 
 This is the human gate that lets reviewers catch missing or wrong
 bodies before the rebase runs. Drift recovery and the executor
-need no change — they already write whatever the plan provides.
+need no change — they already write whatever the plan provides. by @jskswamy
 - Preserve commit bodies in review-commits
 
 The review-commits skill silently dropped commit message bodies
@@ -95,7 +197,7 @@ Tests lock in the executor side end-to-end (build a real repo,
 hand-write a plan with a multi-line body, run the rebase, assert
 the final commit's %B contains the body) and strengthen the
 existing build-todo unit test to require subject + blank + body
-in the saved message file.
+in the saved message file. by @jskswamy
 - Detect branch as cluster, fix depth-3 path bug
 
 The path-prefix heuristic in detect-clusters.sh missed logical
@@ -137,7 +239,14 @@ depth 3 cluster correctly) and the cross-directory case (the
 bug-report fixture, where the path heuristic must stay silent
 so the branch heuristic owns it). A new test exercises all six
 arms of detect-branch-cluster: 4-commit branch, 2-commit
-branch, 1-commit branch, on main, on master, detached HEAD.
+branch, 1-commit branch, on main, on master, detached HEAD. by @jskswamy
+- Release v1.10.0
+
+Bump marketplace version from 1.9.0 to 1.10.0. Sync clean-merge
+plugin version from 1.2.0 to 1.3.0 to reflect two new user-visible
+features in this release: commit body preservation through squash
+and amend (review-commits), and branch-as-cluster detection with
+the depth-3 path-prefix bug fix. by @jskswamy
 ## [1.9.0] - 2026-05-06
 
 ### Added
@@ -1779,6 +1888,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.0.0]: https://github.com/jskswamy/claude-plugins/compare/v1.10.0..v2.0.0
 [1.10.0]: https://github.com/jskswamy/claude-plugins/compare/v1.9.0..v1.10.0
 [1.9.0]: https://github.com/jskswamy/claude-plugins/compare/v1.8.2..v1.9.0
 [1.8.2]: https://github.com/jskswamy/claude-plugins/compare/v1.8.1..v1.8.2

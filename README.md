@@ -45,30 +45,6 @@ This is a personal collection of useful Claude Code plugins that I've built to e
 <!-- PLUGINS:START -->
 
 
-### clean-merge
-
-Commit review, regrouping, and validation for clean git history — standalone or as part of branch merge workflows
-
-**Features:**
-- Git
-- Merge
-- Squash
-- Review
-- Validate
-
-**Install:**
-```
-/plugin install clean-merge@claude-plugins
-```
-
-**Usage:**
-```
-/cleanmerge
-```
-
-[View documentation](./plugins/clean-merge/README.md)
-
-
 ### codebase
 
 Intelligent codebase exploration powered by codebase-memory-mcp. Natural language queries, change impact analysis, symbol graph traversal, and automatic brainstorming/planning integration.
@@ -93,6 +69,54 @@ Intelligent codebase exploration powered by codebase-memory-mcp. Natural languag
 [View documentation](./plugins/codebase/README.md)
 
 
+### commit-tools
+
+End-to-end commit hygiene: write atomic commits with style enforcement, review and consolidate them before push, validate the final history
+
+**Features:**
+- Git
+- Commit
+- Atomic
+- Classic
+- Conventional
+
+**Install:**
+```
+/plugin install commit-tools@claude-plugins
+```
+
+**Usage:**
+```
+/committools
+```
+
+[View documentation](./plugins/commit-tools/README.md)
+
+
+### craft
+
+The craft of building software end-to-end: capture ideas, understand problems, decompose work into structured units, dispatch subagents to execute them, and commit with full task context
+
+**Features:**
+- Craft
+- Work
+- Build
+- Planning
+- Decomposition
+
+**Install:**
+```
+/plugin install craft@claude-plugins
+```
+
+**Usage:**
+```
+/craft
+```
+
+[View documentation](./plugins/craft/README.md)
+
+
 ### devenv
 
 Initialize and manage Nix flake development environments with auto-detection and security tooling
@@ -115,30 +139,6 @@ Initialize and manage Nix flake development environments with auto-detection and
 ```
 
 [View documentation](./plugins/devenv/README.md)
-
-
-### git-commit
-
-Generate intelligent git commit messages with classic or conventional commit style support, strict atomic commit validation, and session context awareness
-
-**Features:**
-- Auto-Activation: Triggers automatically when you ask to commit (no need to type `/commit`)
-- Two Commit Styles: Classic commits (default) and conventional commits
-- Strict Atomic Commit Validation: Warns when staged changes aren't atomic
-- Split Commits Helper: Guides you through staging changes separately
-- Pair Programming Support: Save and reuse co-author information
-
-**Install:**
-```
-/plugin install git-commit@claude-plugins
-```
-
-**Usage:**
-```
-/commit                    # Generate commit with default style (classic)
-```
-
-[View documentation](./plugins/git-commit/README.md)
 
 
 ### guardrails
@@ -194,7 +194,7 @@ Quick, low-friction capture of notes, tasks, ideas, session summaries, tech rada
 
 ### refactor
 
-Semantic refactoring opportunity detection. Scans committed code for structural duplication (Fowler catalog), code smells (Fowler/Beck), GoF design pattern opportunities, SOLID/DRY principle violations, and language-idiomatic anti-patterns (Go, Python, TypeScript). Creates beads issues with TDD-first refactoring plans. Hooks into task-executor after each task closes.
+Semantic refactoring opportunity detection. Scans committed code for structural duplication (Fowler catalog), code smells (Fowler/Beck), GoF design pattern opportunities, SOLID/DRY principle violations, and language-idiomatic anti-patterns (Go, Python, TypeScript). Creates beads issues with TDD-first refactoring plans. Hooks into craft after each task closes.
 
 **Features:**
 - Refactoring
@@ -244,59 +244,6 @@ Generate visual sketch notes in Excalidraw format from conversations, code archi
 ```
 
 [View documentation](./plugins/sketch-note/README.md)
-
-
-### task-decomposer
-
-Transform complex tasks into structured beads issues using configurable decomposition frameworks (built-in, superpowers, speckit, bmad) with proper dependencies
-
-**Features:**
-- Task Decomposition: Break down complex work into structured beads issues with dependencies and acceptance criteria
-- Multi-Epic Support: Create multiple epics per decomposition with auto-grouping based on themes
-- Idea Parking: Capture side thoughts without breaking flow, review and promote later
-- Backlog Dashboard: View all work with filters for ready, blocked, priorities, and epic progress
-- Dependency Management: Visualize and manage task dependencies with tree and mermaid formats
-
-**Install:**
-```
-/plugin install task-decomposer@claude-plugins
-```
-
-**Usage:**
-```
-/decompose "Add user authentication"                    # Full workflow
-/decompose "Add caching" --epic "Performance"           # Create as single epic
-/decompose --epics "Frontend,Backend" "Full-stack"      # Multi-epic
-/task start abc123                                      # Start working on task
-/park "Consider rate limiting"                          # Park an idea
-/backlog ready                                          # See ready tasks
-```
-
-[View documentation](./plugins/task-decomposer/README.md)
-
-
-### task-executor
-
-Execute decomposed beads tasks using framework-adaptive subagents with batch processing, dual-stage review, and atomic commits
-
-**Features:**
-- Beads
-- Execution
-- Subagent
-- Review
-- Batch
-
-**Install:**
-```
-/plugin install task-executor@claude-plugins
-```
-
-**Usage:**
-```
-/taskexecutor
-```
-
-[View documentation](./plugins/task-executor/README.md)
 
 
 ### typst-notes
