@@ -40,6 +40,9 @@ assert_eq "$todo" "$expected" "todo list"
 
 # message files written
 assert_eq "$(cat $msgdir/aaaaaaa)" "Retitled parent message" "fixup target message file"
-assert_eq "$(head -1 $msgdir/ddddddd)" "Reworded subject" "reword message file"
+assert_eq "$(head -1 $msgdir/ddddddd)" "Reworded subject" "reword message file subject"
+assert_eq "$(cat $msgdir/ddddddd)" "Reworded subject
+
+Body line." "reword message file full body"
 
 echo "PASS"
