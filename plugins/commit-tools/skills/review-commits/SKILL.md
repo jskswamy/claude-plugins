@@ -349,13 +349,13 @@ mkdir -p "$WORKING_DIR/msgs"
 ```
 
 Resolve `$STYLE_FILE` by reading `.claude/git-commit.local.md` →
-`commit_style` value → `plugins/git-commit/styles/<style>.md`. If the
+`commit_style` value → `plugins/commit-tools/styles/<style>.md`. If the
 local settings file is missing, default to `classic`.
 
 Read each commit in `$base..HEAD` oldest-to-newest using
 `git log --reverse --format='%H%x00%s%x00%b%x00---END---' "$base..HEAD"`
 so commit bodies are available to the synthesizer. Run the planning
-checklist at `plugins/clean-merge/skills/review-commits/lib/synthesizer-prompt.md`
+checklist at `plugins/commit-tools/skills/review-commits/lib/synthesizer-prompt.md`
 and write `$WORKING_DIR/plan.yaml`. Cluster detection runs as part of
 that checklist (Step 4 in the synthesizer prompt) using
 `lib/detect-clusters.sh`.
@@ -482,7 +482,7 @@ Build the todo file and message directory, then run the rebase:
 ```bash
 msgdir="$WORKING_DIR/msgs"
 mkdir -p "$msgdir"
-bash plugins/clean-merge/skills/review-commits/lib/build-todo.sh \
+bash plugins/commit-tools/skills/review-commits/lib/build-todo.sh \
   "$WORKING_DIR/plan.yaml" "$msgdir" > "$WORKING_DIR/todo"
 GIT_EDITOR=true \
 GIT_SEQUENCE_EDITOR="cat $WORKING_DIR/todo >" \
@@ -507,8 +507,8 @@ If the rebase reports a conflict:
 ### Step 7: Revalidate
 
 ```bash
-PATH_TO_LIB=plugins/clean-merge/skills/review-commits/lib \
-  bash plugins/clean-merge/skills/review-commits/lib/revalidate.sh \
+PATH_TO_LIB=plugins/commit-tools/skills/review-commits/lib \
+  bash plugins/commit-tools/skills/review-commits/lib/revalidate.sh \
   "$WORKING_DIR/plan.yaml" "$msgdir" "$base" "$STYLE_FILE" \
   || echo "drift remained — see warnings"
 ```
@@ -671,7 +671,7 @@ Step 3, which already ran it).
 
 ### With /commit
 
-This skill READS `plugins/git-commit/styles/<style>.md` directly during the
+This skill READS `plugins/commit-tools/styles/<style>.md` directly during the
 synthesis phase to author messages in the saved style. It does NOT invoke
 `/commit` at execute time — the executor is purely mechanical replay. `/commit`
 is a peer of this skill, not a caller.

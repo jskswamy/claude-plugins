@@ -91,7 +91,7 @@ for blk in blocks:
     elif a == 'edit':
         todo_lines.append(f'edit {h}')
         todo_lines.append(
-            f"exec bash plugins/clean-merge/skills/review-commits/lib/apply-split.sh {h} '{plan_q}'"
+            f"exec bash plugins/commit-tools/skills/review-commits/lib/apply-split.sh {h} '{plan_q}'"
         )
         prev_pick = h
 

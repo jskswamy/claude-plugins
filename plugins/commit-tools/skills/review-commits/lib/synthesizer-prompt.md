@@ -8,7 +8,7 @@ flow runs these steps inline.
 
 - `$base` — base SHA for the rebase
 - `$WORKING_DIR` — directory to write `plan.yaml` to
-- `$STYLE_FILE` — absolute path to `plugins/git-commit/styles/<style>.md`
+- `$STYLE_FILE` — absolute path to `plugins/commit-tools/styles/<style>.md`
 - `$SEMANTIC_AVAILABLE` — `true` if codebase-memory-mcp is reachable AND
   the index is fresh; `false` otherwise
 
@@ -16,7 +16,7 @@ flow runs these steps inline.
 
 - `git log`, `git show`, `git diff`, `git diff-tree` (read-only)
 - Read: `$STYLE_FILE`, anything under `$WORKING_DIR`
-- `bash plugins/clean-merge/skills/review-commits/lib/detect-clusters.sh "$base"`
+- `bash plugins/commit-tools/skills/review-commits/lib/detect-clusters.sh "$base"`
 - If `$SEMANTIC_AVAILABLE=true`: codebase-memory-mcp `search_graph`,
   `trace_path`, `get_architecture`
 
@@ -59,8 +59,8 @@ flow runs these steps inline.
 4. **Detect logical clusters.** Run both detectors:
 
    ```bash
-   bash plugins/clean-merge/skills/review-commits/lib/detect-clusters.sh "$base"
-   bash plugins/clean-merge/skills/review-commits/lib/detect-branch-cluster.sh "$base"
+   bash plugins/commit-tools/skills/review-commits/lib/detect-clusters.sh "$base"
+   bash plugins/commit-tools/skills/review-commits/lib/detect-branch-cluster.sh "$base"
    ```
 
    `detect-clusters.sh` finds **high-confidence sub-clusters** (contiguous
