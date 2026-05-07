@@ -58,4 +58,37 @@ done
 out=$(bash "$SCRIPT" "$base2")
 assert_eq "$out" "" "3 commits do not form a cluster (minimum 4)"
 
+# Depth-3 fixture: 4 files in one directory at exactly depth 3
+# (e.g. dev/netbox/env, dev/netbox/setup) must cluster as one run.
+mk_repo "$tmp/repo3"
+cd "$tmp/repo3"
+base3=$(git rev-parse HEAD)
+mkdir -p dev/netbox
+ne=()
+for n in env setup start start-postgres; do
+  echo "$n" > "dev/netbox/$n"
+  git add . && git -c user.email=t@t -c user.name=t commit -q -m "Add $n"
+  ne+=("$(git rev-parse --short HEAD)")
+done
+out=$(bash "$SCRIPT" "$base3")
+assert_eq "$out" "${ne[0]} ${ne[1]} ${ne[2]} ${ne[3]}" \
+  "depth-3 files in one directory cluster correctly"
+
+# Cross-dir fixture (bug report case): 4 commits, each touching a
+# different dev/<service>/ subdirectory, must NOT produce a path
+# cluster — that's the branch heuristic's job, not the path heuristic.
+mk_repo "$tmp/repo4"
+cd "$tmp/repo4"
+base4=$(git rev-parse HEAD)
+for svc in netbox telegraf grafana; do
+  mkdir -p "dev/$svc"
+  echo x > "dev/$svc/file"
+  git add . && git -c user.email=t@t -c user.name=t commit -q -m "Add $svc"
+done
+echo y > root.yaml
+git add . && git -c user.email=t@t -c user.name=t commit -q -m "Add root config"
+out=$(bash "$SCRIPT" "$base4")
+assert_eq "$out" "" \
+  "cross-dir commits do not form a path cluster"
+
 echo "PASS"

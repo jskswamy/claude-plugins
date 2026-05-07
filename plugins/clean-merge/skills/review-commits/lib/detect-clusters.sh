@@ -8,9 +8,9 @@ MIN_CLUSTER_SIZE=4
 
 mapfile -t hashes < <(git rev-list --reverse "$base..HEAD")
 
-# For each commit, compute its 3-level path prefix from the changed files.
-# If any file has fewer than 3 path components, OR files don't all share
-# the same 3-level prefix, return empty (commit doesn't fit a cluster).
+# For each commit, compute the parent directory shared by all changed
+# files. Returns empty if files don't all share the same dirname or if
+# any file is at the repo root (dirname == ".").
 prefix_of() {
   local h="$1"
   local files
@@ -19,21 +19,19 @@ prefix_of() {
     echo ""
     return
   fi
-  local first_prefix
-  first_prefix=$(echo "${files[0]}" | awk -F/ 'NF>=3 {print $1"/"$2"/"$3}')
-  if [[ -z "$first_prefix" ]]; then
+  local first_dir
+  first_dir=$(dirname "${files[0]}")
+  if [[ "$first_dir" == "." ]]; then
     echo ""
     return
   fi
   for f in "${files[@]}"; do
-    local p
-    p=$(echo "$f" | awk -F/ 'NF>=3 {print $1"/"$2"/"$3}')
-    if [[ "$p" != "$first_prefix" ]]; then
+    if [[ "$(dirname "$f")" != "$first_dir" ]]; then
       echo ""
       return
     fi
   done
-  echo "$first_prefix"
+  echo "$first_dir"
 }
 
 # Walk hashes, group contiguous runs sharing the same non-empty prefix.

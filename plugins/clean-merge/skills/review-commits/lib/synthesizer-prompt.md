@@ -56,14 +56,21 @@ flow runs these steps inline.
    codebase-memory-mcp to confirm or dismiss Layer 2's `non-atomic` flags
    via cluster membership and `trace_path`.
 
-4. **Detect logical clusters.** Run:
+4. **Detect logical clusters.** Run both detectors:
 
    ```bash
    bash plugins/clean-merge/skills/review-commits/lib/detect-clusters.sh "$base"
+   bash plugins/clean-merge/skills/review-commits/lib/detect-branch-cluster.sh "$base"
    ```
 
-   Each output line is a candidate cluster (space-separated short-hashes,
-   oldest first). For each candidate:
+   `detect-clusters.sh` finds **high-confidence sub-clusters** (contiguous
+   runs of 4+ commits sharing the same parent directory).
+   `detect-branch-cluster.sh` finds the **medium-confidence whole-branch
+   candidate** (the entire `$base..HEAD` range when on a non-main branch
+   with ≥2 commits). Each helper outputs zero or more lines of
+   space-separated short-hashes, oldest-first per line.
+
+   For each high-confidence path candidate:
 
    - Skip if any commit in the candidate is already flagged as a fixup
      target by Layer 1 (avoid double-counting).
@@ -73,8 +80,34 @@ flow runs these steps inline.
      with high confidence and use the cluster's module name as a hint when
      authoring the message. If the symbols span 2+ unrelated clusters,
      demote the candidate (do not propose a squash).
-   - If `$SEMANTIC_AVAILABLE=false`: propose with medium confidence; the
-     plan-review prompt should flag the lower confidence.
+   - If `$SEMANTIC_AVAILABLE=false`: keep at high confidence; the path
+     heuristic alone is strong enough.
+
+   For the branch candidate:
+
+   - Always present at medium confidence. Do not run semantic confirmation
+     against it — branches frequently contain unrelated commits across
+     subsystems; the user gate is the safety net.
+
+   **Combination rules:**
+
+   - **Overlap.** When the branch candidate's hash set equals a single
+     path candidate's hash set, present only the branch candidate
+     (Option A). Don't double-count the same collapse as two options.
+   - **Disjoint coverage.** When path candidates exist but together do
+     not cover the whole branch range, present both Option A
+     (whole-branch, medium) and Option B (the path sub-clusters, high).
+   - **Branch only.** When path detection finds no candidates but the
+     branch candidate fired, present Option A alone with a note that no
+     path-prefix sub-clusters were found.
+   - **Path only.** When the branch detector emitted nothing
+     (running on main/master or detached HEAD) but path candidates
+     exist, present them as today's behavior — single recommended
+     proposal at high confidence.
+   - **Neither.** When both detectors emit nothing AND `$base..HEAD`
+     has ≥2 commits, surface the reasoning to the user (the plan
+     review will render a "no cluster proposals" block — see SKILL.md
+     Step 5).
 
 5. **Read `$STYLE_FILE` in full.** The "Subject Line Rules" and "Examples"
    sections are the contract. Author **full messages** (subject, blank
