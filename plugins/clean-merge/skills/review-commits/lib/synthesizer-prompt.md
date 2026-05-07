@@ -22,12 +22,20 @@ flow runs these steps inline.
 
 ## Steps
 
-1. **Read each commit in `$base..HEAD` oldest-to-newest.** For each, build a
-   record in memory matching this shape:
+1. **Read each commit in `$base..HEAD` oldest-to-newest.** Use:
+
+   ```bash
+   git log --reverse --format='%H%x00%s%x00%b%x00---END---' "$base..HEAD"
+   ```
+
+   The `%x00` (NUL) field separators and `---END---` record terminator
+   survive any printable subject or body content. For each commit, build
+   a record in memory matching this shape:
 
    ```yaml
    hash: <abbrev>
    subject: <original>
+   body: <original body, may be empty>
    files: [...]
    top_level_dirs: [...]
    concern: <one-line>
@@ -69,11 +77,27 @@ flow runs these steps inline.
      plan-review prompt should flag the lower confidence.
 
 5. **Read `$STYLE_FILE` in full.** The "Subject Line Rules" and "Examples"
-   sections are the contract. Author messages in this style for:
-   - every action that is `reword` or `squash` (existing v1 behavior)
-   - the first commit of each confirmed cluster (new v2 behavior)
+   sections are the contract. Author **full messages** (subject, blank
+   line, body) in this style for:
+   - every action that is `reword` or `squash`
+   - the first commit of each confirmed cluster
+   - any `fixup` whose `fixup_target_message` you are setting
+
+   The body must be informed by the original bodies of every commit being
+   folded (for cluster `pick` + `fixup`s and for any standalone `squash` /
+   `fixup`) or by the original body of the commit itself (for `reword`).
+   Your job is to *understand* what each squashed commit contributed and
+   write one coherent body that explains the collapsed change. Do not
+   concatenate the originals verbatim. Do not paraphrase line-by-line.
+   Read them as raw material, then author fresh prose in the saved style.
+
+   Skip the body only when the originals truly had nothing meaningful to
+   say (subject-only TDD scaffolds) — in that case a subject-only message
+   is correct.
+
    The first line must pass
-   `bash lib/style-check.sh "<subject>" "$STYLE_FILE"`.
+   `bash lib/style-check.sh "<subject>" "$STYLE_FILE"`. There is no
+   body-level style check.
 
 6. **Emit `plan.yaml` to `$WORKING_DIR/plan.yaml`** matching
    `lib/plan-schema.md`. Cluster collapse uses `pick` on the first commit
