@@ -2,6 +2,142 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [1.10.0] - 2026-05-07
+
+### Added
+
+- Add design spec for preserving commit bodies in review-commits
+
+The review-commits skill currently drops commit message bodies during
+squash and amend operations. The synthesizer reads commits via
+git log --oneline (subject only), and the plan review shows only
+subjects, so users cannot see what context is about to be lost.
+
+This spec captures the four root causes from the bug report and the
+agreed fix: synthesizer reads full bodies via git log --format=%H%s%b,
+authors fresh subject + body in the saved style informed by the
+originals, and the plan review previews bodies before the user
+confirms. No schema or executor change is needed — new_message is
+already a multi-line block; the bug is what the synthesizer writes
+into it.
+- Add design spec for branch-cluster + path-heuristic in review-commits
+
+The path-prefix heuristic in detect-clusters.sh missed a 4-commit
+logical cluster on the process-compose-script-extraction branch
+because each commit touched a different dev/<service>/ subdirectory.
+The heuristic also has a latent depth-3 correctness bug — it returns
+the filename as the prefix instead of the parent directory.
+
+This spec captures the agreed design: introduce a new
+detect-branch-cluster.sh that proposes the whole branch as a
+medium-confidence cluster on any non-main branch with two or more
+commits, while keeping the existing path-prefix heuristic (with the
+depth-3 bug fixed) as a high-confidence sub-cluster refinement. The
+plan-review user gate presents both options when they fire and
+surfaces the reasoning when neither does.
+
+### Other
+
+- Lock in full-body preservation in build-todo test
+
+Strengthens the reword fixture assertion: the saved message file
+must contain the full subject + blank line + body, not just the
+subject. This is regression protection ahead of the synthesizer
+change that will start authoring real bodies into new_message.
+
+build-todo.sh itself is unchanged; it already preserves multi-line
+literal blocks via parse_literal_block + rstrip. The test was
+under-asserting.
+- Show body previews in review-commits plan review
+
+Step 4 now points at the git log --format command that includes
+commit bodies, aligning the SKILL narrative with the synthesizer
+prompt. Step 5's plan-review render shows the first 2 wrapped lines
+of any pick or reword commit's authored body indented under its
+subject, so users can see what context is about to be committed
+before they accept the rebase plan. Subject-only entries render as
+before; fixup, drop, and edit entries do not get a preview line.
+
+This is the human gate that lets reviewers catch missing or wrong
+bodies before the rebase runs. Drift recovery and the executor
+need no change — they already write whatever the plan provides.
+- Preserve commit bodies in review-commits
+
+The review-commits skill silently dropped commit message bodies
+during squash and amend operations. The synthesizer read commits
+via git log --oneline (subject only) and wrote only subjects into
+new_message and fixup_target_message, so any body text on the
+original commits was lost when the rebase folded them. This
+affected the most common case: TDD branches whose individual
+commits carried explanations of why a particular API shape was
+needed or why a test was deleted.
+
+Three coordinated changes fix it without touching the schema:
+
+- Read full bodies in the planning phase via
+  `git log --reverse --format='%H%x00%s%x00%b%x00---END---'`.
+  The synthesizer record now carries a `body` field alongside
+  subject, files, and concern.
+- Author full messages (subject + blank line + body) in the saved
+  style for every reword, squash, and cluster pick. The body is
+  informed by the original bodies of every commit being folded —
+  the synthesizer understands what each contributed and writes
+  one coherent body, not a verbatim concatenation.
+- Show body previews in the plan-review user gate, indented under
+  the subject for any pick or reword that carries an authored
+  body. Subject-only entries render as before.
+
+build-todo.sh and revalidate.sh need no change — both already
+amend with `-F tmpfile` and write whatever message the plan
+provides.
+
+Tests lock in the executor side end-to-end (build a real repo,
+hand-write a plan with a multi-line body, run the rebase, assert
+the final commit's %B contains the body) and strengthen the
+existing build-todo unit test to require subject + blank + body
+in the saved message file.
+- Detect branch as cluster, fix depth-3 path bug
+
+The path-prefix heuristic in detect-clusters.sh missed logical
+clusters that span sibling directories — for example, a refactor
+that extracts one file per service into dev/netbox/,
+dev/telegraf/, dev/grafana/, plus a wiring commit at the repo
+root. The heuristic required every commit in a contiguous run to
+share the same parent directory, and split-by-service feature
+branches never satisfied that. The user's own branch decision
+was the missing signal.
+
+Two changes:
+
+- Replace the broken awk-based prefix in detect-clusters.sh
+  with dirname. The previous code used $1/$2/$3 with NF>=3,
+  which at exactly depth 3 (three slash-separated fields, e.g.
+  dev/netbox/env) returned the filename rather than the parent
+  directory. Two such commits in the same directory yielded
+  different "prefixes" and never clustered. The new logic uses
+  the parent directory at any depth >= 1.
+- Add detect-branch-cluster.sh, a single-purpose helper that
+  proposes the entire $base..HEAD range as one
+  medium-confidence cluster on any non-main / non-master branch
+  with at least two commits. On main, master, detached HEAD, or
+  branches with fewer than two commits, it emits nothing.
+  Output format matches detect-clusters.sh so downstream
+  consumers handle them uniformly.
+
+The synthesizer's planning checklist now runs both detectors and
+combines their outputs per documented rules: overlap collapses
+to the branch option only, disjoint coverage presents Option A
+(whole-branch, medium) alongside Option B (path sub-clusters,
+high), branch-only and path-only present a single proposal, and
+neither emitting a candidate triggers a "no cluster +
+reasoning" render in the plan-review user gate.
+
+Tests cover both the depth-3 fix (4 files in one directory at
+depth 3 cluster correctly) and the cross-directory case (the
+bug-report fixture, where the path heuristic must stay silent
+so the branch heuristic owns it). A new test exercises all six
+arms of detect-branch-cluster: 4-commit branch, 2-commit
+branch, 1-commit branch, on main, on master, detached HEAD.
 ## [1.9.0] - 2026-05-06
 
 ### Added
@@ -27,7 +163,7 @@ validator extensions, four-step orchestration changes to scan.md,
 skill triggers, README, and an end-to-end smoke test.
 
 Spec: docs/superpowers/specs/2026-05-05-codebase-wide-refactor-scan-design.md
-Plan: docs/superpowers/plans/2026-05-05-codebase-wide-refactor-scan.md
+Plan: docs/superpowers/plans/2026-05-05-codebase-wide-refactor-scan.md by @jskswamy
 - Add codebase-wide scope to refactor scan
 
 Extends the refactor plugin from diff-only scanning to whole-
@@ -74,7 +210,7 @@ Smoke-tested end-to-end on the tailsctl Go repo (3923 nodes, 11594
 edges including SIMILAR_TO and SEMANTICALLY_RELATED). Pipeline
 ran scanner shards across packages, synthesizer produced
 architectural findings, the review gate paused for editing, and
-validators created rich beads issues.
+validators created rich beads issues. by @jskswamy
 - Add design for multi-agent review-commits
 
 The current /review-commits skill produces wrong-style messages after
@@ -93,7 +229,7 @@ avoiding token-wasting aborts.
 
 Reading parallelizes for branches with 10+ commits via subagents in
 batches; smaller branches use a single-agent fast path. The
-synthesizer is always single-agent.
+synthesizer is always single-agent. by @jskswamy
 - Add implementation plan for multi-agent review-commits
 
 Twelve TDD tasks covering: scaffold and test harness, settings loader
@@ -105,7 +241,7 @@ prompt, and README/changelog updates.
 
 Each task is self-contained, has bite-sized steps with full code,
 exact paths, and verifiable expectations. Self-review confirms every
-spec section is covered.
+spec section is covered. by @jskswamy
 - Add review-commits planner/executor skill
 
 The /review-commits skill previously delegated commit-message
@@ -140,7 +276,13 @@ time, with a 24-hour calendar fallback. The skill invokes
 
 An initial design and a follow-up simplification design are
 both preserved at docs/specs/ to document how this skill landed
-through iteration.
+through iteration. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG for v1.9.0
+
+Document all changes included in the v1.9.0 release. by @jskswamy
 
 ### Other
 
@@ -161,7 +303,7 @@ invocation. The three identical matcher blocks in hooks.json
 collapse into a single matcher with three hook commands.
 
 Adding a fourth nix tool now needs one ~4-line script and one
-hooks.json entry, with no risk of style drift.
+hooks.json entry, with no risk of style drift. by @jskswamy
 - Make review-commits parallel threshold configurable
 
 The threshold for switching from single-agent to multi-agent reading
@@ -173,8 +315,14 @@ Add a settings file (.claude/clean-merge.local.md) with
 parallel_threshold and parallel_batch_size, with safe defaults of 10
 and 5. Add per-invocation override flags (--parallel-threshold,
 --no-parallel, --force-parallel) and a first-run prompt that offers
-to save a custom threshold when the default would activate.
-- Ignore .worktrees for isolated implementation workspaces
+to save a custom threshold when the default would activate. by @jskswamy
+- Ignore .worktrees for isolated implementation workspaces by @jskswamy
+- Release v1.9.0
+
+Bump marketplace version from 1.8.2 to 1.9.0.
+Bump clean-merge plugin from 1.1.0 to 1.2.0 — minor bump for the
+new planner/executor review-commits skill, logical clustering
+detection, and revalidator auto-amend. by @jskswamy
 ## [1.8.2] - 2026-04-30
 
 ### Changed
@@ -1631,6 +1779,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[1.10.0]: https://github.com/jskswamy/claude-plugins/compare/v1.9.0..v1.10.0
 [1.9.0]: https://github.com/jskswamy/claude-plugins/compare/v1.8.2..v1.9.0
 [1.8.2]: https://github.com/jskswamy/claude-plugins/compare/v1.8.1..v1.8.2
 [1.8.1]: https://github.com/jskswamy/claude-plugins/compare/v1.8.0..v1.8.1
