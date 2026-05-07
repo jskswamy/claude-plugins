@@ -352,8 +352,10 @@ Resolve `$STYLE_FILE` by reading `.claude/git-commit.local.md` →
 `commit_style` value → `plugins/git-commit/styles/<style>.md`. If the
 local settings file is missing, default to `classic`.
 
-Read each commit in `$base..HEAD` oldest-to-newest, run the planning
-checklist at `plugins/clean-merge/skills/review-commits/lib/synthesizer-prompt.md`,
+Read each commit in `$base..HEAD` oldest-to-newest using
+`git log --reverse --format='%H%x00%s%x00%b%x00---END---' "$base..HEAD"`
+so commit bodies are available to the synthesizer. Run the planning
+checklist at `plugins/clean-merge/skills/review-commits/lib/synthesizer-prompt.md`
 and write `$WORKING_DIR/plan.yaml`. Cluster detection runs as part of
 that checklist (Step 4 in the synthesizer prompt) using
 `lib/detect-clusters.sh`.
@@ -377,8 +379,10 @@ Rebase plan for N commits on <branch-name>:
     ...
 
   Proposed sequence:
-    pick   c844c6a  Add sync-beads skill
-    fixup  7de838b  ↳ folded into above
+    pick   9e14e75  Add NetBoxClient interface, mock, and validation
+                      Adds NetBoxClient as the testable boundary for all
+                      NetBox HTTP calls. The mock is generated via…
+    fixup  3312c0b  ↳ folded into above
     edit   a1b2c3d  Update auth handler  ← will split into 2
     drop   f4e5d6c  Fix unrelated typo
 
@@ -386,6 +390,12 @@ Rebase plan for N commits on <branch-name>:
 ○ Modify — adjust action for specific commits
 ○ Reset — soft-reset and regroup manually (escape hatch)
 ```
+
+For any `pick` or `reword` whose authored `new_message` carries a body,
+show the first 2 wrapped lines of the body indented under the subject
+(max ~160 chars total, ellipsis if truncated). Subject-only entries
+render as today. `fixup`, `drop`, and `edit` entries never get a body
+preview line — only `pick` and `reword` carry `new_message`.
 
 If "Modify": use AskUserQuestion to let the user change the action for any
 commit. Re-display the updated plan for confirmation.
