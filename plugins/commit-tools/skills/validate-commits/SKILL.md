@@ -1,9 +1,10 @@
 ---
 name: validate-commits
 description: >
-  Validate commits before pushing. Runs five deterministic checks: clean
+  Validate commits before pushing. Runs six deterministic checks: clean
   worktree, tests pass, no AI co-author leaks (Claude, Anthropic, GPT,
-  OpenAI, Copilot), no conflict markers, no squash/fixup residue.
+  OpenAI, Copilot), no conflict markers, no squash/fixup residue, and
+  subject lines conform to the configured style (classic or conventional).
   Activates on: "validate commits", "check commits before push",
   "any AI leaks", "check for co-author", "are my commits clean",
   "validate before pushing", "check commits".
@@ -12,8 +13,9 @@ argument-hint: "[--base <ref>]"
 
 # Validate Commits
 
-Run five deterministic checks against unpushed commits. All checks use
-git commands and grep — no LLM judgment.
+Run six deterministic checks against unpushed commits. All checks use
+git commands, grep, and the shared `style-check.sh` script — no LLM
+judgment.
 
 ## Precondition
 
@@ -48,7 +50,7 @@ If `git log --oneline $BASE..HEAD` produces no commits, report
 
 ## Checks
 
-Run ALL five checks regardless of individual failures. Collect results,
+Run ALL six checks regardless of individual failures. Collect results,
 then report everything at once.
 
 ### Check 1: Clean Worktree
@@ -130,9 +132,39 @@ is a failure.
 - **Pass:** No subjects start with `fixup!` or `squash!`
 - **Fail:** List each commit hash and subject
 
+### Check 6: Subjects Conform to Style
+
+Resolve the active style file:
+
+1. Read `.claude/git-commit.local.md` and extract the `commit_style` value
+   from its YAML frontmatter
+2. If missing, default to `classic`
+3. Style file path: `plugins/commit-tools/styles/<style>.md`
+
+Then for each commit in `$BASE..HEAD`, run the shared style check:
+
+```bash
+SCRIPT=plugins/commit-tools/skills/review-commits/lib/style-check.sh
+for h in $(git rev-list --reverse $BASE..HEAD); do
+  subj=$(git log -1 --format=%s "$h")
+  if ! reason=$(bash "$SCRIPT" "$subj" "$STYLE_FILE" 2>&1); then
+    echo "  ✗ $h '$subj' — $reason"
+  fi
+done
+```
+
+The script enforces the loaded style's rules. For `classic` these are:
+≤50 chars, leading uppercase, no trailing period, no `word:` type prefix,
+imperative mood (best-effort denylist of common past/3rd-person/gerund
+forms). For `conventional`: ≤72 chars and the standard `type(scope)?: description`
+format.
+
+- **Pass:** Every subject conforms
+- **Fail:** List each non-conforming commit hash, subject, and reason
+
 ## Report Results
 
-Display all five results using checkmark/cross format:
+Display all six results using checkmark/cross format:
 
 ```
 Post-commit validation:
@@ -143,6 +175,8 @@ Post-commit validation:
     Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
   ✓ No conflict markers
   ✓ No squash residue
+  ✗ Style violation in commit a1b2c3d
+    'Spec: declarative agent provisioning' — subject has type-prefix (classic forbids 'word:' prefixes)
 ```
 
 If ALL pass: "All checks passed. Ready to push."
@@ -175,4 +209,6 @@ If "No": Report the failure and let the user handle it.
 
 ## No Other Auto-Fixes
 
-Checks 1, 2, 4, and 5 report failures only. The user must fix them.
+Checks 1, 2, 4, 5, and 6 report failures only. The user must fix them.
+Style violations (Check 6) are typically fixed by running `/review-commits`,
+which rewrites drifted subjects against the saved style.

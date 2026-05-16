@@ -536,7 +536,25 @@ Add email validation and rate limiting.
 
 ### Step 7b: Validate Commit Message (LLM as Judge)
 
-**CRITICAL:** Before presenting the commit message to the user, evaluate it for leaked internal context. This is a self-check — you are acting as both generator and judge.
+**CRITICAL:** Before presenting the commit message to the user, evaluate it for style violations AND leaked internal context. This is a self-check — you are acting as both generator and judge.
+
+#### 7b.1: Subject Style Check (deterministic)
+
+Run the shared style script against the generated subject line:
+
+```bash
+SCRIPT=plugins/commit-tools/skills/review-commits/lib/style-check.sh
+STYLE_FILE=plugins/commit-tools/styles/<selected_style>.md
+bash "$SCRIPT" "$subject" "$STYLE_FILE"
+```
+
+If the script exits non-zero, silently regenerate the subject so it
+conforms (preserve the body), then re-run the check. The classic style
+enforces: ≤50 chars, leading uppercase, no trailing period, no `word:`
+type prefix, imperative mood. The conventional style enforces its own
+`type(scope)?: description` format.
+
+#### 7b.2: Content Leak Check (LLM judgment)
 
 **Review the generated message and REJECT it if it contains ANY of:**
 
@@ -616,6 +634,13 @@ What would you like to do?
   Current: Add user session timeout handling\n\nImplement automatic...
   ```
 - Parse the edited message, preserving the user's formatting
+- **Re-run Step 7b on the edited subject.** If the deterministic style
+  check (7b.1) fails, show the violation reason and offer:
+  - "Re-edit" — return to the text input
+  - "Auto-fix" — silently rewrite the subject to conform, keep the body
+  - "Commit anyway" — only if user explicitly overrides
+  The content leak check (7b.2) MUST also pass; on failure, strip leaked
+  content silently before continuing.
 
 **If "Regenerate" selected:**
 - Ask: "Any additional context to help generate a better message?"
