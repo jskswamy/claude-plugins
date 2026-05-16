@@ -273,7 +273,6 @@ Generate beautiful PDF/HTML shareable notes using Typst with 7 professional temp
 ```
 
 [View documentation](./plugins/typst-notes/README.md)
-
 <!-- PLUGINS:END -->
 
 ## Roadmap

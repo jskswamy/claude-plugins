@@ -2,17 +2,38 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.0.1] - 2026-05-16
+
+### Other
+
+- Enforce classic style rules in commit-tools
+
+The classic style guide forbids type prefixes, requires imperative
+mood, and caps subjects at 50 characters, but none of the commit-tools
+skills enforced those rules. A subject like "Spec: declarative agent
+provisioning" passed every check despite violating two rules.
+
+The shared style-check.sh script (used by /review-commits) only
+checked length, capitalization, and trailing period, and its length
+limit was 72 rather than 50.
+
+Changes:
+- Fix classic length limit to 50 chars per the style guide
+- Reject leading "word:" type prefixes (feat:, Spec:, fix:, etc.)
+- Reject common non-imperative first words via an explicit denylist,
+  avoiding false positives on imperative roots like Bring or Process
+- Add Check 6 to /validate-commits that runs style-check.sh against
+  every subject in base..HEAD, keeping all checks deterministic
+- Split /commit Step 7b into a deterministic style check followed by
+  the existing content-leak judge, and re-run both after the user
+  edits a message in Step 8 so manually-typed subjects cannot bypass
+  the rules
+- Extend test-style-check.sh with cases for the new behaviors,
+  including 50-char boundary, type-prefix rejection, and imperative
+  root positives
+
+Fixes #3
 ## [2.0.0] - 2026-05-07
-
-### Breaking changes
-
-This release reorganizes five plugins into three. The plugins
-`git-commit`, `clean-merge`, `task-decomposer`, and `task-executor`
-have been removed. Their commands now ship from `commit-tools` and
-`craft`. Command names and behavior are unchanged.
-
-See `MIGRATION-v2.md` at the repo root for the uninstall/install
-steps and the full namespace mapping.
 
 ### Added
 
@@ -33,7 +54,32 @@ keeps working, and ship as marketplace v2.0.0 with a clean break.
 A migration document at the repo root walks users through the
 uninstall/install steps.
 
-The other six plugins are out of scope.
+The other six plugins are out of scope. by @jskswamy
+
+### Changed
+
+- Update marketplace and add migration guide for v2.0.0
+
+Reflects the plugin consolidation in earlier commits:
+- Removes the git-commit, clean-merge, task-decomposer, and
+  task-executor entries from .claude-plugin/marketplace.json
+- Adds commit-tools and craft entries (both at version 1.0.0)
+- Bumps metadata.version from 1.10.0 to 2.0.0 (breaking change)
+- Regenerates the plugins section in README.md from the new
+  marketplace.json
+- Prepends a v2.0.0 section to CHANGELOG.md with a hand-written
+  Breaking changes block pointing readers to the migration guide
+- Adds MIGRATION-v2.md at the repo root with the full
+  uninstall/install steps and the old-namespace to new-namespace
+  mapping for any settings.json or script that hard-codes
+  plugin:command references
+
+Bare command invocations (/commit, /review-commits, /decompose,
+etc.) continue to work after the reinstallation. Skill behavior,
+hooks, style files, and local settings are all unchanged.
+
+Part of the v2.0.0 marketplace reorganization. See
+docs/superpowers/specs/2026-05-07-plugin-reorg-v2-design.md. by @jskswamy
 
 ### Other
 
@@ -63,7 +109,7 @@ unchanged at the new path (7 tests in
 plugins/commit-tools/skills/review-commits/tests/).
 
 Part of the v2.0.0 marketplace reorganization. See
-docs/superpowers/specs/2026-05-07-plugin-reorg-v2-design.md.
+docs/superpowers/specs/2026-05-07-plugin-reorg-v2-design.md. by @jskswamy
 - Merge task-decomposer and task-executor into craft (v2.0.0 reorg)
 
 The two plugins were halves of one continuous workflow: decompose
@@ -92,7 +138,7 @@ about "craft" implies beads.
 git mv preserved file history throughout.
 
 Part of the v2.0.0 marketplace reorganization. See
-docs/superpowers/specs/2026-05-07-plugin-reorg-v2-design.md.
+docs/superpowers/specs/2026-05-07-plugin-reorg-v2-design.md. by @jskswamy
 ## [1.10.0] - 2026-05-07
 
 ### Added
@@ -1888,6 +1934,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.0.1]: https://github.com/jskswamy/claude-plugins/compare/v2.0.0..v2.0.1
 [2.0.0]: https://github.com/jskswamy/claude-plugins/compare/v1.10.0..v2.0.0
 [1.10.0]: https://github.com/jskswamy/claude-plugins/compare/v1.9.0..v1.10.0
 [1.9.0]: https://github.com/jskswamy/claude-plugins/compare/v1.8.2..v1.9.0
