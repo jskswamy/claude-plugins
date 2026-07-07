@@ -93,6 +93,9 @@ WORKBENCH_PATH=$(eval echo "~/workbench")
 
 Check if `.claude/jot.local.md` exists and read `workbench_path` from YAML frontmatter.
 
+Read `~/.claude/jot.md` (expand `~` to home directory) and extract `capture_backend` and `capacities_mapping`.
+If the file does not exist or `capture_backend` is absent, default to `workbench` and note: "No capture backend configured. Run `/jot:setup` to choose between workbench and Capacities. Saving to workbench for now." (show this note only once, at Step 11).
+
 ### Step 3: Ensure Directory Structure
 
 Create the target directory if it doesn't exist:
@@ -186,6 +189,12 @@ Scan existing notes in the workbench for related content:
 
 ### Step 11: Save the Note
 
+Use the `capture_backend` value read in Step 2 to decide where to save.
+
+#### If capture_backend == "workbench" (or not configured)
+
+If `capture_backend` was absent from `~/.claude/jot.md`, show the note from Step 2 now.
+
 Generate filename:
 - Quick captures (task, note, idea): `YYYY-MM-DD-slugified-title.md`
 - Session: `YYYY-MM-DD-session-slugified-goal.md`
@@ -197,12 +206,38 @@ Save to the appropriate directory:
 ${WORKBENCH_PATH}/notes/[type]/[filename]
 ```
 
+#### If capture_backend == "capacities"
+
+Look up the current capture type in `capacities_mapping` from `~/.claude/jot.md`.
+
+**If the capture type has no entry in `capacities_mapping`:**
+1. Tell the user: "No Capacities mapping found for '[type]'. Let me configure it now."
+2. Ask the user for the Capacities type name to use.
+3. Call `getObjectTypeShape(objectType: "<user's answer>")` to validate and retrieve fields.
+4. If valid, append the new entry under `capacities_mapping` in `~/.claude/jot.md` and continue.
+5. If invalid, warn and repeat from step 2 above until a valid type is provided.
+
+**If the mapped type is `"daily_note"`:**
+Call `saveToDailyNote` with the full formatted note content as markdown text.
+
+**Otherwise:**
+Build a markdown document using the stored `fields` array to construct YAML frontmatter:
+```
+---
+title: "<note title>"
+<frontmatterKey>: "<value from note content if available, omit if not>"
+---
+
+<full note body content>
+```
+Call `createObjectViaMD(objectType: mapping.type, title: <note title>, markdown: <document above>)`.
+
 ### Step 12: Report Success
 
-Tell the user:
-"Captured [type] to [full path]"
+- **workbench:** "Captured [type] to [full path]"
+- **capacities:** "Captured [type] to Capacities as [Capacities type name]"
 
-If related notes were found, also mention:
+If related notes were found (workbench only), also mention:
 "Linked to [N] related notes"
 
 ## Examples

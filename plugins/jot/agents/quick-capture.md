@@ -98,6 +98,19 @@ workbench_path: ~/workbench
 ```
 Default: `~/workbench` if not configured.
 
+Also read `~/.claude/jot.md` (global config, expand `~` to home directory):
+```yaml
+---
+capture_backend: workbench   # workbench | capacities
+capacities_mapping:
+  task:
+    type: "Task"
+    fields: [...]
+  # ... all 12 types
+---
+```
+Default `capture_backend` to `workbench` if the file is absent or the key is missing.
+
 **Capture Types:**
 
 | Type | Folder | Description | Aliases |
@@ -282,6 +295,12 @@ Search existing notes:
 
 ### Step 9: Save the Note
 
+Use the `capture_backend` value from the Configuration block to decide where to save.
+
+#### If capture_backend == "workbench" (or not configured)
+
+If `capture_backend` was absent from `~/.claude/jot.md`, inform the user once: "No capture backend configured. Run `/jot:setup` to choose between workbench and Capacities. Saving to workbench for now."
+
 **Filename formats:**
 - Task/Note/Idea (inbox items): `YYYY-MM-DD-slugified-title.md` (keep date for GTD processing)
 - Session: `slugified-goal.md` (no date prefix)
@@ -297,9 +316,36 @@ Create directory if needed:
 mkdir -p "${WORKBENCH_PATH}/notes/[folder]"
 ```
 
+#### If capture_backend == "capacities"
+
+Look up the current capture type in `capacities_mapping` from `~/.claude/jot.md`.
+
+**If the capture type has no entry in `capacities_mapping`:**
+1. Tell the user: "No Capacities mapping found for '[type]'. Let me configure it now."
+2. Ask the user for the Capacities type name to use.
+3. Call `getObjectTypeShape(objectType: "<user's answer>")` to validate and retrieve fields.
+4. If valid, append the new entry under `capacities_mapping` in `~/.claude/jot.md` and continue.
+5. If invalid, warn and repeat from step 2 above until a valid type is provided.
+
+**If the mapped type is `"daily_note"`:**
+Call `saveToDailyNote` with the full formatted note content as markdown text.
+
+**Otherwise:**
+Build a markdown document using the stored `fields` array:
+```
+---
+title: "<note title>"
+<frontmatterKey>: "<value from note content if available, omit if not>"
+---
+
+<full note body content>
+```
+Call `createObjectViaMD(objectType: mapping.type, title: <note title>, markdown: <document above>)`.
+
 ### Step 10: Report Success
 
-Brief confirmation: "Captured to [path]"
+- **workbench:** Brief confirmation: "Captured to [full path]"
+- **capacities:** Brief confirmation: "Captured [type] to Capacities as [Capacities type name]"
 
 **Quality Standards:**
 - Minimize questions to reduce friction
