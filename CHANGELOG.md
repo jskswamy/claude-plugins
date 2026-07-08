@@ -2,7 +2,31 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.0.2] - 2026-07-08
+
+### Added
+
+- Add Capacities backend to jot v1.5.0
+
+Users can now choose where jot saves captures: to the
+local workbench folder or to their Capacities knowledge
+space via MCP. Backend is configured once with a new
+/jot:setup command and stored in ~/.claude/jot.md.
+
+Setup discovers Capacities object types at runtime,
+builds a jot-type to Capacities-type mapping with field
+schemas, and handles reconfiguration. All three capture
+surfaces (commands/capture, agents/quick-capture,
+agents/capture) route saves based on the stored
+capture_backend value.
 ## [2.0.1] - 2026-05-16
+
+### Changed
+
+- Update CHANGELOG and README for v2.0.1
+
+Document the commit-tools classic style enforcement fix in CHANGELOG.
+Regenerate the plugins section in README from marketplace.json. by @jskswamy
 
 ### Other
 
@@ -32,7 +56,11 @@ Changes:
   including 50-char boundary, type-prefix rejection, and imperative
   root positives
 
-Fixes #3
+Fixes #3 by @jskswamy
+- Release v2.0.1
+
+Bump marketplace version from 2.0.0 to 2.0.1.
+Sync commit-tools plugin to 1.0.1 for the classic style-rule fix. by @jskswamy
 ## [2.0.0] - 2026-05-07
 
 ### Added
@@ -1934,6 +1962,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.0.2]: https://github.com/jskswamy/claude-plugins/compare/v2.0.1..v2.0.2
 [2.0.1]: https://github.com/jskswamy/claude-plugins/compare/v2.0.0..v2.0.1
 [2.0.0]: https://github.com/jskswamy/claude-plugins/compare/v1.10.0..v2.0.0
 [1.10.0]: https://github.com/jskswamy/claude-plugins/compare/v1.9.0..v1.10.0
