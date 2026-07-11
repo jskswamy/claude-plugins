@@ -26,49 +26,63 @@ Set `capture_backend: workbench` and write back to `~/.claude/jot.md`.
 
 Report: "Configured. Captures will save to your workbench folder."
 
-## Step 3: If capacities chosen — Confirm Type Mapping
+## Step 3: If capacities chosen — Discover and Confirm Type Mapping
 
-Present the following default jot-to-Capacities mapping to the user:
+### Step 3a: Discover Available Types via MCP
 
-| jot type     | Default Capacities type       |
-|--------------|-------------------------------|
-| task         | Task                          |
-| note         | Page                          |
-| idea         | Page                          |
-| session      | daily_note *(special)*        |
-| blip         | Page                          |
-| article      | Page                          |
-| video        | Page                          |
-| person       | Person                        |
-| book         | Book                          |
-| organisation | Page                          |
-| trove        | Page                          |
-| research     | Page                          |
+Call `getObjectTypeShape` for each non-`daily_note` type in the default mapping table — run all calls in parallel. The goal is not just validation but **understanding the relationship topology** of the user's Capacities space: what entity fields each type has, what other types those fields link to (`allowedStructureIds`), and how the types connect.
 
-`daily_note` is a special value — session captures use `saveToDailyNote` instead of `createObjectViaMD`. Skip validation for this type.
+Default mapping to probe:
 
-Tell the user: "Here are the proposed jot → Capacities type mappings. Say 'yes' to accept all, or provide overrides as space- or comma-separated key=value pairs (e.g. `note=Article, blip=Blip`). Extract all key=value tokens from the user's response, ignoring surrounding prose."
+| jot type | Default Capacities type |
+|---|---|
+| task | Task |
+| note | Page |
+| idea | Page |
+| session | daily_note *(skip — uses `saveToDailyNote`)* |
+| blip | Blip |
+| article | Page |
+| video | Weblink |
+| person | Person |
+| book | Book |
+| organisation | Organization |
+| trove | Trove |
+| research | Research |
+| weblink | Weblink |
 
-Wait for their response. Apply any overrides to the mapping before proceeding.
+For each call:
+- **Success** → extract the type's title, its entity fields (`type: entity`), and `allowedStructureIds` per field
+- **Failure** → type not found in this space; mark as missing
 
-## Step 4: Validate Capacities Types via getObjectTypeShape
+### Step 3b: Present Relationship Summary to User
 
-For each mapping where the Capacities type is NOT `daily_note`:
+Show a summary of what was discovered. For each jot type, show: found/not-found, key entity fields, and what types those fields accept.
 
-1. Call `getObjectTypeShape(objectType: "<mapped type>")` via the Capacities MCP. If the Capacities MCP tool is unavailable, stop and tell the user: 'Capacities MCP is not connected. Connect it and re-run `/jot:setup`.'
-2. **If the call fails or returns no writable properties:**
-   - Warn: "Type '[name]' was not found in your Capacities space."
-   - Ask the user: "What Capacities type should jot use for '[jot type]' captures?"
-   - Re-validate the new name (repeat this step for that type only).
-   - After 3 failed attempts for any one type, ask the user: 'Skip this jot type for now, or abort setup entirely?' and honour their choice.
-3. **If valid:** extract the list of writable fields from the response — each item has a `frontmatterKey` (string) and an indication of whether it is required.
+Example:
+```
+✓ Blip         — ring, quadrant, link, related (→ any), tags
+✓ Research     — date, blips (→ Blip), organizations (→ Organization), tags
+✓ Person       — worksFor (→ Organization), tags
+✓ Personality  — organizations (→ Organization), books (→ Book), creator (→ Person), tags
+✓ Weblink      — iframeUrl, category, topic, tags
+✗ Trove        — not found in your space
+```
 
-## Step 5: Write Config to ~/.claude/jot.md
+For any missing type, ask: "What Capacities type should jot use for '[jot type]' captures? (Or type 'skip' to exclude this type.)"
+
+Re-probe any user-provided alternative with `getObjectTypeShape`. After 3 failed attempts for one type, ask: "Skip this type or abort setup?"
+
+### Step 3c: Confirm Mapping
+
+Tell the user: "Here are the confirmed mappings. Say 'yes' to accept all, or provide overrides as `key=TypeName` pairs (e.g. `blip=TechBlip, note=Note`)."
+
+Wait for their response. Apply any overrides to the mapping. For any override, validate with `getObjectTypeShape` before accepting.
+
+## Step 4: Write Config to ~/.claude/jot.md
 
 Construct the YAML and write it to `~/.claude/jot.md` (expand `~` to home directory; create if absent, overwrite if present). Preserve any existing fields not managed by this step (such as `workbench_path`) by reading the current file first and merging — only `capture_backend` and `capacities_mapping` are replaced.
-For each type, fill `type` with the confirmed Capacities type name and `fields` with the actual writable fields from Step 4 (empty array `[]` for `daily_note`).
 
-Example structure (actual values come from Step 4 results):
+Write only `type:` per mapping entry — no `fields` array. Field discovery happens at capture time via `getObjectTypeShape`.
 
 ```yaml
 ---
@@ -76,60 +90,37 @@ capture_backend: capacities
 capacities_mapping:
   task:
     type: "Task"
-    fields:
-      - { key: "title", required: true }
-      - { key: "dueDate", required: false }
   note:
     type: "Page"
-    fields:
-      - { key: "title", required: true }
-      - { key: "tags", required: false }
   idea:
     type: "Page"
-    fields:
-      - { key: "title", required: true }
-      - { key: "tags", required: false }
   session:
     type: "daily_note"
-    fields: []
   blip:
-    type: "Page"
-    fields:
-      - { key: "title", required: true }
-      - { key: "tags", required: false }
+    type: "Blip"
   article:
     type: "Page"
-    fields:
-      - { key: "title", required: true }
   video:
-    type: "Page"
-    fields:
-      - { key: "title", required: true }
+    type: "Weblink"
   person:
     type: "Person"
-    fields:
-      - { key: "title", required: true }
-      - { key: "email", required: false }
   book:
     type: "Book"
-    fields:
-      - { key: "title", required: true }
-      - { key: "author", required: false }
   organisation:
-    type: "Page"
-    fields:
-      - { key: "title", required: true }
+    type: "Organization"
   trove:
-    type: "Page"
-    fields:
-      - { key: "title", required: true }
+    type: "Trove"
   research:
-    type: "Page"
-    fields:
-      - { key: "title", required: true }
+    type: "Research"
+  weblink:
+    type: "Weblink"
 ---
 ```
 
-## Step 6: Report Success
+Omit any jot type the user chose to skip.
 
-"Capacities integration configured. Run `/jot:setup` any time to reconfigure."
+If the Capacities MCP is unavailable at any point during Step 3a, stop and tell the user: "Capacities MCP is not connected. Connect it and re-run `/jot:setup`."
+
+## Step 5: Report Success
+
+"Capacities integration configured with [N] type mappings. Run `/jot:setup` any time to reconfigure."

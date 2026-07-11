@@ -43,3 +43,10 @@ Thumbs.db
 
 # Git worktrees (isolated implementation workspaces)
 .worktrees/
+
+# Superpowers design docs and SDD progress (session-local artifacts)
+docs/superpowers/
+.superpowers/
+
+# Working notes and handoff documents
+jot-capture-plugin-improvements.md

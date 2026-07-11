@@ -193,7 +193,12 @@ Follow the template structure:
   - 3+ Usage Examples
   - 4 Strengths, 3 Considerations
   - 3+ Alternatives with comparisons
-- Generate 5-7 relevant tags (lowercase, hyphenated)
+- Generate 5–7 candidate tags. Tags must be **thematic, domain-level, or use-case categories** — never the captured object's own name.
+  - Ask: "If I search this tag, what family of objects should surface together?"
+  - **Good:** `Knowledge Graph`, `Open Protocol`, `Agentic AI`, `Graph Database`, `Digital Commerce`
+  - **Bad:** `graphiti`, `falkordb`, `beckn` — these are titles, not themes
+  - Workbench path: use candidate tags directly in the note
+  - Capacities path: tags are validated and created in Step 9a
 
 ### Step 8: Find Related Notes
 
@@ -239,24 +244,171 @@ Look up the current capture type in `capacities_mapping` from `~/.claude/jot.md`
 **If the capture type has no entry in `capacities_mapping`:**
 1. Tell the user: "No Capacities mapping found for '[type]'. Let me configure it now."
 2. Ask the user for the Capacities type name to use.
-3. Call `getObjectTypeShape(objectType: "<user's answer>")` to validate and retrieve fields.
-4. If valid, append the new entry under `capacities_mapping` in `~/.claude/jot.md` and continue.
+3. Call `getObjectTypeShape(objectType: "<user's answer>")` to confirm the type exists.
+4. If valid, append the following under `capacities_mapping` in `~/.claude/jot.md` and continue:
+   ```yaml
+   <jot-type>:
+     type: "<Capacities type name>"
+   ```
 5. If invalid, warn and repeat from step 2 above until a valid type is provided.
 
 **If the mapped type is `"daily_note"`:**
 Call `saveToDailyNote` with the full formatted note content as markdown text.
 
-**Otherwise:**
-Build a markdown document using the stored `fields` array:
-```
----
-title: "<note title>"
-<frontmatterKey>: "<value from note content if available, omit if not>"
----
+**Otherwise — Step 9a: Prepare Capacities Object**
 
-<full note body content>
+Run the following sub-steps in sequence before saving.
+
+#### Step 9a.0 — Check for Existing Object
+
+Call `search(query: <note title>, objectType: mapping.type)`.
+
+- **Exact or near-exact title match found:** Show the user the match (title + a one-line summary if available) and ask with AskUserQuestion:
+  - "Update existing" (Recommended) — enhance the Capacities object
+  - "Create new anyway" — proceed to 9a.1 and create a new object
+
+  If "Update existing": set a flag `updating_existing = true` and record the matched object's ID, then continue to 9a.1 (the prepare steps still run in full so the complete frontmatter is assembled).
+
+- **No match / ambiguous results:** Continue to 9a.1, `updating_existing = false`.
+
+#### Step 9a.1 — Get Live Shape
+
+Call `getObjectTypeShape(objectType: mapping.type)` to retrieve the current field list for this object type. Store the result as `shape`.
+
+#### Step 9a.2 — Detect Title Key & Set Title Frontmatter
+
+Inspect `shape` for the title property:
+- If any field has `frontmatterKey: entityTitleName` → the type uses `entityTitleName` as its title key
+- Otherwise → the type uses `title` as its title key
+
+**Always write both keys in frontmatter regardless**, to handle Capacities API inconsistencies:
+```yaml
+title: "The Object Title"
+entityTitleName: "The Object Title"
 ```
-Call `createObjectViaMD(objectType: mapping.type, title: <note title>, markdown: <document above>)`.
+
+#### Step 9a.3 — Map Content to Fields
+
+Using the live `shape`, populate all available fields from the captured content. Only write a field if it exists in the shape. Priority mappings:
+
+| Content | Frontmatter field | Applies to |
+|---|---|---|
+| Source URL | `iframeUrl` | Weblink (video) |
+| Source URL | `link` | Blip, Book, Trove, Organisation |
+| Ring level | `ring` | Blip |
+| Quadrant | `quadrant` | Blip |
+| Author | `author`, `writer` | Book |
+| Capture date | `date` | Research, Task |
+| Summary / first paragraph | `description` | All types with this field |
+| `youtube.com` URL | `category: Video` | Weblink |
+| Article/blog URL | `category: Article` | Weblink |
+| Content domain | `topic` | Weblink (pick from shape's option list: Technology, AI/ML, etc.) |
+
+**Key for Weblink/video:** Always populate `iframeUrl` from the source URL. Without it, `createObjectViaMD` rejects Weblink type objects.
+
+#### Step 9a.4 — Entity Linking
+
+Scan the discovery context and note content for entity mentions — people names, personality names, organisation names, tool/blip names, project names.
+
+For each candidate mention:
+1. Call `search(query: "<mention>")` — broad search across all types
+2. Evaluate results:
+   - **High-confidence match**: result title matches the mention exactly or is clearly the same entity (e.g. "Nithya" matches "Nithya Rajesh") → record the link, noting the result's object type
+   - **Multiple close matches**: ask the user "Did you mean X or Y?" before linking
+   - **No match**: skip — do not create dangling links or fabricate objects
+
+For confirmed matches, place links in two locations:
+
+**Frontmatter entity fields** — use `shape` to find fields with `type: entity`. Match found objects to the most appropriate field:
+
+| Linked object type | Look for field named |
+|---|---|
+| Person | `people`, `worksFor`, `creator`, `collaborators` |
+| Personality | `creator`, `people` |
+| Organisation | `organizations`, `worksFor` |
+| Blip | `related`, `blips` |
+| Project | `associatedProjects` |
+| Book | `books` |
+| Trove | `troves` |
+
+Only write to a field if the shape exposes it. Format: `[[Object Title]]`
+
+**Markdown body** (Related Notes section):
+
+Use typed wikilink syntax `[[objectType/Object Title]]`:
+
+| Object type | Format |
+|---|---|
+| Person | `[[person/Nithya Rajesh]]` |
+| Personality | `[[Personality/Sujith Nair]]` |
+| Organisation | `[[Organization/Beckn Foundation]]` |
+| Blip | `[[Blip/Graphiti]]` |
+| Project | `[[Project/Global AI Hackathon]]` |
+| Book | `[[Book/Sapiens]]` |
+| Trove | `[[Trove/AI Reading List]]` |
+| Page | `[[page/Object Title]]` |
+| Daily Note | `[[date/2026-07-10]]` |
+| Any other | `[[TypeName/Object Title]]` using the type name from the search result |
+
+#### Step 9a.5 — Validate and Create Tags
+
+For each candidate tag from Step 7:
+1. Call `search(query: "<tag>", objectType: "Tag")`
+2. **Exact match** → use that exact string (preserves existing casing)
+3. **Close variant** (e.g. "Agentic AI" vs "Agentic Ai") → use the existing variant's exact title
+4. **No match** → create the tag first:
+
+```
+createObjectViaMD(objectType: "Tag", title: "<Title Case Name>", markdown: <frontmatter below>)
+```
+
+New tag frontmatter:
+```yaml
+---
+entityTitleName: "Knowledge Graph"
+icon: 🕸️
+description: <one sentence describing what objects sharing this tag have in common>
+---
+```
+
+Tag creation rules:
+- **Title Case** always: `Knowledge Graph` not `knowledge graph`
+- **Icon by domain:** 🕸️ graph/network · 🤖 AI/agents · 🛒 commerce · 📡 protocols · 🔬 research · 🛠️ dev tools · 📚 learning · 💡 ideas
+
+After creation, use the exact Title Case string in the parent object's `tags` frontmatter.
+
+#### Step 9a.6 — Assemble Final Frontmatter YAML
+
+Combine all outputs from 9a.2–9a.5 into the frontmatter block. Example for a YouTube video about Beckn:
+
+```yaml
+---
+title: "What is Beckn? ft. Sujith Nair"
+entityTitleName: "What is Beckn? ft. Sujith Nair"
+iframeUrl: "https://youtube.com/watch?v=..."
+category: Video
+topic: Technology
+tags: [[Open Protocol]], [[Digital Commerce]], [[Agentic AI]]
+description: "Sujith Nair explains the Beckn open protocol for decentralised digital commerce"
+organizations: [[Beckn Foundation]]
+---
+```
+
+#### Step 9b: Save
+
+**If `updating_existing == true`:**
+
+Call `updateObjectViaMD(objectType: mapping.type, title: <note title>, markdown: <assembled frontmatter + body>)`.
+
+> **Warning:** `updateObjectViaMD` does a **full property replace**, not a partial merge. Every field omitted from the frontmatter will be wiped on the object. Always use the complete frontmatter assembled in Step 9a.6 — never pass only the fields you changed.
+
+**If `updating_existing == false`:**
+
+Call `createObjectViaMD(objectType: mapping.type, title: <note title>, markdown: <assembled frontmatter + body>)`.
+
+On failure: report the exact error message and list the fields that were attempted.
+
+If the object was partially created (e.g. shows as "Untitled" in Capacities), fix it with `updateObjectViaMD` — same full-replace rule applies: use the complete Step 9a.6 frontmatter, not just `title:` + `entityTitleName:`.
 
 ### Step 10: Report Success
 
