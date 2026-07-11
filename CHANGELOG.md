@@ -2,6 +2,24 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.1] - 2026-07-11
+
+### Fixed
+
+- Fix jot capture: enforce 1-2 thematic tags only
+
+Templates previously instructed agents to generate 5-7 descriptive
+tags per capture, polluting Capacities with object-specific tags
+(e.g. `command-runner`, `justfile`) instead of thematic categories
+(e.g. `Dev Tools`, `Agentic AI`).
+
+- Remove standalone Tags section from all capture templates;
+  move to a single `**Tags:**` line in the header metadata block
+- Update tag rules to require 1-2 thematic/domain tags only, never
+  the object's own name; reuse existing Capacities tags first
+- Add tag instructions to research.md (previously had none)
+- Update capture agent Step 7 and Quality Standards to match;
+  clarify Capacities sets tags via frontmatter, not body content
 ## [2.1.0] - 2026-07-11
 
 ### Changed
@@ -39,7 +57,17 @@ setup.md:
 
 .gitignore:
 - Ignore docs/superpowers/ and .superpowers/ (session artifacts)
-- Ignore jot-capture-plugin-improvements.md (working notes)
+- Ignore jot-capture-plugin-improvements.md (working notes) by @jskswamy
+- Update CHANGELOG and README for v2.1.0
+
+Document all changes included in the v2.1.0 release. by @jskswamy
+
+### Other
+
+- Release v2.1.0
+
+Bump marketplace version from 2.0.2 to 2.1.0.
+Sync jot plugin version from 1.5.0 to 1.6.0. by @jskswamy
 ## [2.0.2] - 2026-07-08
 
 ### Added
@@ -2013,6 +2041,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.1]: https://github.com/jskswamy/claude-plugins/compare/v2.1.0..v2.1.1
 [2.1.0]: https://github.com/jskswamy/claude-plugins/compare/v2.0.2..v2.1.0
 [2.0.2]: https://github.com/jskswamy/claude-plugins/compare/v2.0.1..v2.0.2
 [2.0.1]: https://github.com/jskswamy/claude-plugins/compare/v2.0.0..v2.0.1
