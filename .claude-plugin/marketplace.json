@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "A curated collection of Claude Code plugins",
-    "version": "2.0.2"
+    "version": "2.1.0"
   },
   "plugins": [
     {
@@ -58,7 +58,7 @@
     {
       "name": "jot",
       "description": "Quick, low-friction capture of notes, tasks, ideas, session summaries, tech radar blips, and Feynman-style teaching notes with Obsidian-style auto-linking",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
