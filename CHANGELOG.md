@@ -2,6 +2,44 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.0] - 2026-07-11
+
+### Changed
+
+- Improve jot Capacities backend v1.6.0
+
+Fix quality issues from a multi-object capture session and extend
+the Capacities path with richer field population, entity linking,
+and tag validation.
+
+capture.md:
+- Add thematic tagging guidance: tags must be domain categories,
+  not the captured object's own name (e.g. Knowledge Graph, not
+  graphiti)
+- Add Step 9a: call getObjectTypeShape at capture time for live
+  field discovery, replacing static fields arrays in jot.md
+- Always write both title: and entityTitleName: in frontmatter to
+  prevent Capacities from creating objects as Untitled
+- Populate iframeUrl from the source URL for Weblink objects; this
+  field is required — omitting it caused createObjectViaMD to
+  reject the Weblink type entirely
+- Scan discovery context for entity mentions, search Capacities,
+  and link confirmed matches as [[type/Title]] in body and
+  [[Title]] in entity frontmatter fields
+- Validate candidate tags via search before saving; create new tags
+  in Title Case with a domain-appropriate emoji icon
+
+setup.md:
+- Probe all non-session types in parallel via getObjectTypeShape
+  to surface relationship topology before confirming mappings
+- Write type-only config (no fields arrays); live shape lookup at
+  capture time replaces the static field lists
+- Correct default mappings: blip=Blip, video=Weblink,
+  organisation=Organization, trove=Trove, research=Research
+
+.gitignore:
+- Ignore docs/superpowers/ and .superpowers/ (session artifacts)
+- Ignore jot-capture-plugin-improvements.md (working notes)
 ## [2.0.2] - 2026-07-08
 
 ### Added
@@ -18,7 +56,20 @@ builds a jot-type to Capacities-type mapping with field
 schemas, and handles reconfiguration. All three capture
 surfaces (commands/capture, agents/quick-capture,
 agents/capture) route saves based on the stored
-capture_backend value.
+capture_backend value. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG and README for v2.0.2
+
+Document all changes included in the v2.0.2 release. by @jskswamy
+
+### Other
+
+- Release v2.0.2
+
+Bump marketplace version from 2.0.1 to 2.0.2.
+Sync jot plugin version from 1.4.2 to 1.5.0. by @jskswamy
 ## [2.0.1] - 2026-05-16
 
 ### Changed
@@ -1962,6 +2013,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.0]: https://github.com/jskswamy/claude-plugins/compare/v2.0.2..v2.1.0
 [2.0.2]: https://github.com/jskswamy/claude-plugins/compare/v2.0.1..v2.0.2
 [2.0.1]: https://github.com/jskswamy/claude-plugins/compare/v2.0.0..v2.0.1
 [2.0.0]: https://github.com/jskswamy/claude-plugins/compare/v1.10.0..v2.0.0
