@@ -13,6 +13,7 @@ Capture information about a book for future reference or reading list. Extract c
 **Captured:** [Date]
 **Author:** [Author name]
 **Published:** [Year if known]
+**Tags:** `[tag1]`, `[tag2]`
 
 *[DISCOVERY CONTEXT FROM USER - Must ask before saving]*
 
@@ -23,10 +24,6 @@ Capture information about a book for future reference or reading list. Extract c
 ## 💎 Key Insight
 
 > **Why read it:** [The single most compelling reason to read this book - one powerful sentence]
-
-## 🏷️ Tags
-
-`[tag1]` `[tag2]` `[tag3]` `[tag4]` `[tag5]` `[tag6]` `[tag7]`
 
 ## 📖 About
 
@@ -130,7 +127,7 @@ Capture information about a book for future reference or reading list. Extract c
 - **REQUIRED: Ask for discovery context** - "How did you discover this book? What caught your attention?"
 - **Write in first person** - personal notes (use "I think", "I found")
 - **Use emojis on headings** exactly as shown
-- **Generate 5-7 relevant tags** - lowercase, hyphenated (e.g., `software-engineering`, `leadership`, `psychology`)
+- **1-2 thematic tags only** — domain/use-case categories that cluster related objects (e.g. `Dev Tools`, `Agentic AI`). Never use the object's own name as a tag. Reuse existing Capacities tags before creating new ones.
 - Note reading status
 - "How Did This Change Me?" section filled after reading
 - Key Takeaways can be expanded after reading

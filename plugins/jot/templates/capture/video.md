@@ -15,6 +15,7 @@ Extract comprehensive information from YouTube videos or other video content usi
 **Captured:** [Date]
 **Creator:** [Channel/Speaker name]
 **Duration:** [HH:MM:SS]
+**Tags:** `[tag1]`, `[tag2]`
 
 *[DISCOVERY CONTEXT FROM USER - Must ask before saving]*
 
@@ -25,10 +26,6 @@ Extract comprehensive information from YouTube videos or other video content usi
 ## 💎 Key Insight
 
 > **TL;DW:** [The single most important takeaway if you don't watch the full video - one powerful sentence that captures the core message]
-
-## 🏷️ Tags
-
-`[tag1]` `[tag2]` `[tag3]` `[tag4]` `[tag5]` `[tag6]` `[tag7]`
 
 ## 🎯 Key Topics
 
@@ -140,7 +137,7 @@ Extract comprehensive information from YouTube videos or other video content usi
 - **REQUIRED: Ask for discovery context** - "How did you discover this video? What caught your attention?"
 - **Write in first person** - personal notes (use "I think", "I found", "I connected")
 - **Use emojis on headings** exactly as shown
-- **Generate 5-7 relevant tags** - lowercase, hyphenated (e.g., `conference-talk`, `software-design`, `functional-programming`)
+- **1-2 thematic tags only** — domain/use-case categories that cluster related objects (e.g. `Dev Tools`, `Agentic AI`). Never use the object's own name as a tag. Reuse existing Capacities tags before creating new ones.
 - **Preserve speaker's key phrases** - use their language in quotes
 - **Note when transcription is unclear** with [unclear]
 - **Attribute quotes** if multiple speakers

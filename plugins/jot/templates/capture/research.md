@@ -11,6 +11,7 @@ Create technical deep-dive research notes on a specific topic. These are persona
 
 **Created:** [Date]
 **Source:** [Primary URL if applicable]
+**Tags:** `[tag1]`, `[tag2]`
 
 *[DISCOVERY CONTEXT FROM USER - Must ask before saving]*
 
@@ -57,6 +58,7 @@ Create technical deep-dive research notes on a specific topic. These are persona
 - Cross-reference related notes using [[wikilinks]]
 - Focus on practical understanding, not just theory
 - Include real metrics, benchmarks, and data points where available
+- **1-2 thematic tags only** — domain/use-case categories that cluster related objects (e.g. `Dev Tools`, `Agentic AI`). Never use the object's own name as a tag. Reuse existing Capacities tags before creating new ones.
 - **Filename**: `slugified-topic-name.md` (no date prefix)
 - **Save to**: `notes/research/`
 - Output only markdown, no preamble

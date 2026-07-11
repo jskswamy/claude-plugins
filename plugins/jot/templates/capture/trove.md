@@ -12,6 +12,7 @@ Capture a content source - a channel, newsletter, podcast, blog, or creator that
 **Source:** [URL]
 **Captured:** [Date]
 **Type:** [YouTube Channel/Newsletter/Podcast/Blog/Twitter Account]
+**Tags:** `[tag1]`, `[tag2]`
 
 *[DISCOVERY CONTEXT FROM USER - Must ask before saving]*
 
@@ -20,9 +21,6 @@ Capture a content source - a channel, newsletter, podcast, blog, or creator that
 
 ## 💎 Key Insight
 > **Why follow:** [The main reason to subscribe/follow this source]
-
-## 🏷️ Tags
-`[tag1]` `[tag2]` `[tag3]` `[tag4]` `[tag5]`
 
 ## 👥 Personalities
 [Key people behind the content]
@@ -55,7 +53,7 @@ Capture a content source - a channel, newsletter, podcast, blog, or creator that
 - **REQUIRED: Ask for discovery context** - "How did you discover this content source? What caught your attention?"
 - **Write in first person** - personal notes
 - **Use emojis on headings** exactly as shown
-- **Generate 3-7 relevant tags** - lowercase, hyphenated (e.g., `tech-news`, `podcast`, `systems-design`)
+- **1-2 thematic tags only** — domain/use-case categories that cluster related objects (e.g. `Dev Tools`, `Agentic AI`). Never use the object's own name as a tag. Reuse existing Capacities tags before creating new ones.
 - Note publication frequency if known
 - Include notable content examples
 - **Filename**: `slugified-name.md` (no date prefix)

@@ -193,12 +193,12 @@ Follow the template structure:
   - 3+ Usage Examples
   - 4 Strengths, 3 Considerations
   - 3+ Alternatives with comparisons
-- Generate 5–7 candidate tags. Tags must be **thematic, domain-level, or use-case categories** — never the captured object's own name.
+- Generate **1-2 thematic candidate tags**. Tags must be **domain/use-case categories** — never the captured object's own name.
   - Ask: "If I search this tag, what family of objects should surface together?"
-  - **Good:** `Knowledge Graph`, `Open Protocol`, `Agentic AI`, `Graph Database`, `Digital Commerce`
+  - **Good:** `Knowledge Graph`, `Open Protocol`, `Agentic AI`, `Dev Tools`
   - **Bad:** `graphiti`, `falkordb`, `beckn` — these are titles, not themes
-  - Workbench path: use candidate tags directly in the note
-  - Capacities path: tags are validated and created in Step 9a
+  - Workbench path: write as `**Tags:** \`tag1\`, \`tag2\`` in the note header
+  - Capacities path: tags are validated, created, and set via frontmatter `tags:` field in Step 9a
 
 ### Step 8: Find Related Notes
 
@@ -419,7 +419,7 @@ If the object was partially created (e.g. shows as "Untitled" in Capacities), fi
 - Always ask for discovery context first
 - For blips: Always ask for Summary and Ring Rationale
 - Use emojis on headings exactly as in template
-- Generate meaningful tags (5-7)
+- Generate 1-2 thematic tags (domain/use-case, never the object's own name)
 - Link to genuinely related notes only
 - For blips: Target 80-120+ lines of rich content
 - Preserve code examples with proper formatting

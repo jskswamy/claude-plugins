@@ -16,6 +16,7 @@ Capture a technology, tool, technique, platform, or language to the user's perso
 **Source:** [URL if applicable]
 **Captured:** [Date]
 **Last Updated:** [Date]
+**Tags:** `[tag1]`, `[tag2]`
 
 *[DISCOVERY CONTEXT FROM USER - Must ask before saving]*
 
@@ -26,10 +27,6 @@ Capture a technology, tool, technique, platform, or language to the user's perso
 ## 🎯 Ring Rationale
 
 > **Why this ring:** [USER INPUT: Your reasoning for placing it at this assessment level. Be specific about your experience or evaluation.]
-
-## 🏷️ Tags
-
-`[tag1]` `[tag2]` `[tag3]` `[tag4]` `[tag5]` `[tag6]` `[tag7]`
 
 ## ✨ Key Features
 
@@ -123,6 +120,7 @@ When capturing from a URL (especially GitHub):
 4. **Usage Examples**: 3+ real command examples from documentation
 5. **Strengths & Considerations**: 4 strengths, 3 considerations - be specific
 6. **Alternatives**: 3+ competing tools with comparison notes
+7. **Tags**: 1-2 thematic/domain tags only (e.g. `Dev Tools`, `Technology`). Do NOT generate descriptive tags that mirror the object name or features.
 
 ### Data to Extract from GitHub
 
@@ -141,7 +139,7 @@ When capturing from a URL (especially GitHub):
 - **REQUIRED: Ask for ring rationale** - "Why are you placing it at this ring level (Adopt/Trial/Assess/Hold)?"
 - **Use user's exact words** for Summary and Ring Rationale sections
 - **Use emojis on headings** exactly as shown
-- **Generate 5-7 relevant tags** - lowercase, hyphenated
+- **1-2 thematic tags only** — domain/use-case categories that cluster related objects (e.g. `Dev Tools`, `Agentic AI`). Never use the object's own name as a tag. Reuse existing Capacities tags before creating new ones.
 - **Be specific** - include actual commands, features, and metrics
 - **Filename**: `slugified-name.md` (no date prefix)
 - **Save to**: `notes/blips/`

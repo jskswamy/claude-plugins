@@ -12,6 +12,7 @@ Extract content from web articles and documentation into a comprehensive, struct
 **Source:** [URL]
 **Captured:** [Date]
 **Author:** [Author if available]
+**Tags:** `[tag1]`, `[tag2]`
 
 *[DISCOVERY CONTEXT FROM USER - Must ask before saving]*
 
@@ -22,10 +23,6 @@ Extract content from web articles and documentation into a comprehensive, struct
 ## 💎 Key Insight
 
 > **TL;DR:** [The single most important takeaway - one sentence that captures the core message]
-
-## 🏷️ Tags
-
-`[tag1]` `[tag2]` `[tag3]` `[tag4]` `[tag5]` `[tag6]` `[tag7]`
 
 ## 🔑 Key Points
 
@@ -92,7 +89,7 @@ Extract content from web articles and documentation into a comprehensive, struct
    - Use bullet points for criteria/components
    - Include specific examples or use cases
 5. **Key Arguments**: Explain the author's reasoning, not just conclusions
-6. **Tags**: 5-7 relevant tags
+6. **Tags**: 1-2 thematic/domain tags only (e.g. `Dev Tools`, `Technology`). Do NOT generate descriptive tags that mirror the object name or features.
 
 ### What to Extract
 
@@ -108,7 +105,7 @@ Extract content from web articles and documentation into a comprehensive, struct
 - **REQUIRED: Ask for discovery context** - "How did you discover this article? What caught your attention?"
 - **Write in first person** - these are personal notes (use "I think", "I found")
 - **Use emojis on headings** exactly as shown
-- **Generate 5-7 relevant tags** - lowercase, hyphenated (e.g., `software-engineering`, `career`, `architecture`)
+- **1-2 thematic tags only** — domain/use-case categories that cluster related objects (e.g. `Dev Tools`, `Agentic AI`). Never use the object's own name as a tag. Reuse existing Capacities tags before creating new ones.
 - **Be concise but capture essential information** - don't pad, but don't skip important details
 - **Extract actionable insights** - what can be applied?
 - **Note statistics and data points** - specific numbers are valuable
