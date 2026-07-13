@@ -58,7 +58,7 @@
     {
       "name": "jot",
       "description": "Quick, low-friction capture of notes, tasks, ideas, session summaries, tech radar blips, and Feynman-style teaching notes with Obsidian-style auto-linking",
-      "version": "1.6.0",
+      "version": "1.6.1",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
