@@ -75,7 +75,7 @@ Parse the command arguments to extract:
    ○ Cancel - Exit and commit changes first
    ```
 
-### Step 2: Read Current Versions and Sync
+### Step 2: Read Current Versions and Bump Changed Plugins
 
 1. **Read marketplace.json:**
    ```bash
@@ -91,21 +91,45 @@ Parse the command arguments to extract:
    ```
    For each plugin in the plugins directory.
 
-3. **Check version consistency:**
-   Compare marketplace.json versions with plugin.json versions.
+3. **Detect which plugins changed since the last tag:**
+   ```bash
+   git describe --tags --abbrev=0   # last tag, e.g. v2.1.0
+   git diff --name-only <last-tag>..HEAD
+   ```
+   Group the changed paths by plugin: any file under `plugins/<name>/` means
+   plugin `<name>` has changed. Ignore paths outside `plugins/`.
 
-   If mismatch detected:
+4. **Bump plugin.json for each changed plugin:**
+
+   For each plugin with changes, apply the same semver bump type (--bump arg)
+   to its `plugin.json` version and write the file:
+
+   ```
+   Plugin      Current     New (patch)
+   jot         1.6.0       1.6.1       → will bump plugin.json
+   ```
+
+   Edit `plugins/<name>/.claude-plugin/plugin.json` and increment the
+   `version` field accordingly.
+
+   If no plugins changed (e.g. only root-level files changed), skip this step.
+
+5. **Check version consistency:**
+   Compare marketplace.json versions with the (now-updated) plugin.json versions.
+
+   If any mismatch remains after the bump step:
    ```
    Version sync needed:
 
    Plugin           marketplace.json    plugin.json
    task-decomposer  1.3.0               1.3.1          → will sync
-   git-commit       1.1.1               1.1.2          → will sync
 
    These will be synced to marketplace.json during release.
    ```
 
-   Automatically sync marketplace.json to match plugin.json versions.
+   Automatically sync marketplace.json `plugins[].version` entries to match
+   plugin.json. (The marketplace `metadata.version` is bumped separately in
+   Step 3.)
 
 ### Step 3: Calculate New Marketplace Version
 
@@ -214,18 +238,20 @@ Display the plan and skip to Step 9 (Dry Run Summary).
 
 ### Step 6: Update Version Files
 
-1. **Update marketplace.json:**
+1. **Update plugin.json files** (already done in Step 2.4 — confirm they are written)
+
+2. **Update marketplace.json:**
 
    Edit `.claude-plugin/marketplace.json`:
-   - Sync each plugin's version from their plugin.json
+   - Sync each plugin's version from their (now-bumped) plugin.json
    - Bump `metadata.version` to new version
 
-2. **Write changelog:**
+3. **Write changelog:**
    ```bash
    git cliff --tag "v<new-version>" -o CHANGELOG.md
    ```
 
-3. **Update README documentation:**
+4. **Update README documentation:**
    ```bash
    ./scripts/update-readme.sh
    ```
@@ -238,8 +264,9 @@ Display the plan and skip to Step 9 (Dry Run Summary).
 
 1. **Stage version files:**
    ```bash
-   git add .claude-plugin/marketplace.json
+   git add .claude-plugin/marketplace.json plugins/*/. claude-plugin/plugin.json
    ```
+   Stage all changed plugin.json files and marketplace.json together.
 
 2. **Invoke /commit skill:**
    ```
@@ -252,7 +279,7 @@ Display the plan and skip to Step 9 (Dry Run Summary).
    Release v1.1.8
 
    Bump marketplace version from 1.1.7 to 1.1.8.
-   Sync plugin versions: task-decomposer 1.3.1, git-commit 1.1.2.
+   Bump plugin versions: jot 1.6.0 → 1.6.1, git-commit 1.1.1 → 1.1.2.
    ```
 
 #### Commit 2: Changelog and README
@@ -416,7 +443,8 @@ Then retry: /release --bump <type>
 ## Important Notes
 
 - **Unified versioning:** One marketplace version = one snapshot of all plugins
-- **Auto-sync:** Plugin versions from plugin.json are automatically synced to marketplace.json
+- **Auto-bump:** Plugins with changes since the last tag get their plugin.json version bumped automatically (same bump type as --bump)
+- **Auto-sync:** Bumped plugin.json versions are then synced into marketplace.json
 - **Two-commit workflow:** Version bumps and changelog are always in separate commits
 - **Uses /commit skill:** All commits go through the git-commit plugin for consistent messages
 - **git-cliff required:** Changelog generation requires git-cliff (available via nix develop)
