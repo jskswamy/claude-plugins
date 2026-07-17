@@ -2,7 +2,30 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.4] - 2026-07-17
+
+### Other
+
+- Release v2.1.4
+
+Bump marketplace to 2.1.4, jot plugin to 1.6.4.
+
+Complete the Capacities CLI migration in the jot plugin. All three
+capture entry points now use the cap CLI exclusively — no MCP calls
+remain.
+
+commands/capture.md replaces getObjectTypeShape, saveToDailyNote, and
+createObjectViaMD with cap types, cap daily-note, cap validate, and
+cap create. agents/quick-capture.md uses cap types --name to resolve
+structureIds dynamically rather than hardcoding space-specific UUIDs.
 ## [2.1.3] - 2026-07-17
+
+### Changed
+
+- Update CHANGELOG and README for v2.1.3
+
+Document all changes included in the v2.1.3 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
 
 ### Other
 
@@ -24,11 +47,11 @@ Replace with cap CLI Bash calls throughout:
 - cap update: non-destructive per-field updates
 
 Also adds docs/specs/capacities-cli-extensions.md with the handoff
-spec for the three CLI additions built to support this migration.
+spec for the three CLI additions built to support this migration. by @jskswamy
 - Release v2.1.3
 
 Bump marketplace version from 2.1.2 to 2.1.3.
-Bump plugin versions: jot 1.6.2 → 1.6.3.
+Bump plugin versions: jot 1.6.2 → 1.6.3. by @jskswamy
 ## [2.1.2] - 2026-07-17
 
 ### Added
@@ -53,14 +76,14 @@ projects.
 
 Remove teach command and learning-tutor agent from jot - that
 functionality now lives in study:coach → study:recall. Update jot
-description and tags to reflect the narrowed scope (capture only).
+description and tags to reflect the narrowed scope (capture only). by @jskswamy
 
 ### Changed
 
 - Update CHANGELOG and README for v2.1.2
 
 Document all changes included in the v2.1.2 release.
-Regenerate plugins section in README from marketplace.json.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
 
 ### Other
 
@@ -68,7 +91,7 @@ Regenerate plugins section in README from marketplace.json.
 
 Bump marketplace version from 2.1.1 to 2.1.2.
 Bump plugin versions: jot 1.6.1 → 1.6.2.
-Introduce study 1.0.0 (new plugin).
+Introduce study 1.0.0 (new plugin). by @jskswamy
 ## [2.1.1] - 2026-07-13
 
 ### Changed
@@ -2132,6 +2155,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.4]: https://github.com/jskswamy/claude-plugins/compare/v2.1.3..v2.1.4
 [2.1.3]: https://github.com/jskswamy/claude-plugins/compare/v2.1.2..v2.1.3
 [2.1.2]: https://github.com/jskswamy/claude-plugins/compare/v2.1.1..v2.1.2
 [2.1.1]: https://github.com/jskswamy/claude-plugins/compare/v2.1.0..v2.1.1
