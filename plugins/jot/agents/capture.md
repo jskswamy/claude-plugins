@@ -239,176 +239,129 @@ mkdir -p "${WORKBENCH_PATH}/notes/[type]"
 
 #### If capture_backend == "capacities"
 
+Use the CLI for all Capacities operations — no MCP calls. Always use the full path:
+```
+CAP=/Users/subramk/.local/bin/cap
+```
+
 Look up the current capture type in `capacities_mapping` from `~/.claude/jot.md`.
 
 **If the capture type has no entry in `capacities_mapping`:**
 1. Tell the user: "No Capacities mapping found for '[type]'. Let me configure it now."
 2. Ask the user for the Capacities type name to use.
-3. Call `getObjectTypeShape(objectType: "<user's answer>")` to confirm the type exists.
-4. If valid, append the following under `capacities_mapping` in `~/.claude/jot.md` and continue:
-   ```yaml
-   <jot-type>:
-     type: "<Capacities type name>"
-   ```
-5. If invalid, warn and repeat from step 2 above until a valid type is provided.
+3. Validate: `$CAP search "*" --type "<user's answer>" --json 2>&1`. Exit 4 = unknown — warn and repeat. Exit 0 = valid.
+4. Append `<jot-type>:\n  type: "<Capacities type name>"` under `capacities_mapping` in `~/.claude/jot.md` and continue.
 
 **If the mapped type is `"daily_note"`:**
-Call `saveToDailyNote` with the full formatted note content as markdown text.
+```bash
+$CAP daily-note "<full formatted note content>"
+```
 
 **Otherwise — Step 9a: Prepare Capacities Object**
 
-Run the following sub-steps in sequence before saving.
-
 #### Step 9a.0 — Check for Existing Object
 
-Call `search(query: <note title>, objectType: mapping.type)`.
-
-- **Exact or near-exact title match found:** Show the user the match (title + a one-line summary if available) and ask with AskUserQuestion:
-  - "Update existing" (Recommended) — enhance the Capacities object
-  - "Create new anyway" — proceed to 9a.1 and create a new object
-
-  If "Update existing": set a flag `updating_existing = true` and record the matched object's ID, then continue to 9a.1 (the prepare steps still run in full so the complete frontmatter is assembled).
-
-- **No match / ambiguous results:** Continue to 9a.1, `updating_existing = false`.
-
-#### Step 9a.1 — Get Live Shape
-
-Call `getObjectTypeShape(objectType: mapping.type)` to retrieve the current field list for this object type. Store the result as `shape`.
-
-#### Step 9a.2 — Detect Title Key & Set Title Frontmatter
-
-Inspect `shape` for the title property:
-- If any field has `frontmatterKey: entityTitleName` → the type uses `entityTitleName` as its title key
-- Otherwise → the type uses `title` as its title key
-
-**Always write both keys in frontmatter regardless**, to handle Capacities API inconsistencies:
-```yaml
-title: "The Object Title"
-entityTitleName: "The Object Title"
+```bash
+$CAP search "<note title>" --type <mapping.type> --json
 ```
+- **Exact or near-exact title match**: show to user (title + one-line summary), ask via AskUserQuestion: "Update existing" (Recommended) or "Create new anyway".
+  If "Update existing": set `updating_existing = true`, store `existing_id` from result's `id` field.
+- **No match**: `updating_existing = false`.
 
-#### Step 9a.3 — Map Content to Fields
-
-Using the live `shape`, populate all available fields from the captured content. Only write a field if it exists in the shape. Priority mappings:
-
-| Content | Frontmatter field | Applies to |
-|---|---|---|
-| Source URL | `iframeUrl` | Weblink (video) |
-| Source URL | `link` | Blip, Book, Trove, Organisation |
-| Ring level | `ring` | Blip |
-| Quadrant | `quadrant` | Blip |
-| Author | `author`, `writer` | Book |
-| Capture date | `date` | Research, Task |
-| Summary / first paragraph | `description` | All types with this field |
-| `youtube.com` URL | `category: Video` | Weblink |
-| Article/blog URL | `category: Article` | Weblink |
-| Content domain | `topic` | Weblink (pick from shape's option list: Technology, AI/ML, etc.) |
-
-**Key for Weblink/video:** Always populate `iframeUrl` from the source URL. Without it, `createObjectViaMD` rejects Weblink type objects.
-
-#### Step 9a.4 — Entity Linking
-
-Scan the discovery context and note content for entity mentions — people names, personality names, organisation names, tool/blip names, project names.
-
-For each candidate mention:
-1. Call `search(query: "<mention>")` — broad search across all types
-2. Evaluate results:
-   - **High-confidence match**: result title matches the mention exactly or is clearly the same entity (e.g. "Nithya" matches "Nithya Rajesh") → record the link, noting the result's object type
-   - **Multiple close matches**: ask the user "Did you mean X or Y?" before linking
-   - **No match**: skip — do not create dangling links or fabricate objects
-
-For confirmed matches, place links in two locations:
-
-**Frontmatter entity fields** — use `shape` to find fields with `type: entity`. Match found objects to the most appropriate field:
-
-| Linked object type | Look for field named |
-|---|---|
-| Person | `people`, `worksFor`, `creator`, `collaborators` |
-| Personality | `creator`, `people` |
-| Organisation | `organizations`, `worksFor` |
-| Blip | `related`, `blips` |
-| Project | `associatedProjects` |
-| Book | `books` |
-| Trove | `troves` |
-
-Only write to a field if the shape exposes it. Format: `[[Object Title]]`
-
-**Markdown body** (Related Notes section):
-
-Use typed wikilink syntax `[[objectType/Object Title]]`:
-
-| Object type | Format |
-|---|---|
-| Person | `[[person/Nithya Rajesh]]` |
-| Personality | `[[Personality/Sujith Nair]]` |
-| Organisation | `[[Organization/Beckn Foundation]]` |
-| Blip | `[[Blip/Graphiti]]` |
-| Project | `[[Project/Global AI Hackathon]]` |
-| Book | `[[Book/Sapiens]]` |
-| Trove | `[[Trove/AI Reading List]]` |
-| Page | `[[page/Object Title]]` |
-| Daily Note | `[[date/2026-07-10]]` |
-| Any other | `[[TypeName/Object Title]]` using the type name from the search result |
-
-#### Step 9a.5 — Validate and Create Tags
+#### Step 9a.1 — Tag Dedup
 
 For each candidate tag from Step 7:
-1. Call `search(query: "<tag>", objectType: "Tag")`
-2. **Exact match** → use that exact string (preserves existing casing)
-3. **Close variant** (e.g. "Agentic AI" vs "Agentic Ai") → use the existing variant's exact title
-4. **No match** → create the tag first:
-
+```bash
+$CAP search "<tag>" --type Tag --json
 ```
-createObjectViaMD(objectType: "Tag", title: "<Title Case Name>", markdown: <frontmatter below>)
-```
+- **Exact match** → use existing tag name as-is (preserve its casing)
+- **Close variant** (e.g. "Agentic AI" vs "Agentic Ai") → use the existing variant's exact title
+- **No match** → create:
+  ```bash
+  $CAP create --type Tag --title "<Title Case>" --desc "<one sentence: what family of objects share this tag>"
+  ```
 
-New tag frontmatter:
-```yaml
----
-entityTitleName: "Knowledge Graph"
-icon: 🕸️
-description: <one sentence describing what objects sharing this tag have in common>
----
-```
-
-Tag creation rules:
+Tag rules:
 - **Title Case** always: `Knowledge Graph` not `knowledge graph`
+- **Thematic only** — never the captured object's own name. Tags cluster families of objects by domain/use-case.
 - **Icon by domain:** 🕸️ graph/network · 🤖 AI/agents · 🛒 commerce · 📡 protocols · 🔬 research · 🛠️ dev tools · 📚 learning · 💡 ideas
 
-After creation, use the exact Title Case string in the parent object's `tags` frontmatter.
+#### Step 9a.2 — Entity Linking Prep
 
-#### Step 9a.6 — Assemble Final Frontmatter YAML
+Scan the discovery context and note content for entity mentions — people, personalities, organisations, blips.
 
-Combine all outputs from 9a.2–9a.5 into the frontmatter block. Example for a YouTube video about Beckn:
+For each candidate mention:
+```bash
+$CAP search "<mention>" --json
+```
+- **High-confidence match** (title matches exactly or clearly same entity) → record `{ mention, id, structureId }` for post-create linking
+- **Multiple close matches** → ask user "Did you mean X or Y?" before recording
+- **No match** → skip
 
-```yaml
----
-title: "What is Beckn? ft. Sujith Nair"
-entityTitleName: "What is Beckn? ft. Sujith Nair"
-iframeUrl: "https://youtube.com/watch?v=..."
-category: Video
-topic: Technology
-tags: [[Open Protocol]], [[Digital Commerce]], [[Agentic AI]]
-description: "Sujith Nair explains the Beckn open protocol for decentralised digital commerce"
-organizations: [[Beckn Foundation]]
----
+Store all confirmed matches — linking happens after the object is created in Step 9c.
+
+#### Step 9a.3 — Assemble Frontmatter
+
+Build the frontmatter from captured content. Do NOT include entity fields (`people`, `organizations`, `related`) — those are set via `cap link` in Step 9c.
+
+| Content | Frontmatter field | Types |
+|---|---|---|
+| Note title | `title` | All |
+| Summary / first paragraph | `description` | All |
+| Source URL | `iframeUrl` | Weblink, MediaWebResource |
+| Source URL | `link` | Blip, Book, Trove, Organisation |
+| Ring level (raw, validate will normalize) | `ring` | Blip |
+| Quadrant (raw, validate will normalize) | `quadrant` | Blip |
+| Comma-separated resolved tag names | `tags` | All |
+
+For Weblink: include `iframeUrl` — the `cap validate` step will also infer `category` (Video/Article) from the URL host automatically.
+
+#### Step 9a.4 — Validate Frontmatter
+
+```bash
+echo "<assembled frontmatter>" | $CAP validate --type <mapping.type> --json
 ```
 
-#### Step 9b: Save
+Parse JSON response:
+- `valid: true` → use value of `corrected` as the final frontmatter going into 9b
+- `valid: false` → read `errors[]`, ask user to provide each missing value, re-run validate until `valid: true`
+- `warnings[]` → informational only, do not block
 
-**If `updating_existing == true`:**
+The validate step handles: enum normalization (`trial → Trial`), `iframeUrl` inference from `link` on Weblinks, `category` inference from URL host, and `type:` field injection.
 
-Call `updateObjectViaMD(objectType: mapping.type, title: <note title>, markdown: <assembled frontmatter + body>)`.
+#### Step 9b — Save
 
-> **Warning:** `updateObjectViaMD` does a **full property replace**, not a partial merge. Every field omitted from the frontmatter will be wiped on the object. Always use the complete frontmatter assembled in Step 9a.6 — never pass only the fields you changed.
+**If `updating_existing == false` (creating new):**
 
-**If `updating_existing == false`:**
+```bash
+printf '<validated frontmatter from 9a.4>\n\n<note body>' | $CAP create --type <mapping.type> --markdown -
+```
+Capture stdout — this is the `objectId`. Store it for Step 9c.
 
-Call `createObjectViaMD(objectType: mapping.type, title: <note title>, markdown: <assembled frontmatter + body>)`.
+**If `updating_existing == true` (updating existing):**
 
-On failure: report the exact error message and list the fields that were attempted.
+For each scalar field that changed (ring, quadrant, description, link, iframeUrl, category):
+```bash
+$CAP update <existing_id> <field> "<new value>"
+```
+Use `existing_id` as `objectId` for Step 9c.
 
-If the object was partially created (e.g. shows as "Untitled" in Capacities), fix it with `updateObjectViaMD` — same full-replace rule applies: use the complete Step 9a.6 frontmatter, not just `title:` + `entityTitleName:`.
+#### Step 9c — Entity Linking
+
+For each confirmed entity match from Step 9a.2:
+
+Determine the property key by target type:
+| Target structureId prefix | Property key |
+|---|---|
+| `RootPersonality` / `UserPersonality` | `people` |
+| `RootOrganization` | `organizations` |
+| Blip (custom structureId) | `related` |
+
+```bash
+$CAP link <objectId> <propertyKey> <targetId>
+```
+
+Run one `cap link` call per entity relationship. These use the typed Capacities entity API — not wikilinks in markdown.
 
 ### Step 10: Report Success
 
