@@ -208,29 +208,56 @@ ${WORKBENCH_PATH}/notes/[type]/[filename]
 
 #### If capture_backend == "capacities"
 
+Use the CLI for all Capacities operations — no MCP calls. Always use the full path:
+```
+CAP=/Users/subramk/.local/bin/cap
+```
+
 Look up the current capture type in `capacities_mapping` from `~/.claude/jot.md`.
 
 **If the capture type has no entry in `capacities_mapping`:**
 1. Tell the user: "No Capacities mapping found for '[type]'. Let me configure it now."
 2. Ask the user for the Capacities type name to use.
-3. Call `getObjectTypeShape(objectType: "<user's answer>")` to validate and retrieve fields.
-4. If valid, append the new entry under `capacities_mapping` in `~/.claude/jot.md` and continue.
-5. If invalid, warn and repeat from step 2 above until a valid type is provided.
+3. Validate: `$CAP types --name "<user's answer>"`. Non-zero exit = unknown — warn and repeat. Exit 0 = valid.
+4. Append the new entry under `capacities_mapping` in `~/.claude/jot.md` and continue.
 
 **If the mapped type is `"daily_note"`:**
-Call `saveToDailyNote` with the full formatted note content as markdown text.
+```bash
+$CAP daily-note "<full formatted note content>"
+```
 
 **Otherwise:**
-Build a markdown document using the stored `fields` array to construct YAML frontmatter:
-```
----
-title: "<note title>"
-<frontmatterKey>: "<value from note content if available, omit if not>"
----
 
-<full note body content>
+**1. Duplicate check:**
+```bash
+$CAP search "<note title>" --type <mapping.type> --json
 ```
-Call `createObjectViaMD(objectType: mapping.type, title: <note title>, markdown: <document above>)`.
+Exact or near-exact title match → ask user: "Update existing" (Recommended) or "Create new anyway". If "Update existing": store matched ID as `existing_id`.
+
+**2. Tag dedup (per candidate tag):**
+```bash
+$CAP search "<tag>" --type Tag --json
+```
+- Exact match → use existing tag name as-is (preserve casing)
+- No match → `$CAP create --type Tag --title "<Title Case>" --desc "<one sentence>"`
+
+**3. Assemble frontmatter** with: `title`, `description`, `tags` (comma-separated).
+
+**4. Validate and normalize:**
+```bash
+echo "<frontmatter>" | $CAP validate --type <mapping.type> --json
+```
+`valid: false` → read `errors[]`, ask user for missing values, re-run until `valid: true`. Warnings are informational only.
+
+**5. Save:**
+- Creating new:
+  ```bash
+  STRUCTURE_ID=$($CAP types --name <mapping.type>)
+  printf '<validated frontmatter>\n\n<note body>' | $CAP create -t "$STRUCTURE_ID" --markdown -
+  ```
+  Capture stdout — this is the `objectId`.
+- Updating existing:
+  For each changed scalar field: `$CAP update <existing_id> <field> "<new value>"`
 
 ### Step 12: Report Success
 

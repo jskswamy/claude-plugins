@@ -334,7 +334,8 @@ The validate step handles: enum normalization (`trial → Trial`), `iframeUrl` i
 **If `updating_existing == false` (creating new):**
 
 ```bash
-printf '<validated frontmatter from 9a.4>\n\n<note body>' | $CAP create --type <mapping.type> --markdown -
+STRUCTURE_ID=$($CAP types --name <mapping.type>)
+printf '<validated frontmatter from 9a.4>\n\n<note body>' | $CAP create -t "$STRUCTURE_ID" --markdown -
 ```
 Capture stdout — this is the `objectId`. Store it for Step 9c.
 

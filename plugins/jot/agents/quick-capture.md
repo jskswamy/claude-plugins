@@ -362,7 +362,8 @@ Parse JSON. If `valid: false`, read `errors[]`, ask user to provide missing valu
 **5. Save:**
 - Creating new:
   ```bash
-  printf '<validated frontmatter>\n\n<note body>' | $CAP create --type <mapping.type> --markdown -
+  STRUCTURE_ID=$($CAP types --name <mapping.type>)
+  printf '<validated frontmatter>\n\n<note body>' | $CAP create -t "$STRUCTURE_ID" --markdown -
   ```
   Capture stdout — this is the `objectId`.
 - Updating existing (user chose "Update existing"):
