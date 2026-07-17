@@ -1,0 +1,20 @@
+{
+  "name": "study",
+  "version": "1.0.0",
+  "description": "Adaptive study coach with multi-gear learning sessions and spaced recall tracking",
+  "author": {
+    "name": "Krishnaswamy Subramanian",
+    "email": "jskswamy@gmail.com"
+  },
+  "tags": [
+    "learning",
+    "coaching",
+    "feynman",
+    "recall",
+    "spaced-repetition",
+    "study",
+    "knowledge",
+    "gaps",
+    "understanding"
+  ]
+}

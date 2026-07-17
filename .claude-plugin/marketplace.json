@@ -188,6 +188,26 @@
       ]
     },
     {
+      "name": "study",
+      "description": "Adaptive study coach with multi-gear learning sessions (Socratic, Explain, Guide, Check, Help) and spaced recall tracking via Feynman loops. Saves coaching notes with gap tracking and a recall log that shows improvement over time.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Krishnaswamy Subramanian"
+      },
+      "source": "./plugins/study",
+      "category": "productivity",
+      "tags": [
+        "learning",
+        "coaching",
+        "feynman",
+        "recall",
+        "spaced-repetition",
+        "study",
+        "knowledge",
+        "gaps"
+      ]
+    },
+    {
       "name": "refactor",
       "description": "Semantic refactoring opportunity detection. Scans committed code for structural duplication (Fowler catalog), code smells (Fowler/Beck), GoF design pattern opportunities, SOLID/DRY principle violations, and language-idiomatic anti-patterns (Go, Python, TypeScript). Creates beads issues with TDD-first refactoring plans. Hooks into craft after each task closes.",
       "version": "0.1.0",
