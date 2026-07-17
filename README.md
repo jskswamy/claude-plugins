@@ -167,7 +167,7 @@ Efficiency guardrails for Claude - IDE refactoring handoff with automatic patter
 
 ### jot
 
-Quick, low-friction capture of notes, tasks, ideas, session summaries, tech radar blips, and Feynman-style teaching notes with Obsidian-style auto-linking
+Quick, low-friction capture of notes, tasks, ideas, session summaries, and tech radar blips with Obsidian-style auto-linking
 
 **Features:**
 - Quick captures: Task, note, idea, session, blip - minimal friction
@@ -244,6 +244,30 @@ Generate visual sketch notes in Excalidraw format from conversations, code archi
 ```
 
 [View documentation](./plugins/sketch-note/README.md)
+
+
+### study
+
+Adaptive study coach with multi-gear learning sessions (Socratic, Explain, Guide, Check, Help) and spaced recall tracking via Feynman loops. Saves coaching notes with gap tracking and a recall log that shows improvement over time.
+
+**Features:**
+- Learning
+- Coaching
+- Feynman
+- Recall
+- Spaced Repetition
+
+**Install:**
+```
+/plugin install study@claude-plugins
+```
+
+**Usage:**
+```
+/study
+```
+
+[View documentation](./plugins/study/README.md)
 
 
 ### typst-notes

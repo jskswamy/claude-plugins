@@ -2,7 +2,39 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
-## [2.1.1] - 2026-07-11
+## [2.1.2] - 2026-07-17
+
+### Added
+
+- Add study plugin and remove teach from jot
+
+Introduce the study plugin: an adaptive learning coach with multi-gear
+coaching sessions (Socratic, Explain, Guide, Check, Help) and spaced
+Feynman-style recall tracking.
+
+Commands:
+- study:setup  - interactive wizard writing ~/.claude/study.md with
+                 notes_path and content_vaults (array of local dirs)
+- study:coach  - coaching session on any topic, URL, or local file;
+                 auto-flows into recall at session end
+- study:recall - standalone Feynman recall targeting known gaps
+
+Each coaching session saves a note with identified gaps and a Recall
+Log table that tracks improvement over successive recall sessions.
+Config is global (~/.claude/study.md) since learning persists across
+projects.
+
+Remove teach command and learning-tutor agent from jot - that
+functionality now lives in study:coach → study:recall. Update jot
+description and tags to reflect the narrowed scope (capture only).
+## [2.1.1] - 2026-07-13
+
+### Changed
+
+- Update CHANGELOG and README for v2.1.1
+
+Document all changes included in the v2.1.1 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
 
 ### Fixed
 
@@ -19,7 +51,24 @@ tags per capture, polluting Capacities with object-specific tags
   the object's own name; reuse existing Capacities tags first
 - Add tag instructions to research.md (previously had none)
 - Update capture agent Step 7 and Quality Standards to match;
-  clarify Capacities sets tags via frontmatter, not body content
+  clarify Capacities sets tags via frontmatter, not body content by @jskswamy
+- Fix release skill: auto-bump changed plugin.json on release
+
+Previously the release skill only synced plugin versions FROM plugin.json
+INTO marketplace.json, but nothing ever bumped plugin.json itself.
+
+Added Step 2.3-2.4: detect which plugins changed since the last tag via
+git diff, then apply the same semver bump type to each changed plugin's
+plugin.json before syncing into marketplace.json. by @jskswamy
+
+### Other
+
+- Release v2.1.1
+
+Bump marketplace version from 2.1.0 to 2.1.1. by @jskswamy
+- Bump jot plugin.json to 1.6.1
+
+Sync jot version in marketplace.json to match. by @jskswamy
 ## [2.1.0] - 2026-07-11
 
 ### Changed
@@ -2041,6 +2090,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.2]: https://github.com/jskswamy/claude-plugins/compare/v2.1.1..v2.1.2
 [2.1.1]: https://github.com/jskswamy/claude-plugins/compare/v2.1.0..v2.1.1
 [2.1.0]: https://github.com/jskswamy/claude-plugins/compare/v2.0.2..v2.1.0
 [2.0.2]: https://github.com/jskswamy/claude-plugins/compare/v2.0.1..v2.0.2
