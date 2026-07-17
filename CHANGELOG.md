@@ -2,6 +2,33 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.3] - 2026-07-17
+
+### Other
+
+- Replace jot Capacities backend with cap CLI
+
+MCP calls (createObjectViaMD, updateObjectViaMD, getObjectTypeShape,
+saveToDailyNote, search) were producing blank titles, rejecting
+Weblink objects, duplicating tags, and silently dropping entity
+links due to API inconsistencies and full-replace semantics.
+
+Replace with cap CLI Bash calls throughout:
+- cap validate: normalizes ring/quadrant case, infers iframeUrl from
+  link on Weblinks, infers category from URL host, exits 1 with
+  structured JSON errors on missing required fields
+- cap create --markdown -: creates objects from validated frontmatter
+- cap search --type Tag: deduplicates tags before creating new ones
+- cap link: sets entity relationships via typed API, not wikilinks
+- cap daily-note: handles session captures
+- cap update: non-destructive per-field updates
+
+Also adds docs/specs/capacities-cli-extensions.md with the handoff
+spec for the three CLI additions built to support this migration.
+- Release v2.1.3
+
+Bump marketplace version from 2.1.2 to 2.1.3.
+Bump plugin versions: jot 1.6.2 → 1.6.3.
 ## [2.1.2] - 2026-07-17
 
 ### Added
@@ -27,6 +54,21 @@ projects.
 Remove teach command and learning-tutor agent from jot - that
 functionality now lives in study:coach → study:recall. Update jot
 description and tags to reflect the narrowed scope (capture only).
+
+### Changed
+
+- Update CHANGELOG and README for v2.1.2
+
+Document all changes included in the v2.1.2 release.
+Regenerate plugins section in README from marketplace.json.
+
+### Other
+
+- Release v2.1.2
+
+Bump marketplace version from 2.1.1 to 2.1.2.
+Bump plugin versions: jot 1.6.1 → 1.6.2.
+Introduce study 1.0.0 (new plugin).
 ## [2.1.1] - 2026-07-13
 
 ### Changed
@@ -2090,6 +2132,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.3]: https://github.com/jskswamy/claude-plugins/compare/v2.1.2..v2.1.3
 [2.1.2]: https://github.com/jskswamy/claude-plugins/compare/v2.1.1..v2.1.2
 [2.1.1]: https://github.com/jskswamy/claude-plugins/compare/v2.1.0..v2.1.1
 [2.1.0]: https://github.com/jskswamy/claude-plugins/compare/v2.0.2..v2.1.0
