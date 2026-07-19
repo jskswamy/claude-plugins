@@ -463,7 +463,7 @@ Record any result whose `structureId` starts with `RootPersonality`, `UserPerson
 - enum field: "Ask about [fieldName]. Valid values: [values]. Try to infer from context and confirm: 'I'd place this as [inferred] — right?'"
 - text field (if it needs user input): "Ask: [what to ask]"
 - date: "Use CURRENT_DATE — do not ask"
-- tags: "Generate 1-2 thematic domain tags (lowercase, hyphen-separated). Include them in the frontmatter tags: field — the CLI auto-creates tags by name if they don't exist."]
+- tags: "Generate 1-2 thematic domain tags in Title Case (e.g. 'Aerospace', 'Private Space'). Include them in the frontmatter tags: field — the CLI auto-creates tags by name if they don't exist."]
 
 ## Schema
 
@@ -493,14 +493,14 @@ Record any result whose `structureId` starts with `RootPersonality`, `UserPerson
 CAP=$(which cap 2>/dev/null || echo "$HOME/.local/bin/cap")
 ```
 
-**1. Assemble frontmatter** — include ALL schema fields. Always include `date` (CURRENT_DATE) and any fields with defaults. Omit only fields the user explicitly skipped. Tags are lowercase, hyphen-separated names — the CLI auto-creates them:
+**1. Assemble frontmatter** — include ALL schema fields. Always include `date` (CURRENT_DATE) and any fields with defaults. Omit only fields the user explicitly skipped. Tags are Title Case (e.g. `Aerospace, Private Space`) — the CLI auto-creates them by name:
 ```yaml
 ---
 title: [TITLE]
 description: [DESCRIPTION]
 date: [CURRENT_DATE]
 [other fields from schema with their values]
-tags: [comma-separated lowercase tag names]
+tags: [comma-separated Title Case tag names]
 ---
 ```
 
