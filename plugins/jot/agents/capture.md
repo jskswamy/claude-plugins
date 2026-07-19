@@ -93,7 +93,27 @@ Match label (case-insensitive) against `routing[].label` or any string in `routi
 For each routing entry, check if any string in `routing[].triggers` appears as a substring of the input. If multiple entries match, prefer the one with the longest matching trigger string.
 
 **Priority 3 — URL pattern:**
-Extract any URL (regex: `https?://[^\s]+`). Parse the host. Match against `routing[].url_patterns`. If matched, use that routing entry. If no match but URL detected, note the URL for later (content-type detection in Step 3/4).
+Extract any URL (regex: `https?://[^\s]+`). Parse the host. Match against `routing[].url_patterns`. If matched, use that routing entry.
+
+If URL detected (matched or not), **extract its content immediately** and store as `URL_CONTENT`:
+
+- **YouTube** (host contains `youtube.com` or `youtu.be`):
+  ```bash
+  mkdir -p /tmp/jot-capture
+  yt-dlp --print title --print description --skip-download "${URL}" 2>/dev/null
+  yt-dlp --write-auto-sub --sub-lang en --skip-download --sub-format vtt \
+    -o "/tmp/jot-capture/video" "${URL}" 2>/dev/null
+  VTT=$(ls /tmp/jot-capture/*.vtt 2>/dev/null | head -1)
+  [ -n "$VTT" ] && cat "$VTT" | grep -v "^WEBVTT" | grep -v "^[0-9]" | \
+    grep -v "^$" | sed 's/<[^>]*>//g' | sort -u
+  ```
+  Store title, description, and cleaned transcript as `URL_CONTENT`.
+
+- **Other URL** (article, GitHub, etc.):
+  Use WebFetch on the URL with prompt: "Extract the full title, summary, and main content of this page."
+  Store result as `URL_CONTENT`.
+
+`URL_CONTENT` is available to Steps 3, 4, and 5 to enrich the note body.
 
 **Priority 4 — Inline "jot" as verb:**
 If the word "jot" appears in the sentence (not as the command trigger), it signals capture intent. Look for a type word adjacent to "jot": "jot [label]", "a jot [label]", "jot [label] with". Match the word against routing triggers.
@@ -170,11 +190,15 @@ Announce:
 $CAP types --json 2>&1
 ```
 
-Show the full type list. If the detected label matches a type name exactly (case-insensitive), confirm:
-> "I'll map '[Label]' to the '[TypeName]' Capacities type — right?"
+If the detected label matches a type name exactly (case-insensitive), use AskUserQuestion:
+```
+question: "I'll map '[Label]' to the '[TypeName]' Capacities type — right?"
+options:
+  - Yes — use [TypeName]
+  - No — let me pick from the list
+```
 
-If no exact match, ask:
-> "Which Capacities type should '[Label]' map to? (pick from the list above)"
+If user picks "No", or if there is no exact match, use AskUserQuestion with every type name from `cap types --json` as an option (one option per type). Wait for the user's selection.
 
 Store `CAPACITIES_TYPE` (exact name as returned by `cap types`) and `STRUCTURE_ID` (the `structureId` field from the same entry).
 
@@ -234,19 +258,38 @@ Suggest trigger phrases based on the type name and label. Examples:
 - "Book" → suggest: book, reading, read, finished reading
 - "Blip" / "Technology" → suggest: technology, tool, framework, library, evaluate, blip
 
-Ask:
-> "I'll recognise '[Label]' captures from: [suggestions]. Add or remove any?"
+Use AskUserQuestion:
+```
+question: "I'll recognise '[Label]' captures from: [suggestions]. Want to change anything?"
+options:
+  - Looks good — use these triggers
+  - Add more — I'll say which words to add
+  - Remove some — I'll say which to remove
+```
+If user picks "Add more" or "Remove some", ask a follow-up free-text question, update the suggestions, and confirm once more.
 
-Then ask:
-> "Any URL domains that should auto-route to '[Label]'? (e.g., 'github.com' — press enter to skip)"
+Then use AskUserQuestion:
+```
+question: "Any URL domains that should auto-route to '[Label]'?"
+options:
+  - Skip — no URL patterns needed
+  - Add domains — I'll list them (e.g. github.com, npmjs.com)
+```
+If user picks "Add domains", ask for the list and store it.
 
 Store confirmed `TRIGGERS` list and `URL_PATTERNS` list.
 
 ### Step 5f: Optional Reference Object
 
-> "Do you have an existing [Label] you'd like to base the template on? Give me a title, or say 'skip' to generate one."
+Use AskUserQuestion:
+```
+question: "Do you have an existing [Label] in Capacities to base the template on?"
+options:
+  - Skip — generate template from scratch
+  - Yes — I'll give you a title to search for
+```
 
-If title given:
+If user picks "Yes", ask for the title, then:
 ```bash
 $CAP search "<title>" --type "${CAPACITIES_TYPE}" --json 2>&1
 ```
@@ -278,9 +321,19 @@ Generate an **improved** version that:
 Generate a sensible template from scratch based on:
 - The type name/label (what kind of thing is this?)
 - The discovered fields in `SCHEMA`
+- `URL_CONTENT` if available — use the extracted title, description, and content to seed relevant sections
 - Common sense about what someone capturing this type would want to record
 
 The template defines the **output note body structure only** — it is NOT a list of questions to ask. Use `[placeholder text]` for sections the agent will fill. Mark user-input sections explicitly: `[USER: brief description of what to ask]`.
+
+**If `URL_CONTENT` is available** (from Step 2 extraction), the generated type agent's Capture Flow must include:
+```
+Use URL_CONTENT passed from the routing agent to pre-fill:
+- Title (from video/page title)
+- Description/summary section
+- Any body sections derivable from the transcript or article content
+Ask the user only for fields that can't be inferred from URL_CONTENT.
+```
 
 ### Step 5h: Generate Type Agent File
 
