@@ -265,11 +265,13 @@ For blips, also ask:
 - **Assess**: Worth exploring and learning about
 - **Hold**: Proceed with caution, or deprecating
 
-**Quadrant Definitions:**
-- **Tools**: Development tools, utilities, applications
-- **Techniques**: Methodologies, practices, patterns
-- **Platforms**: Infrastructure, runtime, hosting
-- **Languages**: Programming languages, frameworks, SDKs
+**Quadrant (infer then confirm):**
+
+Probe valid quadrant values via `cap validate` (same discovery method as Step 5c of the routing agent in `agents/capture.md`). Use candidate values: Tool, Tools, Platform, Technique, Language & Framework, Infrastructure, Data, AI, Design, Security. A value is valid if the JSON warnings contain no `"code":"UNKNOWN_VALUE"` entry for that field.
+
+Based on the blip name/content, infer the most likely valid quadrant and confirm:
+"I'd place this in **[inferred]** — is that right, or one of [other valid values]?"
+If the user provided `--quadrant` as a flag, use that directly without asking.
 
 ### Step 6: Read Template
 
