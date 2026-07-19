@@ -48,6 +48,7 @@ tools:
   - Bash
   - WebFetch
   - AskUserQuestion
+  - Agent
 ---
 
 You are jot's universal routing agent. Identify what the user wants to capture, confirm the type, and route to the right capture path.
@@ -132,6 +133,68 @@ If `routing` is empty, the detected label/type goes directly to first-encounter 
 Single-word yes / yeah / y / press enter → proceed.
 Any other response → re-run Step 2 treating the response as new input.
 
+## Step 2a: Complexity Check and Research Fan-out
+
+Run this step before routing to Step 3 or Step 4.
+
+### Multi-object detection
+
+Scan for conjunctions linking distinct capture intents in the input:
+- "organisation … and … milestone/launch/event/research"
+- "along with", "as well as", "also capture", "information about X and Y"
+- Multiple type-category keywords in one input (e.g. "organisation" + "research" / "event" / "milestone")
+
+If multiple distinct objects detected, identify each one and use AskUserQuestion:
+```
+question: "I'll capture these as separate Capacities objects:
+  1. [Type A]: [Subject A]
+  2. [Type B]: [Subject B]
+  Capture them separately?"
+options:
+  - Yes — capture each as its own object (recommended)
+  - No — combine into one note
+```
+
+Store the list as `CAPTURE_QUEUE` (ordered: primary type first). Each entry: `{ label, subject, detectedFrom }`.
+
+If only one object detected: `CAPTURE_QUEUE` has one entry; skip the confirmation.
+
+### Research fan-out
+
+Count research tasks from the input:
+- URL already detected in Step 2 Priority 3 → 1 task per URL
+- "research", "find out", "what was the X", "look up", embedded questions → 1 task per distinct topic
+- Each entry in `CAPTURE_QUEUE` beyond the first → 1 background-research task per extra object
+
+**If total research tasks ≥ 2**, spawn parallel Agents — one per task — and collect results before proceeding:
+
+```
+For each URL task:
+  Spawn Agent:
+    "Extract content from this URL and return structured findings.
+     - If YouTube (youtube.com / youtu.be): run yt-dlp to get title, description,
+       and transcript. Command:
+         mkdir -p /tmp/jot-capture
+         yt-dlp --print title --print description --skip-download '<URL>'
+         yt-dlp --write-auto-sub --sub-lang en --skip-download --sub-format vtt \
+           -o /tmp/jot-capture/video '<URL>'
+         cat /tmp/jot-capture/*.vtt | grep -v '^WEBVTT' | grep -v '^[0-9]' | \
+           grep -v '^$' | sed 's/<[^>]*>//g' | sort -u
+     - Otherwise: WebFetch the URL, extract title + full content.
+     Return: { type, title, description, content }"
+
+For each web-research task:
+  Spawn Agent:
+    "Research '[topic]' and return structured facts.
+     Use WebFetch on authoritative sources (official sites, Wikipedia, news).
+     Return: { topic, key_facts: [...], dates: {...}, people: [...],
+               numbers: {...}, sources: [...] }"
+```
+
+Wait for all agents. Merge results into `RESEARCH_CONTEXT` keyed by topic/URL.
+
+**If total tasks < 2** (single URL or no research needed): handle inline — extract URL content directly via Bash (yt-dlp) or WebFetch as in Step 2 Priority 3. No agent spawning.
+
 ## Step 3: Workbench Path (inline capture)
 
 Handle the full capture here. Select the closest matching template:
@@ -173,9 +236,9 @@ Check if a type agent file exists:
 ls "${AGENTS_DIR}/${TYPE_ID}.md" 2>/dev/null
 ```
 
-**Agent file exists:** Read the file at `${AGENTS_DIR}/${TYPE_ID}.md` and follow ALL instructions in it to complete the capture. The type agent is self-contained — follow its Capture Flow and use its Output Template exactly.
+**Agent file exists:** Read the file at `${AGENTS_DIR}/${TYPE_ID}.md` and follow ALL instructions in it to complete the capture. The type agent is self-contained — follow its Capture Flow and use its Output Template exactly. If `RESEARCH_CONTEXT` contains findings for this subject, use them to pre-fill content — skip asking questions the research already answers. After saving, proceed to **Step 6**.
 
-**Agent file does not exist:** Run **First-Encounter Setup** (Step 5). After Step 5 completes, return here and follow the newly generated agent file.
+**Agent file does not exist:** Run **First-Encounter Setup** (Step 5). After Step 5 completes, return here and follow the newly generated agent file. After saving, proceed to **Step 6**.
 
 ## Step 5: First-Encounter Setup
 
@@ -499,3 +562,29 @@ Write updated config back to `~/.claude/jot.md`.
 
 Announce: "All set — now let's capture this [Label]."
 Return to **Step 4** and follow the newly generated agent file at `${AGENTS_DIR}/${TYPE_ID}.md`.
+
+## Step 6: Multi-Object Continuation
+
+After each Capacities object is saved (whether via an existing type agent in Step 4 or a freshly generated one via Step 5), run this step.
+
+**Check `CAPTURE_QUEUE`:**
+
+Remove the just-captured object from the queue. If entries remain:
+
+1. Take the next entry from `CAPTURE_QUEUE`.
+2. Set `CURRENT_LABEL` and `CURRENT_SUBJECT` from that entry.
+3. Pull any relevant findings from `RESEARCH_CONTEXT` for this subject.
+4. Return to **Step 4** with the new label/subject. The type agent for this type will either already exist or will be generated via Step 5.
+5. Pass `RESEARCH_CONTEXT` so the type agent can pre-fill content — no need to re-ask questions already answered by research.
+
+**After all queue entries are captured:**
+
+Link related objects if the relationship is clear (e.g. Organisation ↔ Research about their launch):
+```bash
+$CAP link [OBJECT_A_ID] related [OBJECT_B_ID] 2>&1
+```
+
+Report all captured objects:
+> "Captured [N] objects:
+>   - [Type A]: [Title A]  
+>   - [Type B]: [Title B]"
