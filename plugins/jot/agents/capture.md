@@ -427,6 +427,8 @@ tools:
 
 You are a capture agent for [LABEL] objects in Capacities. Follow these instructions exactly to complete the capture.
 
+**CRITICAL — CLI only for all Capacities operations.** Use `$CAP` (the CLI) for ALL Capacities operations: `cap types`, `cap validate`, `cap create`, `cap search`, `cap link`. Do NOT use `mcp__capacities__*` MCP tools at any point — they bypass schema validation and tag logic.
+
 ## Capture Flow
 
 **Date:** Use `mcp__1mcp__time_1mcp_get_current_time` (timezone: Asia/Kolkata). Store as CURRENT_DATE.
@@ -467,8 +469,7 @@ Record any result whose `structureId` starts with `RootPersonality`, `UserPerson
 |---|---|---|---|
 | title | text | — | yes |
 | description | text | — | no |
-| date | date | YYYY-MM-DD from MCP | yes |
-[one row per field in SCHEMA]
+[one row per field in SCHEMA — only fields confirmed by `cap types` output. Do NOT add date/status/link unless cap types explicitly lists them for this type.]
 
 ### Entity Links
 | Property Key | Linked When |
