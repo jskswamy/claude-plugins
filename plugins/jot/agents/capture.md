@@ -80,6 +80,8 @@ Store cap path as `CAP`. If not found, force `PATH=workbench` regardless of conf
 - `capture_backend: workbench` OR `CAP` not found → **Workbench Path** (Step 3)
 - `capture_backend: capacities` AND `CAP` found → **Capacities Path** (Step 4)
 
+**IMPORTANT — Capacities Path uses CLI only.** When on the Capacities Path, use `$CAP` (the CLI) for ALL Capacities operations: `cap types`, `cap validate`, `cap create`, `cap search`, `cap link`. Do NOT use `mcp__capacities__*` MCP tools — they bypass the schema validation and tag-dedup logic in these instructions.
+
 ## Step 2: Detect Intent and Type
 
 Analyse the full user input in priority order:
@@ -461,7 +463,7 @@ Record any result whose `structureId` starts with `RootPersonality`, `UserPerson
 - enum field: "Ask about [fieldName]. Valid values: [values]. Try to infer from context and confirm: 'I'd place this as [inferred] — right?'"
 - text field (if it needs user input): "Ask: [what to ask]"
 - date: "Use CURRENT_DATE — do not ask"
-- tags: "Generate 1-2 thematic domain tags. Dedup via cap search before creating."]
+- tags: "Generate 1-2 thematic domain tags (lowercase, hyphen-separated). Include them in the frontmatter tags: field — the CLI auto-creates tags by name if they don't exist."]
 
 ## Schema
 
@@ -491,46 +493,37 @@ Record any result whose `structureId` starts with `RootPersonality`, `UserPerson
 CAP=$(which cap 2>/dev/null || echo "$HOME/.local/bin/cap")
 ```
 
-**1. Tag dedup** — for each candidate tag:
-```bash
-$CAP search "<tag>" --type Tag --json 2>&1
-```
-Exact match → use existing name (preserve casing). No match → create:
-```bash
-$CAP create --type Tag --title "<Title Case tag>" --desc "<one sentence: what objects share this tag>" 2>&1
-```
-
-**2. Assemble frontmatter:**
+**1. Assemble frontmatter** — include ALL schema fields. Always include `date` (CURRENT_DATE) and any fields with defaults. Omit only fields the user explicitly skipped. Tags are lowercase, hyphen-separated names — the CLI auto-creates them:
 ```yaml
 ---
 title: [TITLE]
 description: [DESCRIPTION]
 date: [CURRENT_DATE]
-[other fields from schema]
-tags: [comma-separated resolved tag names]
+[other fields from schema with their values]
+tags: [comma-separated lowercase tag names]
 ---
 ```
 
-**3. Validate:**
+**2. Validate:**
 ```bash
 echo "[frontmatter]" | $CAP validate --type [CAPACITIES_TYPE] --json 2>&1
 ```
 Use `corrected` frontmatter from response. If `valid: false`, read `errors[]`, ask user for each missing value, re-run until `valid: true`.
 
-**4. Create:**
+**3. Create:**
 ```bash
 STRUCTURE_ID=$($CAP types --name "[CAPACITIES_TYPE]")
 printf '[corrected frontmatter]\n\n[body]' | $CAP create -t "$STRUCTURE_ID" --markdown - 2>&1
 ```
 Capture stdout as OBJECT_ID.
 
-**5. Entity links** — for each confirmed entity match from entity scan:
+**4. Entity links** — for each confirmed entity match from entity scan:
 ```bash
 $CAP link [OBJECT_ID] [propertyKey] [targetId] 2>&1
 ```
 Property keys: `people` for Person/Personality, `organizations` for Organization, `related` for other types.
 
-**6. Confirm:**
+**5. Confirm:**
 > "Captured [LABEL] to Capacities."
 
 ### Workbench
