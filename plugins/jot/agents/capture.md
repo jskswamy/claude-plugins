@@ -267,52 +267,47 @@ If user picks "No", or if there is no exact match, use AskUserQuestion with ever
 
 Store `CAPACITIES_TYPE` (exact name as returned by `cap types`) and `STRUCTURE_ID` (the `structureId` field from the same entry).
 
-### Step 5b: Schema Discovery — Pass 1 (field existence)
+### Step 5b: Schema Discovery
 
-Probe whether each candidate field name is valid for this type. For each field, pipe a frontmatter snippet to `cap validate` and check the output.
-
-A field **exists** if the JSON response does NOT contain a warning with both `"code":"UNKNOWN_VALUE"` and `"field":"<fieldname>"`.
-
-Run probes for these candidate fields: `title`, `description`, `date`, `ring`, `quadrant`, `status`, `link`, `tags`, `category`, `level`, `priority`, `due`, `author`, `rating`, `iframeUrl`
-
-Example probe for `ring`:
-```bash
-printf -- "---\ntitle: test\nring: test_value\n---" | $CAP validate --type "${CAPACITIES_TYPE}" --json 2>&1
-```
-
-`title`, `description`, `date`, `tags` always exist — no need to probe these.
-
-### Step 5c: Schema Discovery — Pass 2 (enum values)
-
-For each field that passed Pass 1 AND whose name suggests an enum (`ring`, `quadrant`, `category`, `status`, `level`, `priority`), probe candidate values:
+Use `cap types` to get the **authoritative** field list for this type:
 
 ```bash
-# ring / level candidates
-for val in "Adopt" "Trial" "Assess" "Hold" "Explore" "Deprecate" "Archive" "Active" "Inactive" "Evaluate"; do
-  printf -- "---\ntitle: test\nring: \"${val}\"\n---" | $CAP validate --type "${CAPACITIES_TYPE}" --json 2>&1
-done
-
-# quadrant / category candidates
-for val in "Tool" "Tools" "Platform" "Platforms" "Technique" "Techniques" "Language & Framework" "Infrastructure" "Application" "Library" "Data" "AI" "Design" "Security"; do
-  printf -- "---\ntitle: test\ncategory: \"${val}\"\n---" | $CAP validate --type "${CAPACITIES_TYPE}" --json 2>&1
-done
-
-# status candidates
-for val in "Todo" "In Progress" "Done" "Blocked" "Cancelled" "Active" "Archived" "Draft" "Review" "Backlog"; do
-  printf -- "---\ntitle: test\nstatus: \"${val}\"\n---" | $CAP validate --type "${CAPACITIES_TYPE}" --json 2>&1
-done
+$CAP types "${CAPACITIES_TYPE}" --json 2>&1
 ```
 
-A value is **valid** if the JSON warnings contain no entry with `"code":"UNKNOWN_VALUE"` for that field. The `corrected` field in the response gives the normalised form — use that exact casing.
+This returns a `fields` array. Each entry has `name` (the field key) and `type` (`title`, `text`, `richText`, `date`, `entity`, `select`, `multiSelect`, `icon`, etc.).
 
-Build `SCHEMA`: a map of `{ fieldName → { type: "enum"|"text"|"date"|"tags", validValues: [...] } }`.
+**Do NOT use `cap validate` probing for field discovery** — `cap validate` accepts any field name regardless of whether it exists on the type, producing phantom schemas.
+
+**System fields always available (not shown in `cap types` output):**
+- `title` — always required
+- `description` — free text, always available
+- `tags` — comma-separated Title Case names, always available
+
+**From the `fields` array**, extract every field where type is NOT `title`, `entity`, `icon`, or `text` (entity and icon fields can't be set via frontmatter). For each remaining field:
+
+- `richText` field → treat as free text (store value as plain text or markdown)
+- `date` field → use YYYY-MM-DD format
+- `select` / `multiSelect` field → discover valid values:
+
+```bash
+# For select/multiSelect fields, check the 'values' array in the types output
+# If values[] is empty, probe a few likely values via cap validate to discover them:
+printf -- "---\ntitle: test\n[fieldName]: [candidate]\n---" | $CAP validate --type "${CAPACITIES_TYPE}" --json 2>&1
+```
+
+The `corrected` field in the validate response gives the normalised form — use that exact casing.
+
+Build `SCHEMA`: a map of `{ fieldName → { type: "richText"|"date"|"select"|"multiSelect"|"text", validValues: [...] } }`.
+
+Include `description` and `tags` in SCHEMA as system fields.
+
+**Frontmatter field names**: use the exact `name` from `cap types` output, lowercased (e.g. `Contact Information` → `contact information`). The CLI normalises capitalisation on write.
 
 ### Step 5d: Fill Gaps
 
-For any field that passed Pass 1 but where Pass 2 found zero valid values (suggesting a custom enum unknown to the probe candidates):
+For any `select`/`multiSelect` field where no valid values were found via the `values[]` array and probing returned nothing:
 > "I see a '[fieldName]' field but couldn't find its valid values. What values does it take? (comma-separated)"
-
-Skip free-text fields (`description`, `title`, `link`, `author`, `iframeUrl`).
 
 Add user-provided values to `SCHEMA`.
 
