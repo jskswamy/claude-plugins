@@ -2,7 +2,60 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.5] - 2026-07-19
+
+### Other
+
+- Strip jot setup to backend selection only
+
+The previous setup mapped 12+ Capacities types upfront via cap search
+loops. This was brittle — types vary per user space — and required
+significant configuration before any captures could happen.
+
+Replace with a three-step flow: pick backend, verify cap connectivity
+(Capacities path only), write minimal config. Type agents are now
+generated automatically on first capture via the routing agent.
+
+New config format writes: capture_backend, agents_dir, routing: [].
+- Rewrite capture agent as universal routing agent
+
+Replaces the URL-specific capture agent with a dynamic routing agent
+that handles any input: natural language, URLs, explicit type labels,
+and inline "jot" sentences.
+
+Routing uses five priority levels: explicit label > trigger phrase >
+URL pattern > inline "jot" verb > ambiguous (ask user). Each routing
+entry lives in ~/.claude/jot.md, populated on first capture.
+
+Adds first-encounter setup (Steps 5a-5j) that runs inline when a type
+is captured for the first time: probes Capacities schema via cap
+validate, discovers enum values, collects trigger phrases, optionally
+reads a reference object for template generation, writes a self-
+contained type agent to ~/.claude/jot/agents/<id>.md, and updates the
+routing table — all without leaving the capture conversation.
+- Thin capture command delegates to routing agent
+
+Remove the 354-line type-parsing command that hardcoded task/note/idea/
+session/blip types and delegated to quick-capture. Replace with a 45-
+line entry point that passes all input to the routing agent.
+
+The routing agent (agents/capture.md) now handles type detection,
+confirmation, and delegation — the command just provides examples and
+documentation.
+- Mark quick-capture agent as deprecated
+
+Add HTML comment at top of agents/quick-capture.md noting that its
+functionality is now handled by the routing agent (agents/capture.md).
+File is kept intact for reference; comment directs readers to the new
+routing agent and notes this file will be removed in a future cleanup.
 ## [2.1.4] - 2026-07-17
+
+### Changed
+
+- Update CHANGELOG and README for v2.1.4
+
+Document all changes included in the v2.1.4 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
 
 ### Other
 
@@ -17,7 +70,7 @@ remain.
 commands/capture.md replaces getObjectTypeShape, saveToDailyNote, and
 createObjectViaMD with cap types, cap daily-note, cap validate, and
 cap create. agents/quick-capture.md uses cap types --name to resolve
-structureIds dynamically rather than hardcoding space-specific UUIDs.
+structureIds dynamically rather than hardcoding space-specific UUIDs. by @jskswamy
 ## [2.1.3] - 2026-07-17
 
 ### Changed
@@ -2155,6 +2208,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.5]: https://github.com/jskswamy/claude-plugins/compare/v2.1.4..v2.1.5
 [2.1.4]: https://github.com/jskswamy/claude-plugins/compare/v2.1.3..v2.1.4
 [2.1.3]: https://github.com/jskswamy/claude-plugins/compare/v2.1.2..v2.1.3
 [2.1.2]: https://github.com/jskswamy/claude-plugins/compare/v2.1.1..v2.1.2
