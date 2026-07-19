@@ -1,3 +1,10 @@
+<!--
+DEPRECATED: This agent's functionality is now handled by the routing agent (agents/capture.md).
+The routing agent detects task/note/idea/session/blip types automatically and uses the
+templates/capture/ files for workbench output. Do not update this file.
+To be removed in a future cleanup once all users have migrated to the new routing agent.
+-->
+
 ---
 name: quick-capture
 description: Use this agent for quick text-based captures - tasks, notes, ideas, session summaries, and tech radar blips. Supports URL references in quick captures without triggering full content extraction. Minimal friction capture that asks for context, auto-links to related notes, and saves to the workbench.
@@ -122,6 +129,10 @@ Default `capture_backend` to `workbench` if the file is absent or the key is mis
 | blip | blips/ | Tech radar item with ring + quadrant | tool |
 
 **Quick Capture Workflow:**
+
+### Step 0: Get Current Date
+
+Use `mcp__1mcp__time_1mcp_get_current_time` with timezone `Asia/Kolkata` to get today's date and time. Store as `CURRENT_DATE` in `YYYY-MM-DD` format. Use this for all date fields throughout the workflow — never use `date` bash commands or memory-based dates.
 
 ### Step 1: Parse Input and Check for Existing Note
 
@@ -353,7 +364,19 @@ $CAP search "<tag>" --type Tag --json
 - Exact match → use existing tag name as-is (preserve its casing)
 - No match → create: `$CAP create --type Tag --title "<Title Case>" --desc "<one-sentence description of what objects sharing this tag have in common>"`
 
-**3. Assemble frontmatter** with: `title`, `description`, `tags` (comma-separated).
+**2b. Person/Entity Linking Prep**
+
+Scan the user's **input text and discovery context** for person names or entity mentions. Conversational phrases like "I spoke to [Name]", "mentioned by [Name]", "from [Name]", "[Name] said" are high-priority signals.
+
+For each candidate name:
+```bash
+$CAP search "<name>" --json
+```
+- High-confidence match with `structureId` starting with `RootPersonality`, `UserPersonality`, or matching a Person/Organization type → record `{ mention, id, structureId }` for post-save linking
+- Multiple close matches → ask user "Did you mean X or Y?" before recording
+- No match → skip
+
+**3. Assemble frontmatter** with: `title`, `description`, `date` (use `CURRENT_DATE` from Step 0 — links note to that date's daily view in Capacities), `tags` (comma-separated).
 
 **4. Validate and normalize:**
 ```bash
@@ -370,6 +393,22 @@ Parse JSON. If `valid: false`, read `errors[]`, ask user to provide missing valu
   Capture stdout — this is the `objectId`.
 - Updating existing (user chose "Update existing"):
   For each changed scalar field: `$CAP update <existing_id> <field> "<new value>"`
+
+**6. Entity Linking**
+
+For each confirmed person/entity match from step 2b:
+
+| Target structureId prefix | Property key |
+|---|---|
+| `RootPersonality` / `UserPersonality` | `people` |
+| `RootOrganization` | `organizations` |
+| Other custom types | `related` |
+
+```bash
+$CAP link <objectId> <propertyKey> <targetId>
+```
+
+Run one `cap link` call per entity. Skip this step if no matches were found in 2b.
 
 ### Step 10: Report Success
 
