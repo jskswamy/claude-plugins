@@ -50,12 +50,24 @@ If still not found:
 
 ### Step 4: Delegate to Recall Agent
 
-Delegate to the `recall-agent` with:
+Spawn the `recall-agent` ONCE with:
 - Topic name
 - Coaching note path (or null if not found)
 - Notes path
 - Depth level
 - `from_coach: false`
+
+Store the returned agentId as `RECALL_AGENT_ID`.
+
+For every subsequent user response during the session, use:
+```
+SendMessage(to: RECALL_AGENT_ID, content: <user response>)
+```
+
+Do NOT spawn a new agent for follow-up turns. The same agent tracks all
+explanation attempts, gap assessments, and probe answers in one context.
+
+The session ends when the agent updates the coaching note and wraps up.
 
 ### Step 5: Done
 

@@ -70,24 +70,44 @@ If matches found, list them and ask the user to pick one or proceed with concept
 
 ### Step 6: Delegate to Coach Agent
 
-Delegate to the `coach-agent` with:
+Spawn the `coach-agent` ONCE with:
 - Topic name or title
 - Extracted content (if any)
 - Source (URL, file path, or "concept")
 - Notes path
 - Template path: `${CLAUDE_PLUGIN_ROOT}/templates/study-note.md`
 
-The coach-agent runs the full coaching session and saves the coaching note.
+Store the returned agentId as `COACH_AGENT_ID`.
+
+For every subsequent user response during the session, use:
+```
+SendMessage(to: COACH_AGENT_ID, content: <user response>)
+```
+
+Do NOT spawn a new agent for follow-up turns. The same agent holds the full
+conversation history and all session state (gear, gaps, concepts covered).
+
+The session ends when the coach-agent returns the note path and gap count
+without asking another question.
 
 ### Step 7: Flow into Recall (Unless --no-recall)
 
-After the coach-agent completes, unless `--no-recall` was passed:
+After the coach-agent signals completion, unless `--no-recall` was passed:
 
-Delegate to the `recall-agent` with:
+Spawn the `recall-agent` ONCE with:
 - Topic slug (from coaching note filename)
 - Notes path
 - Depth level
 - `from_coach: true` (skip prerequisite check - user just coached)
+
+Store the returned agentId as `RECALL_AGENT_ID`.
+
+For every subsequent user response during the recall session, use:
+```
+SendMessage(to: RECALL_AGENT_ID, content: <user response>)
+```
+
+The recall session ends when the agent updates the note and wraps up.
 
 ### Step 8: Done
 
