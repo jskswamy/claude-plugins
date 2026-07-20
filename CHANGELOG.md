@@ -2,7 +2,133 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.6] - 2026-07-20
+
+### Added
+
+- Add multi-agent research and multi-object capture
+
+Adds Step 2a (Complexity Check) and Step 6 (Multi-Object Continuation)
+to the routing agent.
+
+Step 2a detects two things:
+- Multiple capture intents in one input ("organisation … along with …
+  milestone") → builds a CAPTURE_QUEUE, confirms with AskUserQuestion
+- Research signals ("need to research", embedded questions, extra URLs)
+  with ≥2 tasks → fans out parallel Agents (one per URL, one per topic)
+  and merges results into RESEARCH_CONTEXT before any saving begins.
+  Single-task inputs stay inline with no agent overhead.
+
+Step 6 drains CAPTURE_QUEUE after each save: picks the next object,
+pulls relevant RESEARCH_CONTEXT, and loops through Step 4/5 until all
+objects are captured, then links related objects via cap link.
+
+Also adds the Agent tool to the routing agent's tool list.
+- Add jot configure command for managing type agents
+
+Users had no way to reconfigure a type after initial setup or edit
+the questions and output template for an existing type agent.
+
+The new /jot:configure command lets users pick a configured type
+and choose from four actions: edit capture questions, edit the
+output template body structure, update trigger phrases and URL
+patterns, or reset the type entirely so the next capture re-runs
+full First-Encounter Setup from scratch.
+
+### Fixed
+
+- Fix capture agent setup gates and URL extraction
+
+First-encounter setup (Step 5) had three interactive gates written as
+prose quote blocks. The model would infer answers from context and skip
+AskUserQuestion entirely. Replaced Step 5a (type mapping confirm),
+Step 5e (trigger phrase confirm + URL patterns), and Step 5f (reference
+object) with explicit AskUserQuestion calls so they always pause.
+
+URL content extraction was noted in Step 2 Priority 3 as "for later"
+but Steps 3 and 4 never followed up. Added yt-dlp transcript extraction
+for YouTube URLs and WebFetch for articles, executed immediately at
+detection time and stored as URL_CONTENT. Step 5g now seeds the
+generated template from URL_CONTENT when available.
+- Fix untitled tags and missing fields in jot capture
+
+Root causes found via systematic debugging:
+
+1. `cap create -t RootTag --title "..."` silently ignores --title,
+   creating every tag as "Untitled". The pre-creation step was the
+   bug — tags included in the frontmatter tags: field are correctly
+   named by the CLI automatically.
+
+2. `cap search --type Tag` always returns empty even when tags exist,
+   so the dedup check never worked and always triggered a create call,
+   compounding the Untitled problem.
+
+3. The frontmatter assembly template didn't make it explicit that date
+   and status must always be included — fields with defaults were
+   being silently dropped.
+
+Fix: remove the separate tag pre-creation step entirely from the Save
+Instructions template (and both existing type agents). Tags go
+directly into the frontmatter tags: field; CLI handles dedup and
+creation. Also added an explicit note that all schema fields must be
+included in assembled frontmatter, with clear note on CLI-only rule.
+- Fix schema discovery to use cap types instead of cap validate probing
+
+Root cause: cap validate accepts any field name regardless of whether
+it exists on the type, producing phantom schemas. Organisation ended
+up with date/status/link fields that Capacities silently drops on
+create — none of those fields exist on the Organization type.
+
+Fix Step 5b to use `cap types "<TYPE>" --json` which returns the
+authoritative field list. cap validate probing is explicitly
+prohibited for field existence checks.
+
+Also update organisation.md to reflect the real Organization schema:
+- Remove phantom date, status, link fields
+- Add `contact information` (richText) for website/contact details
+- Document that entity links use `people` and `personalities` keys
+
+Verified: contact information field persists correctly; Title Case
+tags with spaces store and search correctly (cap get display strips
+spaces but actual titles are intact).
+- Fix per-turn agent re-spawns in study commands
+
+coach.md and recall.md both said "delegate" to an agent with
+no guidance for follow-up turns. Without a SendMessage
+instruction, the orchestrator defaults to spawning a fresh
+agent per user response, re-paying ~15k tokens of context
+on every turn.
+
+Both commands now: spawn the agent once, store agentId,
+and route all subsequent user responses through SendMessage.
+The same fix covers the coach Explain gear and the recall
+session's Feynman explanation loop.
+
+### Other
+
+- Use Title Case for tags in jot capture
+
+Tags like "Aerospace" and "Private Space" instead of "aerospace"
+and "private-space". Applied to the Save Instructions template
+in capture.md and both existing type agents.
+- Bake CLI-only guard into generated type agent template
+
+The MCP guard was only in the routing agent (capture.md). Generated
+type agents had no such guard and kept reaching for mcp__capacities__*
+tools. Fix: add the CLI-only prohibition at the top of the type agent
+template in Step 5h so every generated agent carries it.
+
+Also remove the phantom date field from the schema table template —
+it was misleading agents into including date on types that don't
+have it (e.g. Organization).
 ## [2.1.5] - 2026-07-19
+
+### Changed
+
+- Update CHANGELOG and README for v2.1.5
+
+Document all changes included in the v2.1.5 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
 
 ### Other
 
@@ -16,7 +142,7 @@ Replace with a three-step flow: pick backend, verify cap connectivity
 (Capacities path only), write minimal config. Type agents are now
 generated automatically on first capture via the routing agent.
 
-New config format writes: capture_backend, agents_dir, routing: [].
+New config format writes: capture_backend, agents_dir, routing: []. by @jskswamy
 - Rewrite capture agent as universal routing agent
 
 Replaces the URL-specific capture agent with a dynamic routing agent
@@ -32,7 +158,7 @@ is captured for the first time: probes Capacities schema via cap
 validate, discovers enum values, collects trigger phrases, optionally
 reads a reference object for template generation, writes a self-
 contained type agent to ~/.claude/jot/agents/<id>.md, and updates the
-routing table — all without leaving the capture conversation.
+routing table — all without leaving the capture conversation. by @jskswamy
 - Thin capture command delegates to routing agent
 
 Remove the 354-line type-parsing command that hardcoded task/note/idea/
@@ -41,13 +167,17 @@ line entry point that passes all input to the routing agent.
 
 The routing agent (agents/capture.md) now handles type detection,
 confirmation, and delegation — the command just provides examples and
-documentation.
+documentation. by @jskswamy
 - Mark quick-capture agent as deprecated
 
 Add HTML comment at top of agents/quick-capture.md noting that its
 functionality is now handled by the routing agent (agents/capture.md).
 File is kept intact for reference; comment directs readers to the new
-routing agent and notes this file will be removed in a future cleanup.
+routing agent and notes this file will be removed in a future cleanup. by @jskswamy
+- Release v2.1.5
+
+Bump marketplace version from 2.1.4 to 2.1.5.
+Bump jot plugin from 1.6.4 to 1.6.5. by @jskswamy
 ## [2.1.4] - 2026-07-17
 
 ### Changed
@@ -2208,6 +2338,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.6]: https://github.com/jskswamy/claude-plugins/compare/v2.1.5..v2.1.6
 [2.1.5]: https://github.com/jskswamy/claude-plugins/compare/v2.1.4..v2.1.5
 [2.1.4]: https://github.com/jskswamy/claude-plugins/compare/v2.1.3..v2.1.4
 [2.1.3]: https://github.com/jskswamy/claude-plugins/compare/v2.1.2..v2.1.3
