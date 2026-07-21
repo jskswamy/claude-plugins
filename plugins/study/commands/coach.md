@@ -68,46 +68,39 @@ grep -ril "<topic>" <vault_1> <vault_2> 2>/dev/null | head -10
 
 If matches found, list them and ask the user to pick one or proceed with concept-only coaching.
 
-### Step 6: Delegate to Coach Agent
+### Step 6: Run Coaching Session
 
-Spawn the `coach-agent` ONCE with:
+Read `${CLAUDE_PLUGIN_ROOT}/agents/coach-agent.md` for the full session
+logic. Run it directly in this conversation — do not spawn an agent.
+
+Context to carry in:
 - Topic name or title
 - Extracted content (if any)
 - Source (URL, file path, or "concept")
-- Notes path
+- Notes path: `NOTES_PATH`
 - Template path: `${CLAUDE_PLUGIN_ROOT}/templates/study-note.md`
 
-Store the returned agentId as `COACH_AGENT_ID`.
+Complete all phases (gear selection → engage → session close → save note).
+Use the Read and Write tools for template and file operations.
 
-For every subsequent user response during the session, use:
-```
-SendMessage(to: COACH_AGENT_ID, content: <user response>)
-```
-
-Do NOT spawn a new agent for follow-up turns. The same agent holds the full
-conversation history and all session state (gear, gaps, concepts covered).
-
-The session ends when the coach-agent returns the note path and gap count
-without asking another question.
+When the session closes, store:
+- `NOTE_PATH` — path to the saved coaching note
+- `SLUG` — topic slug used for the filename
+- `GAPS` — final gap list
 
 ### Step 7: Flow into Recall (Unless --no-recall)
 
-After the coach-agent signals completion, unless `--no-recall` was passed:
+After coaching completes, unless `--no-recall` was passed:
 
-Spawn the `recall-agent` ONCE with:
-- Topic slug (from coaching note filename)
-- Notes path
-- Depth level
-- `from_coach: true` (skip prerequisite check - user just coached)
+Read `${CLAUDE_PLUGIN_ROOT}/agents/recall-agent.md` for the full session
+logic. Run it directly in this conversation — do not spawn an agent.
 
-Store the returned agentId as `RECALL_AGENT_ID`.
-
-For every subsequent user response during the recall session, use:
-```
-SendMessage(to: RECALL_AGENT_ID, content: <user response>)
-```
-
-The recall session ends when the agent updates the note and wraps up.
+Context to carry in:
+- Topic slug: `SLUG`
+- Coaching note path: `NOTE_PATH`
+- Notes path: `NOTES_PATH`
+- Depth: from `--depth` argument
+- `from_coach: true` (skip prerequisite check)
 
 ### Step 8: Done
 

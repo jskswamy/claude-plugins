@@ -25,7 +25,7 @@ Extract topic/url and depth (default: standard).
 cat "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/study.md" 2>/dev/null
 ```
 
-Extract `notes_path`. Expand `~`:
+Extract `notes_path` and `content_vaults`. Expand `~`:
 ```bash
 NOTES_PATH=$(eval echo "<notes_path>")
 ```
@@ -43,31 +43,30 @@ If not found, try fuzzy match:
 ls "${NOTES_PATH}/" | grep -i "<keywords_from_topic>"
 ```
 
-If still not found:
-- Inform user no coaching note exists for this topic
+If still not found, search content vaults for a matching note:
+```bash
+grep -ril "<topic_keywords>" <vault_1> <vault_2> --include="*.md" 2>/dev/null | head -5
+```
+If vault matches found, show them and let the user pick one. Use the selected
+file as the note path (treat as a vault note — recall agent handles it the
+same way as a coaching note).
+
+If nothing found anywhere:
+- Inform user no note exists for this topic
 - Ask: start a coaching session first with `/study:coach <topic>`, or run recall without prior note?
 - If they choose to proceed without note: run recall as cold recall (no gap targeting)
 
-### Step 4: Delegate to Recall Agent
+### Step 4: Run Recall Session
 
-Spawn the `recall-agent` ONCE with:
+Read `${CLAUDE_PLUGIN_ROOT}/agents/recall-agent.md` for the full session
+logic. Run it directly in this conversation — do not spawn an agent.
+
+Context to carry in:
 - Topic name
-- Coaching note path (or null if not found)
-- Notes path
-- Depth level
+- Coaching note path (or null for cold recall)
+- Notes path: `NOTES_PATH`
+- Depth: from `--depth` argument
 - `from_coach: false`
-
-Store the returned agentId as `RECALL_AGENT_ID`.
-
-For every subsequent user response during the session, use:
-```
-SendMessage(to: RECALL_AGENT_ID, content: <user response>)
-```
-
-Do NOT spawn a new agent for follow-up turns. The same agent tracks all
-explanation attempts, gap assessments, and probe answers in one context.
-
-The session ends when the agent updates the coaching note and wraps up.
 
 ### Step 5: Done
 
