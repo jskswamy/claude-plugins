@@ -2,6 +2,19 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.7] - 2026-07-21
+
+### Other
+
+- Respect CLAUDE_CONFIG_DIR in plugin config paths
+
+Plugins hardcoded ~/.claude for reading and writing config files
+(jot.md, study.md, installed_plugins.json). When CLAUDE_CONFIG_DIR
+is set to a non-default location the plugins broke silently.
+
+Replace all ~/.claude references with ${CLAUDE_CONFIG_DIR:-$HOME/.claude}
+across jot, study, and craft plugins. Behavior is unchanged when the
+env var is unset — the fallback resolves to the same default path.
 ## [2.1.6] - 2026-07-20
 
 ### Added
@@ -23,7 +36,7 @@ Step 6 drains CAPTURE_QUEUE after each save: picks the next object,
 pulls relevant RESEARCH_CONTEXT, and loops through Step 4/5 until all
 objects are captured, then links related objects via cap link.
 
-Also adds the Agent tool to the routing agent's tool list.
+Also adds the Agent tool to the routing agent's tool list. by @jskswamy
 - Add jot configure command for managing type agents
 
 Users had no way to reconfigure a type after initial setup or edit
@@ -33,7 +46,13 @@ The new /jot:configure command lets users pick a configured type
 and choose from four actions: edit capture questions, edit the
 output template body structure, update trigger phrases and URL
 patterns, or reset the type entirely so the next capture re-runs
-full First-Encounter Setup from scratch.
+full First-Encounter Setup from scratch. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG and README for v2.1.6
+
+Document all changes included in the v2.1.6 release. by @jskswamy
 
 ### Fixed
 
@@ -49,7 +68,7 @@ URL content extraction was noted in Step 2 Priority 3 as "for later"
 but Steps 3 and 4 never followed up. Added yt-dlp transcript extraction
 for YouTube URLs and WebFetch for articles, executed immediately at
 detection time and stored as URL_CONTENT. Step 5g now seeds the
-generated template from URL_CONTENT when available.
+generated template from URL_CONTENT when available. by @jskswamy
 - Fix untitled tags and missing fields in jot capture
 
 Root causes found via systematic debugging:
@@ -71,7 +90,7 @@ Fix: remove the separate tag pre-creation step entirely from the Save
 Instructions template (and both existing type agents). Tags go
 directly into the frontmatter tags: field; CLI handles dedup and
 creation. Also added an explicit note that all schema fields must be
-included in assembled frontmatter, with clear note on CLI-only rule.
+included in assembled frontmatter, with clear note on CLI-only rule. by @jskswamy
 - Fix schema discovery to use cap types instead of cap validate probing
 
 Root cause: cap validate accepts any field name regardless of whether
@@ -90,7 +109,7 @@ Also update organisation.md to reflect the real Organization schema:
 
 Verified: contact information field persists correctly; Title Case
 tags with spaces store and search correctly (cap get display strips
-spaces but actual titles are intact).
+spaces but actual titles are intact). by @jskswamy
 - Fix per-turn agent re-spawns in study commands
 
 coach.md and recall.md both said "delegate" to an agent with
@@ -102,7 +121,7 @@ on every turn.
 Both commands now: spawn the agent once, store agentId,
 and route all subsequent user responses through SendMessage.
 The same fix covers the coach Explain gear and the recall
-session's Feynman explanation loop.
+session's Feynman explanation loop. by @jskswamy
 
 ### Other
 
@@ -110,7 +129,7 @@ session's Feynman explanation loop.
 
 Tags like "Aerospace" and "Private Space" instead of "aerospace"
 and "private-space". Applied to the Save Instructions template
-in capture.md and both existing type agents.
+in capture.md and both existing type agents. by @jskswamy
 - Bake CLI-only guard into generated type agent template
 
 The MCP guard was only in the routing agent (capture.md). Generated
@@ -120,7 +139,11 @@ template in Step 5h so every generated agent carries it.
 
 Also remove the phantom date field from the schema table template —
 it was misleading agents into including date on types that don't
-have it (e.g. Organization).
+have it (e.g. Organization). by @jskswamy
+- Release v2.1.6
+
+Bump marketplace version from 2.1.5 to 2.1.6.
+Bump plugin versions: jot 1.6.5 → 1.6.6, study 1.0.0 → 1.0.1. by @jskswamy
 ## [2.1.5] - 2026-07-19
 
 ### Changed
@@ -2338,6 +2361,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.7]: https://github.com/jskswamy/claude-plugins/compare/v2.1.6..v2.1.7
 [2.1.6]: https://github.com/jskswamy/claude-plugins/compare/v2.1.5..v2.1.6
 [2.1.5]: https://github.com/jskswamy/claude-plugins/compare/v2.1.4..v2.1.5
 [2.1.4]: https://github.com/jskswamy/claude-plugins/compare/v2.1.3..v2.1.4
