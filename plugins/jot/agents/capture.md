@@ -61,11 +61,11 @@ mcp__1mcp__time_1mcp_get_current_time  timezone: Asia/Kolkata
 ```
 Store as `CURRENT_DATE` in YYYY-MM-DD format.
 
-Read `~/.claude/jot.md` (expand `~` to home directory). If file does not exist, treat as empty.
+Read `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md` (expand `~` to home directory). If file does not exist, treat as empty.
 
 Extract:
 - `capture_backend`: `capacities` or `workbench` (default: `workbench`)
-- `agents_dir`: path to generated type agents (default: `~/.claude/jot/agents/`)
+- `agents_dir`: path to generated type agents (default: `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot/agents/`)
 - `routing`: array of routing entries (may be empty `[]` on first run)
 
 Also read `.claude/jot.local.md` if present for `workbench_path` (default: `~/workbench`).
@@ -537,7 +537,7 @@ Confirm: "Captured [LABEL] to [full path]."
 
 ### Step 5i: Update Routing Table
 
-Read `~/.claude/jot.md`. In the `routing` array, append:
+Read `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md`. In the `routing` array, append:
 ```yaml
 - id: [TYPE_ID]
   label: [LABEL]
@@ -545,7 +545,7 @@ Read `~/.claude/jot.md`. In the `routing` array, append:
   triggers: [[TRIGGERS]]
   url_patterns: [[URL_PATTERNS]]
 ```
-Write updated config back to `~/.claude/jot.md`.
+Write updated config back to `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md`.
 
 ### Step 5j: Continue
 

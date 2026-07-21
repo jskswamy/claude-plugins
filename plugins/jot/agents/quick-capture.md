@@ -105,7 +105,7 @@ workbench_path: ~/workbench
 ```
 Default: `~/workbench` if not configured.
 
-Also read `~/.claude/jot.md` (global config, expand `~` to home directory):
+Also read `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md` (global config, expand `~` to home directory):
 ```yaml
 ---
 capture_backend: workbench   # workbench | capacities
@@ -312,7 +312,7 @@ Use the `capture_backend` value from the Configuration block to decide where to 
 
 #### If capture_backend == "workbench" (or not configured)
 
-If `capture_backend` was absent from `~/.claude/jot.md`, inform the user once: "No capture backend configured. Run `/jot:setup` to choose between workbench and Capacities. Saving to workbench for now."
+If `capture_backend` was absent from `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md`, inform the user once: "No capture backend configured. Run `/jot:setup` to choose between workbench and Capacities. Saving to workbench for now."
 
 **Filename formats:**
 - Task/Note/Idea (inbox items): `YYYY-MM-DD-slugified-title.md` (keep date for GTD processing)
@@ -336,13 +336,13 @@ Use the CLI for all Capacities operations — no MCP calls. Always use the full 
 CAP=/Users/subramk/.local/bin/cap
 ```
 
-Look up the current capture type in `capacities_mapping` from `~/.claude/jot.md`.
+Look up the current capture type in `capacities_mapping` from `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md`.
 
 **If the capture type has no entry in `capacities_mapping`:**
 1. Tell the user: "No Capacities mapping found for '[type]'. Let me configure it now."
 2. Ask the user for the Capacities type name to use.
 3. Validate it exists: `$CAP search "*" --type "<user's answer>" --json 2>&1`. Exit code 4 = unknown type — warn and repeat. Exit 0 = valid.
-4. Append the new entry under `capacities_mapping` in `~/.claude/jot.md` and continue.
+4. Append the new entry under `capacities_mapping` in `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md` and continue.
 
 **If the mapped type is `"daily_note"`:**
 ```bash

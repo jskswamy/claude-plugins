@@ -26,16 +26,16 @@ Before starting decomposition, determine which framework to use:
    **Detection**: Run these checks in parallel:
    ```bash
    # Check for superpowers
-   grep -qi "superpowers" ~/.claude/plugins/installed_plugins.json 2>/dev/null && echo "superpowers:plugin" || true
+   grep -qi "superpowers" ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/installed_plugins.json 2>/dev/null && echo "superpowers:plugin" || true
    grep -rqi "superpowers" CLAUDE.md .claude/*.md 2>/dev/null && echo "superpowers:config" || true
 
    # Check for speckit
-   grep -qi "spec.kit\|speckit" ~/.claude/plugins/installed_plugins.json 2>/dev/null && echo "speckit:plugin" || true
+   grep -qi "spec.kit\|speckit" ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/installed_plugins.json 2>/dev/null && echo "speckit:plugin" || true
    which speckit 2>/dev/null && echo "speckit:cli" || true
    test -d .speckit && echo "speckit:dir" || true
 
    # Check for bmad
-   grep -qi "bmad" ~/.claude/plugins/installed_plugins.json 2>/dev/null && echo "bmad:plugin" || true
+   grep -qi "bmad" ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/installed_plugins.json 2>/dev/null && echo "bmad:plugin" || true
    test -d .bmad && echo "bmad:dir" || true
    test -f .bmad-config.json && echo "bmad:config" || true
    ```

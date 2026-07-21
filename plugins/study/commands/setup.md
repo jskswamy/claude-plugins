@@ -5,14 +5,14 @@ description: Configure the study plugin - set notes folder and content vault pat
 
 # Study Setup
 
-Configure the study plugin by writing `~/.claude/study.md`.
+Configure the study plugin by writing `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/study.md`.
 
 ## Workflow
 
 ### Step 1: Check Existing Config
 
 ```bash
-cat ~/.claude/study.md 2>/dev/null
+cat "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/study.md" 2>/dev/null
 ```
 
 If found, show current values and ask: update or keep?
@@ -32,7 +32,7 @@ Ask the user for:
 
 Expand `~` in all paths before writing.
 
-Write to `~/.claude/study.md`:
+Write to `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/study.md`:
 
 ```yaml
 ---

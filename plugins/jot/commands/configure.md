@@ -10,10 +10,10 @@ Manage existing jot type agents. Use this when the initial setup missed somethin
 
 ## Step 1: Load Config
 
-Read `~/.claude/jot.md` (expand `~` to home directory).
+Read `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md` (expand `~` to home directory).
 
 Extract:
-- `agents_dir` (default: `~/.claude/jot/agents/`)
+- `agents_dir` (default: `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot/agents/`)
 - `routing` array
 
 If `routing` is empty or file doesn't exist:
@@ -102,7 +102,7 @@ options:
 
 Ask for the specific words/domains. Apply changes to:
 1. The frontmatter `triggers:` / `url-patterns:` in `${AGENTS_DIR}/${ENTRY.agent}.md`
-2. The matching entry's `triggers` / `url_patterns` in `~/.claude/jot.md`
+2. The matching entry's `triggers` / `url_patterns` in `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md`
 
 Both files must stay in sync.
 
@@ -127,7 +127,7 @@ If confirmed:
 rm "${AGENTS_DIR}/${ENTRY.agent}.md"
 ```
 
-2. Read `~/.claude/jot.md`. Remove the entry where `id == ENTRY.id` from the `routing` array. Write the file back.
+2. Read `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md`. Remove the entry where `id == ENTRY.id` from the `routing` array. Write the file back.
 
 3. Confirm:
 > "Reset [Label]. Next `/jot:capture [label]` will walk through setup from scratch."

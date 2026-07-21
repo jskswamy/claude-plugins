@@ -10,7 +10,7 @@ Configure where jot saves your captures. Type agents are configured automaticall
 
 ## Config Location
 
-Reads and writes `~/.claude/jot.md` (global config, not per-project).
+Reads and writes `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md` (global config, not per-project).
 Expand `~` to home directory before reading or writing.
 
 ## Step 1: Ask Backend Preference
@@ -21,11 +21,11 @@ Use AskUserQuestion with two options:
 
 ## Step 2: If workbench chosen
 
-Read `~/.claude/jot.md` if it exists (preserve any existing fields unrelated to this step).
+Read `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md` if it exists (preserve any existing fields unrelated to this step).
 Write or update these fields:
 ```yaml
 capture_backend: workbench
-agents_dir: ~/.claude/jot/agents/
+agents_dir: ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot/agents/
 routing: []
 ```
 
@@ -54,16 +54,16 @@ If exit non-zero or output contains error, stop:
 ### Step 3c: Create agents directory
 
 ```bash
-mkdir -p ~/.claude/jot/agents
+mkdir -p ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot/agents
 ```
 
 ### Step 3d: Write config
 
-Read `~/.claude/jot.md` if it exists (preserve unrelated fields).
+Read `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md` if it exists (preserve unrelated fields).
 Write or update these fields:
 ```yaml
 capture_backend: capacities
-agents_dir: ~/.claude/jot/agents/
+agents_dir: ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot/agents/
 routing: []
 ```
 

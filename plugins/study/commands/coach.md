@@ -29,7 +29,7 @@ Extract:
 ### Step 2: Read Config
 
 ```bash
-cat ~/.claude/study.md 2>/dev/null
+cat "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/study.md" 2>/dev/null
 ```
 
 Extract `notes_path` and `content_vaults`. If config missing, prompt user to run `/study:setup` first.

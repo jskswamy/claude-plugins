@@ -22,7 +22,7 @@ Extract topic/url and depth (default: standard).
 ### Step 2: Read Config
 
 ```bash
-cat ~/.claude/study.md 2>/dev/null
+cat "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/study.md" 2>/dev/null
 ```
 
 Extract `notes_path`. Expand `~`:

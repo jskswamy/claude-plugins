@@ -68,7 +68,7 @@ Before anything else, determine which decomposition framework to use:
       - OR directory exists: `.claude/plugins/superpowers` or similar
       - OR CLAUDE.md references superpowers methodology
       ```bash
-      grep -qi "superpowers" ~/.claude/plugins/installed_plugins.json 2>/dev/null && echo "found" || echo "not found"
+      grep -qi "superpowers" ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/installed_plugins.json 2>/dev/null && echo "found" || echo "not found"
       grep -rqi "superpowers" CLAUDE.md .claude/*.md 2>/dev/null && echo "referenced" || echo "not referenced"
       ```
 
@@ -77,7 +77,7 @@ Before anything else, determine which decomposition framework to use:
       - OR CLI available: `which speckit`
       - OR project files: `.speckit/`, `specs/constitution.md`, `constitution.md`
       ```bash
-      grep -qi "spec.kit\|speckit" ~/.claude/plugins/installed_plugins.json 2>/dev/null && echo "found" || echo "not found"
+      grep -qi "spec.kit\|speckit" ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/installed_plugins.json 2>/dev/null && echo "found" || echo "not found"
       which speckit 2>/dev/null && echo "cli found" || echo "cli not found"
       ls .speckit/ specs/constitution.md constitution.md 2>/dev/null
       ```
@@ -86,7 +86,7 @@ Before anything else, determine which decomposition framework to use:
       - Plugin installed: grep for `bmad` in installed_plugins.json
       - OR project files: `.bmad/`, `.bmad-config.json`, `bmad-agent/`
       ```bash
-      grep -qi "bmad" ~/.claude/plugins/installed_plugins.json 2>/dev/null && echo "found" || echo "not found"
+      grep -qi "bmad" ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/installed_plugins.json 2>/dev/null && echo "found" || echo "not found"
       ls .bmad/ .bmad-config.json bmad-agent/ 2>/dev/null
       ```
 
