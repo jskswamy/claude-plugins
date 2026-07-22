@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "A curated collection of Claude Code plugins",
-    "version": "2.1.6"
+    "version": "2.1.8"
   },
   "plugins": [
     {
@@ -58,7 +58,7 @@
     {
       "name": "jot",
       "description": "Quick, low-friction capture of notes, tasks, ideas, session summaries, and tech radar blips with Obsidian-style auto-linking",
-      "version": "1.6.6",
+      "version": "1.6.7",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -85,7 +85,7 @@
     {
       "name": "craft",
       "description": "The craft of building software end-to-end: capture ideas, understand problems, decompose work into structured units, dispatch subagents to execute them, and commit with full task context",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -190,7 +190,7 @@
     {
       "name": "study",
       "description": "Adaptive study coach with multi-gear learning sessions (Socratic, Explain, Guide, Check, Help) and spaced recall tracking via Feynman loops. Saves coaching notes with gap tracking and a recall log that shows improvement over time.",
-      "version": "1.0.1",
+      "version": "1.0.3",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
