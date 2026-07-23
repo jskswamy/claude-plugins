@@ -2,6 +2,59 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.9] - 2026-07-23
+
+### Added
+
+- Add smart amend detection to commit-tools
+
+Auto-detects whether staged changes should amend the previous
+commit rather than always creating a new one, eliminating the
+manual review-commits fold step after each session.
+
+Step 3b (new): run a Jaccard file-overlap heuristic against the
+last commit. Overlap > 0.5 → amend; zero overlap with different
+top-level dirs → new commit; ambiguous → LLM judgment. Skips
+when --amend is explicit, commit is pushed, or authored by
+someone else. Handles branches with no upstream (treats as
+unpushed).
+
+When AMEND_MODE=true: Step 7 synthesises a single fresh message
+from both diffs; Step 8 shows an amend-specific confirm dialog
+with a "New commit instead" escape hatch that resets AMEND_MODE
+and regenerates from staged diff alone; Step 9 runs
+git commit --amend.
+
+### Changed
+
+- Update CHANGELOG for v2.1.8 by @jskswamy
+
+### Fixed
+
+- Fix jot capture delegation and add review gate
+
+Three fixes to the jot capture plugin:
+
+- commands/capture.md: add MANDATORY block that forces Agent tool
+  delegation. Claude was treating the delegation description as
+  documentation and handling captures inline.
+
+- agents/capture.md: move MCP ban to the top of the agent and
+  strengthen it in the Step 5h generated-agent template. MCP
+  Capacities tools produce blank titles, duplicate tags, and wiped
+  fields — the cap CLI is the only safe path.
+
+- agents/capture.md: add Step 4.5 Review Gate. After content is
+  assembled the agent shows the draft (frontmatter + body) and asks
+  Save / Edit / Cancel. Edit loop runs in-context with no sub-agents.
+  Configurable via review: key in jot.md (default: both).
+
+### Other
+
+- Ignore .beads directory and untrack it from git
+
+Beads data is local-only (issues, hooks, credentials, config).
+Replace narrow export-state.json exclusion with full .beads/ rule.
 ## [2.1.8] - 2026-07-22
 
 ### Fixed
@@ -18,7 +71,7 @@ agent files remain the single source of truth for session logic.
 
 Also extends /study:recall to search content_vaults when no coaching
 note exists in notes_path, so pre-existing vault notes can be used
-as recall targets.
+as recall targets. by @jskswamy
 
 ### Other
 
@@ -30,11 +83,11 @@ is set to a non-default location the plugins broke silently.
 
 Replace all ~/.claude references with ${CLAUDE_CONFIG_DIR:-$HOME/.claude}
 across jot, study, and craft plugins. Behavior is unchanged when the
-env var is unset — the fallback resolves to the same default path.
+env var is unset — the fallback resolves to the same default path. by @jskswamy
 - Release v2.1.8
 
 Bump marketplace to 2.1.8. Plugin versions: craft 1.0.1,
-jot 1.6.7, study 1.0.3.
+jot 1.6.7, study 1.0.3. by @jskswamy
 ## [2.1.6] - 2026-07-20
 
 ### Added
@@ -2381,6 +2434,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.9]: https://github.com/jskswamy/claude-plugins/compare/v2.1.8..v2.1.9
 [2.1.8]: https://github.com/jskswamy/claude-plugins/compare/v2.1.6..v2.1.8
 [2.1.6]: https://github.com/jskswamy/claude-plugins/compare/v2.1.5..v2.1.6
 [2.1.5]: https://github.com/jskswamy/claude-plugins/compare/v2.1.4..v2.1.5
