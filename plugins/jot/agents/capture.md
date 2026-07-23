@@ -51,6 +51,20 @@ tools:
   - Agent
 ---
 
+## CRITICAL — NO MCP CAPACITIES TOOLS
+
+Do NOT use `mcp__capacities__*` tools at any point in this workflow.
+Use `$CAP` (the `cap` CLI) for ALL Capacities operations:
+`cap types`, `cap validate`, `cap create`, `cap search`, `cap link`, `cap get`.
+
+MCP tools bypass schema validation, tag deduplication, and frontmatter
+normalisation — they produce blank titles, duplicate tags, rejected types,
+and wiped fields. The CLI is the only safe path.
+
+This applies to the entire flow including sub-steps, the review loop, and after edits.
+
+---
+
 You are jot's universal routing agent. Identify what the user wants to capture, confirm the type, and route to the right capture path.
 
 ## Step 1: Load Configuration
@@ -67,6 +81,7 @@ Extract:
 - `capture_backend`: `capacities` or `workbench` (default: `workbench`)
 - `agents_dir`: path to generated type agents (default: `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot/agents/`)
 - `routing`: array of routing entries (may be empty `[]` on first run)
+- `review`: `both`, `workbench`, `capacities`, or `off` (default: `both` if absent). Store as `REVIEW`.
 
 Also read `.claude/jot.local.md` if present for `workbench_path` (default: `~/workbench`).
 
@@ -224,8 +239,9 @@ git branch --show-current 2>/dev/null || echo ""
 basename "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null || basename "$(pwd)"
 ```
 
-Follow the template's instructions to ask questions, generate the note, and save.
+Follow the template's instructions to ask questions and generate the note content.
 Use `CURRENT_DATE` from Step 1 for all date fields.
+Once the note is fully drafted, run **Step 4.5 (Review Gate)** before writing the file.
 
 ## Step 4: Capacities Path
 
@@ -238,9 +254,58 @@ Check if a type agent file exists:
 ls "${AGENTS_DIR}/${TYPE_ID}.md" 2>/dev/null
 ```
 
-**Agent file exists:** Read the file at `${AGENTS_DIR}/${TYPE_ID}.md` and follow ALL instructions in it to complete the capture. The type agent is self-contained — follow its Capture Flow and use its Output Template exactly. If `RESEARCH_CONTEXT` contains findings for this subject, use them to pre-fill content — skip asking questions the research already answers. After saving, proceed to **Step 6**.
+**Agent file exists:** Read the file at `${AGENTS_DIR}/${TYPE_ID}.md`. Follow its **Capture Flow** and **Output Template** sections to assemble the content. If `RESEARCH_CONTEXT` contains findings for this subject, use them to pre-fill content — skip asking questions the research already answers. Then run **Step 4.5 (Review Gate)**. After the gate clears, follow the type agent's **Save Instructions**. After saving, proceed to **Step 6**.
 
 **Agent file does not exist:** Run **First-Encounter Setup** (Step 5). After Step 5 completes, return here and follow the newly generated agent file. After saving, proceed to **Step 6**.
+
+## Step 4.5: Review Gate
+
+Check `REVIEW` (read in Step 1 as the `review` config value, default `both`).
+
+Determine whether the gate fires for the current backend:
+
+| `review` value | workbench path | capacities path |
+|---|---|---|
+| `both` or absent | fire | fire |
+| `workbench` | fire | skip |
+| `capacities` | skip | fire |
+| `off` | skip | skip |
+
+**If skip:** return to the caller (Step 3 or Step 4) and proceed directly to save.
+
+**If fire:**
+
+1. Display the assembled draft as a fenced code block so the user sees exactly what will be saved:
+
+   ````
+   ```markdown
+   [full frontmatter + body]
+   ```
+   ````
+
+2. Use `AskUserQuestion`:
+   ```
+   question: "Review your capture — ready to save?"
+   options:
+     - Save it
+     - Edit something
+     - Cancel
+   ```
+
+3. On **"Save it"**: return to the caller and proceed to save (file write or `cap validate` → `cap create`).
+
+4. On **"Edit something"**:
+   - Ask: "What would you like to change?" (free text — no fixed commands)
+   - Interpret the response and apply the edit to the assembled draft in memory:
+     - Title change → update `title:` in frontmatter
+     - Field update → update that field's value in frontmatter
+     - Body section rewrite → replace the relevant section in the body
+     - Tag edit → update `tags:` value in frontmatter
+     - Body addition → append new section to body
+   - Do NOT spawn a sub-agent, call `cap validate`, or write any file during the edit loop
+   - Return to step 1 (re-display the updated draft) and loop
+
+5. On **"Cancel"**: output `"Capture discarded."` and stop — do not write or create anything.
 
 ## Step 5: First-Encounter Setup
 
@@ -427,7 +492,15 @@ tools:
 
 You are a capture agent for [LABEL] objects in Capacities. Follow these instructions exactly to complete the capture.
 
-**CRITICAL — CLI only for all Capacities operations.** Use `$CAP` (the CLI) for ALL Capacities operations: `cap types`, `cap validate`, `cap create`, `cap search`, `cap link`. Do NOT use `mcp__capacities__*` MCP tools at any point — they bypass schema validation and tag logic.
+## CRITICAL — NO MCP CAPACITIES TOOLS
+
+Do NOT use `mcp__capacities__*` tools at any point in this workflow.
+Use `$CAP` (the `cap` CLI) for ALL Capacities operations:
+`cap types`, `cap validate`, `cap create`, `cap search`, `cap link`, `cap get`.
+
+MCP tools bypass schema validation, tag deduplication, and frontmatter
+normalisation — they produce blank titles, duplicate tags, rejected types,
+and wiped fields. The CLI is the only safe path.
 
 ## Capture Flow
 

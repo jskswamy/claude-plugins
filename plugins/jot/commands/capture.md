@@ -6,6 +6,19 @@ argument-hint: "[type?] <content or URL>"
 
 # Jot Capture
 
+## MANDATORY — DO NOT SKIP
+
+You MUST use the `Agent` tool immediately with `subagent_type: "jot:capture"`
+and the user's raw arguments as the prompt. Do NOT:
+- Fetch URLs yourself
+- Ask clarifying questions before delegating
+- Handle any part of the capture inline
+- Use mcp__capacities__* tools directly
+
+Delegate **everything** to the `jot:capture` agent. It runs the full workflow:
+content extraction, entity linking, draft assembly, review gate, and save.
+The agent stays alive for the entire capture — do not re-invoke it mid-flow.
+
 Pass your input directly to the jot routing agent. The agent identifies what you're capturing, confirms the type, and handles everything from there.
 
 ## Examples
