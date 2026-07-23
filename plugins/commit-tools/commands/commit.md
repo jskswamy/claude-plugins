@@ -162,6 +162,60 @@ pairs:
 
 5. **User context:** Any remaining arguments after flags are treated as context/intention
 
+### Step 3b: Last Commit Comparison
+
+**Skip this step entirely if `--amend` flag was set** — explicit amend is handled by Step 3.
+Set `AMEND_MODE=false` and proceed to Step 4.
+
+**Prerequisites — skip entirely and set `AMEND_MODE=false` if any fail:**
+1. Repo has at least one commit: `git log -1` exits 0
+2. Last commit was authored by the current user:
+   - Current user email: `git config user.email`
+   - Last commit email: `git log -1 --format='%ae'`
+   - Must match exactly
+3. Last commit is unpushed. Check with:
+   `git log @{u}.. 2>/dev/null | head -1` — if this outputs something (or
+   if the command fails because there is no upstream), the commit is
+   unpushed. A branch with no upstream tracking is always unpushed.
+   Treat `git log @{u}..` failing AND `git status` not showing
+   "behind" or "up to date" as unpushed. Only reject if `git status`
+   explicitly shows "Your branch is up to date" or "behind".
+
+**If all prerequisites pass, run the file-overlap heuristic:**
+
+```bash
+staged_files=$(git diff --staged --name-only)
+last_files=$(git diff-tree --no-commit-id --name-only -r HEAD)
+```
+
+Compute Jaccard overlap:
+```
+overlap = |staged_files ∩ last_files| / |staged_files ∪ last_files|
+```
+
+Decision table:
+```
+overlap > 0.5                                                → AMEND_MODE=true
+overlap == 0  AND  every staged file's top-level dir
+             differs from every last_files' top-level dir   → AMEND_MODE=false
+otherwise                                                    → LLM path
+```
+
+"Top-level dir" = the first path component before `/`. For root-level files, it is the filename itself.
+
+**LLM path (ambiguous cases only):**
+
+When the heuristic yields no clear decision, gather:
+- `LAST_MSG=$(git log -1 --format='%B')` — last commit subject + body
+- `LAST_DIFF=$(git show HEAD)` — last commit's full diff
+- Current staged diff (already gathered in Step 3)
+
+Ask yourself: "Do these staged changes belong with the previous commit (same logical concern), or are they a new, separate concern?" Answer `amend` or `new` and set `AMEND_MODE` accordingly.
+
+**Outputs:**
+- `AMEND_MODE=true`: also capture `LAST_DIFF=$(git show HEAD)` — proceed to Step 4 with amend intent
+- `AMEND_MODE=false`: proceed to Step 4 as a normal new commit
+
 ### Step 4: Atomic Commit Validation
 
 **Skip this step if `--no-atomic-check` flag is set.**
@@ -465,6 +519,14 @@ Using all gathered context, generate the commit message:
 - Selected commit style rules
 - Co-author info (if `--pair` flag set)
 
+**When `AMEND_MODE=true` (from Step 3b), also include:**
+- `LAST_DIFF` — the diff of the last commit captured in Step 3b
+
+Generate a message that describes the **combined** change as if both
+the last commit's changes and the current staged changes were always
+one commit. Do NOT concatenate the two individual messages — synthesise
+a single fresh message covering both diffs.
+
 **Generation guidelines:**
 
 1. **Analyze the diff** to understand WHAT changed:
@@ -602,6 +664,31 @@ type prefix, imperative mood. The conventional style enforces its own
 
 ### Step 8: Present and Confirm
 
+**When `AMEND_MODE=true` (detected in Step 3b), show the amend dialog instead:**
+
+```
+These changes look related to your last commit — amending it.
+
+────────────────────────────────────────────────────────────────────────
+<regenerated subject>
+
+<regenerated body>
+────────────────────────────────────────────────────────────────────────
+
+What would you like to do?
+○ Amend          — update the last commit with this message
+○ Edit message   — modify the message before amending
+○ New commit instead — create a separate commit (discard amend intent)
+○ Cancel
+```
+
+- **"Amend"** → proceed to Step 9 with `AMEND_MODE=true`
+- **"Edit message"** → same edit flow as the standard dialog below; re-show this amend dialog after edit (not the standard dialog)
+- **"New commit instead"** → set `AMEND_MODE=false`, unset `LAST_DIFF` (set it to empty string), return to Step 7 with only the staged diff, regenerate the message, then proceed through the standard dialog below
+- **"Cancel"** → exit without committing
+
+**When `AMEND_MODE=false`, show the standard dialog:**
+
 Show the generated commit message:
 
 ```
@@ -680,7 +767,7 @@ EOF
 
 **IMPORTANT:** Never add Claude/Anthropic-related Co-Authored-By lines.
 
-**If `--amend` flag:**
+**If `--amend` flag OR `AMEND_MODE=true` (auto-detected in Step 3b):**
 
 ```bash
 __GIT_COMMIT_PLUGIN__=1 git commit --amend -m "$(cat <<'EOF'
