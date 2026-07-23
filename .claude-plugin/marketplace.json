@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "A curated collection of Claude Code plugins",
-    "version": "2.1.8"
+    "version": "2.1.9"
   },
   "plugins": [
     {
@@ -34,7 +34,7 @@
     {
       "name": "commit-tools",
       "description": "End-to-end commit hygiene: write atomic commits with style enforcement, review and consolidate them before push, validate the final history",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
@@ -58,7 +58,7 @@
     {
       "name": "jot",
       "description": "Quick, low-friction capture of notes, tasks, ideas, session summaries, and tech radar blips with Obsidian-style auto-linking",
-      "version": "1.6.7",
+      "version": "1.6.8",
       "author": {
         "name": "Krishnaswamy Subramanian"
       },
