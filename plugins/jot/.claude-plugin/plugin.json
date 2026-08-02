@@ -1,7 +1,7 @@
 {
   "name": "jot",
-  "version": "1.6.8",
-  "description": "Quick, low-friction capture of notes, tasks, ideas, session summaries, and tech radar blips with Obsidian-style auto-linking",
+  "version": "2.0.0",
+  "description": "Low-friction knowledge capture — reads your conversation context, guides you through understanding the content, and saves to workbench or Capacities.",
   "author": {
     "name": "Krishnaswamy Subramanian",
     "email": "jskswamy@gmail.com"
@@ -9,13 +9,10 @@
   "keywords": [
     "capture",
     "notes",
-    "tasks",
     "ideas",
-    "radar",
-    "blips",
     "knowledge-management",
-    "obsidian",
-    "wikilinks",
+    "capacities",
+    "study",
     "gtd",
     "productivity"
   ]
