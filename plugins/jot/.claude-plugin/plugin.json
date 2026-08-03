@@ -1,6 +1,6 @@
 {
   "name": "jot",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Low-friction knowledge capture — reads your conversation context, guides you through understanding the content, and saves to workbench or Capacities.",
   "author": {
     "name": "Krishnaswamy Subramanian",
