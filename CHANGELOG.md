@@ -2,6 +2,24 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.12] - 2026-08-03
+
+### Other
+
+- Derive project name and auto-reindex stale indexes
+
+Step 0 now derives the project name from `git rev-parse
+--show-toplevel` by stripping the leading `/` and replacing
+remaining `/` with `-`, then calls `index_status` directly
+with that name. This gives two distinct failure modes:
+MCP unreachable vs project not indexed.
+
+Step 0b is rewritten as a decision table. Stale indexes
+(>24 h) are now auto-reindexed when `auto_index` is not
+`never`, replacing the old warn-and-proceed behaviour.
+
+Step 1 is simplified to reference the name already derived
+in Step 0 instead of calling `list_projects` again.
 ## [2.1.11] - 2026-08-03
 
 ### Added
@@ -17,7 +35,21 @@ the project name from the git root path, and is fail-open: any error
 or zero results exits 0 with no output.
 
 hooks.json wires it via ${CLAUDE_PLUGIN_ROOT} so the path resolves
-correctly regardless of where the plugin is installed.
+correctly regardless of where the plugin is installed. by @jskswamy
+
+### Changed
+
+- Update CHANGELOG and README for v2.1.11
+
+Document all changes included in the v2.1.11 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
+
+### Other
+
+- Release v2.1.11
+
+Bump marketplace version from 2.1.10 to 2.1.11.
+Bump plugin versions: codebase 0.1.2 → 0.1.3. by @jskswamy
 ## [2.1.10] - 2026-08-03
 
 ### Changed
@@ -2538,6 +2570,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.12]: https://github.com/jskswamy/claude-plugins/compare/v2.1.11..v2.1.12
 [2.1.11]: https://github.com/jskswamy/claude-plugins/compare/v2.1.10..v2.1.11
 [2.1.10]: https://github.com/jskswamy/claude-plugins/compare/v2.1.9..v2.1.10
 [2.1.9]: https://github.com/jskswamy/claude-plugins/compare/v2.1.8..v2.1.9
