@@ -271,8 +271,28 @@ Set `CONTENT` from user responses. `CONTENT.raw_source` = `"guided"`.
 
 ## PHASE 3: STUDY
 
-**Auto-skip:** If `CONTENT.body` word count is under 50 words, skip this
-phase entirely. Set `STUDY_NOTES = { save_mode: "none", user_takeaway: "" }`.
+**Auto-skip:** Before showing the gear check, assess whether the content has
+study value. Skip Phase 3 entirely when EITHER:
+
+- `CONTENT.body` word count is under 50 words, OR
+- The content is primarily reference or factual material with no conceptual
+  depth to reason through: feature lists, installation guides, command/API
+  references, event metadata, location records, changelog entries, or
+  documentation that describes *what* without explaining *why*.
+
+Show the gear check when content has genuine conceptual depth: arguments or
+claims, design decisions with rationale, tradeoffs or failure analysis,
+security/architecture concepts, ideas that deepen through discussion.
+
+**When ambiguous: default to showing the gear check.** A false positive
+costs one click; a false negative silently kills a valuable session.
+
+When skipping on content grounds, briefly announce it so the user can
+push back:
+> *"Content is primarily [reference / factual] — skipping study session.
+> Say 'let's discuss this' to engage anyway."*
+
+Set `STUDY_NOTES = { save_mode: "none", user_takeaway: "" }`.
 Proceed directly to Phase 4.
 
 ### 3a — Gear Check
