@@ -1,19 +1,3 @@
----
-name: capture
-description: Universal jot capture agent. 6-phase workflow: classify → extract → study → draft → review → save. Reads conversation context (Mode A) or runs a guided session (Mode B).
-model: inherit
-color: cyan
-tools:
-  - Read
-  - Write
-  - Glob
-  - Grep
-  - Bash
-  - WebFetch
-  - AskUserQuestion
-  - Agent
----
-
 ## CRITICAL — CLI ONLY
 
 Do NOT use `mcp__capacities__*` tools at any point in this workflow.
@@ -26,43 +10,26 @@ This applies to every phase, every sub-step, the review loop, and save.
 
 ---
 
-You are jot's universal capture agent. Run each phase in order. Do not
-skip phases or jump ahead.
+This spec is run inline by the capture command. All config variables
+(CURRENT_DATE, BACKEND, WORKBENCH_PATH, CAP, AGENTS_DIR, routing[],
+REVIEW) are pre-resolved. Run each phase in order. Do not skip phases
+or jump ahead.
 
 ---
 
 ## PHASE 1: CLASSIFY
 
-### 1a — Load Config
+### 1a — Config (pre-loaded)
 
-Get current date:
-```bash
-date +%Y-%m-%d
-```
-Store as `CURRENT_DATE`.
+All variables were resolved by the capture command before this spec was
+invoked. Do not re-fetch config or re-run `date`.
 
-Read `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot.md` (expand `~` to absolute
-home path). If file does not exist, treat as empty with all defaults.
+Available: `CURRENT_DATE`, `BACKEND`, `WORKBENCH_PATH`, `CAP`,
+`AGENTS_DIR`, `routing[]`, `REVIEW`, `raw_args`, `CONTENT`.
 
-Extract:
-- `capture_backend`: `workbench` | `capacities` (default: `workbench`)
-- `review`: `both` | `workbench` | `capacities` | `off` (default: `both`)
-- `agents_dir`: path to generated type agents
-  (default: `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/jot/agents/`)
-- `routing`: array of entries — may be empty `[]` on first run
-
-Store `capture_backend` value as `BACKEND`.
-
-Read `.claude/jot.local.md` if present. Extract `workbench_path`
-(default: `~/workbench`). Expand `~` to absolute path. Store as `WORKBENCH_PATH`.
-
-Check cap availability:
-```bash
-which cap 2>/dev/null || echo "$HOME/.local/bin/cap"
-```
-Store result as `CAP`. If neither path exists, set `capture_backend = workbench`.
-
-Expand `agents_dir` `~` to absolute path. Store as `AGENTS_DIR`.
+If `CONTENT` is non-empty: the user passed a URL or file — treat as
+Mode A with pre-extracted content; skip Phase 2 URL fetching.
+If `CONTENT` is empty: detect Mode A or B in step 1b as normal.
 
 ### 1b — Detect Mode
 
@@ -337,12 +304,8 @@ No Socratic back-and-forth unless the user asks.
 **Guide gear:** Walk through the content decision-by-decision, step-by-step.
 Pause at each step and wait for the user to follow.
 
-**CRITICAL — stay resident for the entire session.** Do NOT return or emit
-plain text questions. For every exchange, use `AskUserQuestion` with a single
-free-text question field. Receive the answer, respond inline, then call
-`AskUserQuestion` again with the next question. Loop until the user signals
-done: "ok", "let's draft", "enough", "good", "move on", or any completion
-signal. No artificial cap on length.
+Continue until the user signals done: "ok", "let's draft", "enough",
+"good", "move on", or any completion signal. No artificial cap on length.
 
 Track:
 - `CONCEPTS_COVERED`: key terms and ideas that came up
@@ -509,7 +472,7 @@ Store this path as `DRAFT_PATH`.
 
 ### 5a — Gate Check
 
-Read the `review` config value (loaded in Phase 1, default `both`).
+Use `REVIEW` (pre-resolved by the capture command, default `both`).
 
 | review value | workbench path | capacities path |
 |---|---|---|
