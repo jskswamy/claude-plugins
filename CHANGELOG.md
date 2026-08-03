@@ -2,6 +2,22 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.11] - 2026-08-03
+
+### Added
+
+- Add PreToolUse grep hook to codebase plugin
+
+Intercepts Bash grep/rg calls and injects matching codebase-memory
+graph symbols as context before the grep runs. Claude sees the graph
+results first and typically skips acting on the grep output.
+
+The hook calls codebase-memory-mcp via its cli subcommand, derives
+the project name from the git root path, and is fail-open: any error
+or zero results exits 0 with no output.
+
+hooks.json wires it via ${CLAUDE_PLUGIN_ROOT} so the path resolves
+correctly regardless of where the plugin is installed.
 ## [2.1.10] - 2026-08-03
 
 ### Changed
@@ -23,7 +39,11 @@ removed. All 6 phases and all AskUserQuestion calls are unchanged —
 they now work natively in the inline context.
 
 Also fixes from final review: CONTENT schema (title/description/body/
-raw_source), jot.local.md absolute path, stale Phase 5a variable ref.
+raw_source), jot.local.md absolute path, stale Phase 5a variable ref. by @jskswamy
+- Update CHANGELOG and README for v2.1.10
+
+Document all changes included in the v2.1.10 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
 
 ### Other
 
@@ -52,7 +72,7 @@ Key changes:
 - commands/capture.md reduced to a thin mandatory delegate
 - Study and review edit interactions use AskUserQuestion in a
   loop so the agent stays resident; each exchange no longer
-  spawns a fresh instance with a full context reload
+  spawns a fresh instance with a full context reload by @jskswamy
 - Make study auto-skip content-aware
 
 The word-count-only gate in Phase 3 didn't distinguish between
@@ -65,7 +85,11 @@ The new logic assesses content nature before showing the gear
 check. Reference and factual content auto-skips with a brief
 announcement so users can push back. When ambiguous, defaults to
 showing the gear check — a false negative (silently skipping a
-valuable session) is worse than a false positive (one extra click).
+valuable session) is worse than a false positive (one extra click). by @jskswamy
+- Release v2.1.10
+
+Bump marketplace version from 2.1.9 to 2.1.10.
+Bump plugin versions: jot 2.0.0 → 2.0.1 (sync from 1.6.8 in marketplace). by @jskswamy
 
 ### Removed
 
@@ -73,7 +97,7 @@ valuable session) is worse than a false positive (one extra click).
 
 The quick-capture agent had been superseded by the routing agent
 and marked deprecated. Removing it eliminates the stale routing
-entry. Version bump reflects the breaking architecture change.
+entry. Version bump reflects the breaking architecture change. by @jskswamy
 ## [2.1.9] - 2026-07-23
 
 ### Added
@@ -2514,6 +2538,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.11]: https://github.com/jskswamy/claude-plugins/compare/v2.1.10..v2.1.11
 [2.1.10]: https://github.com/jskswamy/claude-plugins/compare/v2.1.9..v2.1.10
 [2.1.9]: https://github.com/jskswamy/claude-plugins/compare/v2.1.8..v2.1.9
 [2.1.8]: https://github.com/jskswamy/claude-plugins/compare/v2.1.6..v2.1.8
