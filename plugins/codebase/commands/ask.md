@@ -27,43 +27,35 @@ Examples:
 
 ## Execution Flow
 
-### Step 0: Check codebase-memory-mcp Availability
+### Step 0: Derive Project Name and Check Availability
 
-Call `list_projects` to verify the MCP server is available. If not:
-```
-codebase-memory-mcp not found. Install and configure it before using /codebase commands.
-```
-Exit.
+Run `git rev-parse --show-toplevel` to get the repo root. Derive the project name by stripping the leading `/` and replacing all remaining `/` with `-` (e.g. `/Users/alice/src/myrepo` → `Users-alice-src-myrepo`).
+
+Call `index_status` with that derived project name. Two failure cases:
+- MCP server unreachable → print and exit:
+  ```
+  codebase-memory-mcp not found. Install and configure it before using /codebase commands.
+  ```
+- Project not found → print and exit:
+  ```
+  Project not indexed. Run /codebase:index first.
+  ```
 
 ### Step 0b: Check Index Freshness
 
-Read `.claude/codebase.local.md`. Check the `auto_index` setting:
+Read `.claude/codebase.local.md`. Determine two things: `auto_index` setting and whether the index is **stale** (`last_indexed` missing or >24 hours ago).
 
-- If the file is missing or `auto_index` is `ask`:
-  Use AskUserQuestion to prompt:
-  ```
-  The codebase needs to be indexed before querying. Index now?
-
-  ○ Yes, always (save this preference)
-  ○ Yes, just this once
-  ○ No, I'll run /codebase:index manually (save this preference)
-  ```
-  If a "save" option is selected, write the preference to `.claude/codebase.local.md`.
-  If "Yes", call `index_repository` with the saved `index_mode` (default: `moderate`).
-
-- If `auto_index` is `always`:
-  Call `index_repository` with the saved `index_mode` before proceeding.
-
-- If `auto_index` is `never`:
-  Check `last_indexed`. If >24 hours ago or missing, print:
-  ```
-  ⚠ Index may be stale (last indexed: [time ago]). Run /codebase:index to refresh.
-  ```
-  Proceed with the query.
+| Condition | Action |
+|-----------|--------|
+| `last_indexed` missing (never indexed) | AskUserQuestion: "Index now?" with options: Yes always / Yes once / No (manual). Save preference if chosen. If Yes, call `index_repository`. |
+| Stale AND `auto_index` is not `never` | Auto-reindex: print `⟳ Index is stale — reindexing…`, call `index_repository` with saved `index_mode` (default: `moderate`), update `last_indexed`. |
+| Stale AND `auto_index` is `never` | Print `⚠ Index may be stale (last indexed: [time ago]). Run /codebase:index to refresh.` then proceed. |
+| `auto_index` is `always` (any freshness) | Call `index_repository` before proceeding. |
+| Fresh | Proceed. |
 
 ### Step 1: Determine the Project Name
 
-Call `list_projects` to get the list of indexed projects. Match against the current repository name (from `git rev-parse --show-toplevel`, using the directory basename). If no match is found, suggest running `/codebase:index` first.
+Use the project name derived in Step 0.
 
 ### Step 2: Classify Intent
 
