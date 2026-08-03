@@ -2,6 +2,78 @@
 
 All notable changes to the Claude Code Plugin Marketplace will be documented in this file.
 
+## [2.1.10] - 2026-08-03
+
+### Changed
+
+- Convert jot capture to inline command pattern
+
+Replace the spawned-subagent delegation with an inline orchestration
+pattern (study:coach style). AskUserQuestion is filtered out of
+subagent tool access in Claude Code, so the old pattern terminated
+the agentic loop after every exchange.
+
+commands/capture.md is now an orchestrator: resolves config, delegates
+URL extraction to jot:content-extractor (one-shot), then reads and
+runs agents/capture.md directly in the command's conversation context.
+
+agents/capture.md becomes a spec document: frontmatter removed, Phase
+1a updated to treat config as pre-loaded, Phase 3b residency guard
+removed. All 6 phases and all AskUserQuestion calls are unchanged —
+they now work natively in the inline context.
+
+Also fixes from final review: CONTENT schema (title/description/body/
+raw_source), jot.local.md absolute path, stale Phase 5a variable ref.
+
+### Other
+
+- Replace jot capture with 6-phase workflow
+
+Rewrote the capture agent from a monolith into an explicit
+6-phase structure: classify → extract → study → draft →
+review → save.
+
+The old agent embedded routing, URL extraction, and save in a
+single flat flow that was hard to follow reliably, causing blank
+titles, duplicate tags, and missed fields when using Capacities.
+
+Key changes:
+- Classify detects Mode A (synthesise from conversation) or
+  Mode B (guided fresh session), eliminating the need to invoke
+  a separate capture command with structured arguments
+- Study phase added between extract and draft — skippable gear
+  system lets users learn the concept before committing to a draft
+- Draft writes to a pivot file on disk before the review loop,
+  preventing loss during long sessions
+- All Capacities operations route through the cap CLI; the MCP
+  capacities tools are banned to avoid schema bypass bugs that
+  wiped fields and produced blank titles
+- Backend guards prevent cap calls on workbench-only installs
+- commands/capture.md reduced to a thin mandatory delegate
+- Study and review edit interactions use AskUserQuestion in a
+  loop so the agent stays resident; each exchange no longer
+  spawns a fresh instance with a full context reload
+- Make study auto-skip content-aware
+
+The word-count-only gate in Phase 3 didn't distinguish between
+reference material (feature lists, install guides) and conceptual
+content (arguments, design rationale, failure analysis). Tool
+READMEs easily exceeded 50 words while offering nothing to reason
+through.
+
+The new logic assesses content nature before showing the gear
+check. Reference and factual content auto-skips with a brief
+announcement so users can push back. When ambiguous, defaults to
+showing the gear check — a false negative (silently skipping a
+valuable session) is worse than a false positive (one extra click).
+
+### Removed
+
+- Delete deprecated quick-capture, bump to v2.0.0
+
+The quick-capture agent had been superseded by the routing agent
+and marked deprecated. Removing it eliminates the stale routing
+entry. Version bump reflects the breaking architecture change.
 ## [2.1.9] - 2026-07-23
 
 ### Added
@@ -23,11 +95,15 @@ When AMEND_MODE=true: Step 7 synthesises a single fresh message
 from both diffs; Step 8 shows an amend-specific confirm dialog
 with a "New commit instead" escape hatch that resets AMEND_MODE
 and regenerates from staged diff alone; Step 9 runs
-git commit --amend.
+git commit --amend. by @jskswamy
 
 ### Changed
 
 - Update CHANGELOG for v2.1.8 by @jskswamy
+- Update CHANGELOG and README for v2.1.9
+
+Document all changes included in the v2.1.9 release.
+Regenerate plugins section in README from marketplace.json. by @jskswamy
 
 ### Fixed
 
@@ -47,14 +123,18 @@ Three fixes to the jot capture plugin:
 - agents/capture.md: add Step 4.5 Review Gate. After content is
   assembled the agent shows the draft (frontmatter + body) and asks
   Save / Edit / Cancel. Edit loop runs in-context with no sub-agents.
-  Configurable via review: key in jot.md (default: both).
+  Configurable via review: key in jot.md (default: both). by @jskswamy
 
 ### Other
 
 - Ignore .beads directory and untrack it from git
 
 Beads data is local-only (issues, hooks, credentials, config).
-Replace narrow export-state.json exclusion with full .beads/ rule.
+Replace narrow export-state.json exclusion with full .beads/ rule. by @jskswamy
+- Release v2.1.9
+
+Bump marketplace version from 2.1.8 to 2.1.9.
+Bump plugin versions: commit-tools 1.0.1 → 1.0.2, jot 1.6.7 → 1.6.8. by @jskswamy
 ## [2.1.8] - 2026-07-22
 
 ### Fixed
@@ -2434,6 +2514,7 @@ as a dependency.
 ### Removed
 
 - Remove welcome message from shell hook by @jskswamy
+[2.1.10]: https://github.com/jskswamy/claude-plugins/compare/v2.1.9..v2.1.10
 [2.1.9]: https://github.com/jskswamy/claude-plugins/compare/v2.1.8..v2.1.9
 [2.1.8]: https://github.com/jskswamy/claude-plugins/compare/v2.1.6..v2.1.8
 [2.1.6]: https://github.com/jskswamy/claude-plugins/compare/v2.1.5..v2.1.6
